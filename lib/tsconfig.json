@@ -1,0 +1,29 @@
+{
+  "compileOnSave": true,
+
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "module": "commonjs",
+
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "preserveConstEnums": true,
+
+    "target": "es2015",
+    "strict": true,
+    "declaration": true
+  },
+
+  "exclude": [
+    "node_modules"
+  ],
+
+  "include": [
+    "../typings/*.ts"
+  ],
+
+  "files": [
+    "node-odbc.ts"
+  ]
+}

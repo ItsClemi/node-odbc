@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "node-odbc", "src\node-odbc.vcxproj", "{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "etc", "etc", "{B127BECC-3920-4C7F-8DA5-E3639128700F}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		binding.gyp = binding.gyp
+		CONTRIBUTORS = CONTRIBUTORS
+		LICENSE = LICENSE
+		package.json = package.json
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "js", "js.njsproj", "{8F149A60-3406-4A78-AD3B-EC143B12FE6D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "node-odbc.test", "test\node-odbc.test\node-odbc.test.vcxproj", "{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Debug|x64.ActiveCfg = Debug|x64
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Debug|x64.Build.0 = Debug|x64
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Debug|x86.ActiveCfg = Debug|Win32
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Debug|x86.Build.0 = Debug|Win32
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Release|Any CPU.ActiveCfg = Release|Win32
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Release|x64.ActiveCfg = Release|x64
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Release|x64.Build.0 = Release|x64
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Release|x86.ActiveCfg = Release|Win32
+		{5EEFE633-01B6-4A75-BFFE-85D1D0FE841C}.Release|x86.Build.0 = Release|Win32
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|x64.Build.0 = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Debug|x86.Build.0 = Debug|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|x64.ActiveCfg = Release|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|x64.Build.0 = Release|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|x86.ActiveCfg = Release|Any CPU
+		{8F149A60-3406-4A78-AD3B-EC143B12FE6D}.Release|x86.Build.0 = Release|Any CPU
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Debug|x64.ActiveCfg = Debug|x64
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Debug|x64.Build.0 = Debug|x64
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Debug|x86.ActiveCfg = Debug|Win32
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Debug|x86.Build.0 = Debug|Win32
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Release|Any CPU.ActiveCfg = Release|Win32
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Release|x64.ActiveCfg = Release|x64
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Release|x64.Build.0 = Release|x64
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Release|x86.ActiveCfg = Release|Win32
+		{AE6B4AF9-C832-48C6-84B4-72DBAB49BEDE}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

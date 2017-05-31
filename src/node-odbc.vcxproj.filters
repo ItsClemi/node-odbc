@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{8a6587c2-5e62-4177-99e4-d8ed27495865}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Export">
+      <UniqueIdentifier>{d22a3803-b6c8-46c1-b047-0a9db7ce30a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{21c830a4-7832-4e43-8b15-ac5366097f68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc">
+      <UniqueIdentifier>{009e96f9-4fcf-4bbb-be35-3d7cfc618a12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Helper">
+      <UniqueIdentifier>{4c0855e7-63c4-475f-85f3-b79aab5c9f70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Helper">
+      <UniqueIdentifier>{8690880f-2ea1-47fe-adc5-1c97234b8e6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Helper\Handle">
+      <UniqueIdentifier>{ec7f4e04-f90d-462b-9420-851198172fae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Query">
+      <UniqueIdentifier>{92b76bc0-8e2c-43a0-8dbd-423ea6231a4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Drivers">
+      <UniqueIdentifier>{e4ef2d9c-e63d-4762-aea4-eec77688ed13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\libuv">
+      <UniqueIdentifier>{49fdbd1c-c9f5-43c0-b5bd-e9d36d71a091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Connection">
+      <UniqueIdentifier>{828a6b37-d323-4e48-8f6c-7ac36a9aeacc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Query\Helper">
+      <UniqueIdentifier>{57451ba5-ad1b-45b5-8211-25c4ca22e1dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Connection\Helper">
+      <UniqueIdentifier>{43ac6158-457e-4165-866f-8c3b2b19b1d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Connection\Extension">
+      <UniqueIdentifier>{f33e4295-dcd5-485d-b9cd-ef829ca04153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Dispatcher">
+      <UniqueIdentifier>{1ed6df06-61c9-417d-b26c-b9f43bddb130}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Dispatcher\Async">
+      <UniqueIdentifier>{3d627b46-f2e3-4aaa-a2c9-3bf274b38d69}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Module.cpp" />
+    <ClCompile Include="Core\GlobalEnvironment.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\OdbcEnvironment.cpp">
+      <Filter>Odbc</Filter>
+    </ClCompile>
+    <ClCompile Include="Export\EConnection.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Helper\Utility.cpp">
+      <Filter>Common\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Helper\OdbcError.cpp">
+      <Filter>Odbc\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Export\EModuleHelper.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\Query.cpp">
+      <Filter>Odbc\Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Processor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Dispatcher\IoWorker.cpp">
+      <Filter>Odbc\Dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Dispatcher\DispatchManager.cpp">
+      <Filter>Odbc\Dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="Export\EPreparedQuery.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Connection\Extension\MssqlExtension.cpp">
+      <Filter>Odbc\Connection\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Connection\ConnectionPool.cpp">
+      <Filter>Odbc\Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Connection\Extension\PoolExtension.cpp">
+      <Filter>Odbc\Connection\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\ResultSet.cpp">
+      <Filter>Odbc\Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\QueryParameter.cpp">
+      <Filter>Odbc\Query</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GlobalEnvironment.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\OdbcEnvironment.h">
+      <Filter>Odbc</Filter>
+    </ClInclude>
+    <ClInclude Include="Export\EConnection.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Helper\Utility.h">
+      <Filter>Common\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Helper\Handle\OdbcHandle.h">
+      <Filter>Odbc\Helper\Handle</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Helper\OdbcError.h">
+      <Filter>Odbc\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Helper\Handle\OdbcConnectionHandle.h">
+      <Filter>Odbc\Helper\Handle</Filter>
+    </ClInclude>
+    <ClInclude Include="Export\EModuleHelper.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Helper\NodeExt.h">
+      <Filter>Common\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Query.h">
+      <Filter>Odbc\Query</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Helper\Handle\OdbcEnvironmentHandle.h">
+      <Filter>Odbc\Helper\Handle</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Drivers\msodbcsql.h">
+      <Filter>Odbc\Drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Processor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Connection\Extension\MssqlExtension.h">
+      <Filter>Odbc\Connection\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Dispatcher\IoWorker.h">
+      <Filter>Odbc\Dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Dispatcher\DispatchManager.h">
+      <Filter>Odbc\Dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="Export\EPreparedQuery.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Helper\Handle\OdbcStatementHandle.h">
+      <Filter>Odbc\Helper\Handle</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Connection\ConnectionPool.h">
+      <Filter>Odbc\Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Connection\Extension\PoolExtension.h">
+      <Filter>Odbc\Connection\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\ParamData.h">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\ColumnData.h">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\BindParam.h">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\JSDate.h">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\ResultSet.h">
+      <Filter>Odbc\Query</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\QueryParameter.h">
+      <Filter>Odbc\Query</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Dispatcher\Async\UvWorker.h">
+      <Filter>Odbc\Dispatcher\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\libuv\UvOperation.h">
+      <Filter>Core\libuv</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Dispatcher\Async\UvJob.h">
+      <Filter>Odbc\Dispatcher\Async</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

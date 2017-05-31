@@ -1,0 +1,36 @@
+{
+  "compileOnSave": true,
+
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "module": "commonjs",
+    "preserveConstEnums": true,
+
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "target": "es2015",
+    "strict": true
+  },
+
+
+  "exclude": [
+    "node_modules",
+    "test/node-odbc.test"
+  ],
+
+  "include": [
+    "../typings/*.ts"
+  ],
+
+
+
+  "files": [
+    "api.ts",
+    "module.ts",
+    "connection.ts",
+    "test.ts",
+    "crash.ts",
+    "insert.ts"
+  ]
+}

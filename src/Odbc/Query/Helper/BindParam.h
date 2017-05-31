@@ -34,7 +34,8 @@ public:
 
 	~CBindParam( )
 	{
-		assert( v8::Isolate::GetCurrent( ) == nullptr && !m_stream.IsEmpty( ) );
+		assert( v8::Isolate::GetCurrent( ) != nullptr );
+		assert( m_stream.IsEmpty( ) );
 	}
 
 public:

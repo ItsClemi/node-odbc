@@ -88,7 +88,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.setResilienceStrategy( undefined );
+				.setResilienceStrategy( (<any>(undefined)) );
 		} );
 	} );
 
@@ -216,7 +216,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.disconnect( null );
+				.disconnect( <any>null );
 		} );
 	} );
 
@@ -244,7 +244,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.prepareQuery( undefined );
+				.prepareQuery( <any>undefined );
 		} );
 	} );
 

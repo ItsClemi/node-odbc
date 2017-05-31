@@ -50,7 +50,7 @@ module.connection.forEach(( con ) =>
 			let _retries = 25;
 			let _errorCodes = [50, 120, 5000, 4000];
 
-			let info: odbc.ConnectionInfo;
+			let info: odbc.ConnectionInfo = <any>{};
 			assert.doesNotThrow(() =>
 			{
 				info = new odbc.Connection()

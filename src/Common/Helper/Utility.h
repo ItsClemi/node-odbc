@@ -56,15 +56,16 @@ inline std::string WStringToString( const wchar_t* szStr )
 
 inline const std::wstring FromV8String( const v8::Local< v8::String > str )
 {
-	//> handle leak? HandleScope scope( isolate );
 	const int nLength = str->Length( );
 
 	std::wstring szResult;
+	
+	if( nLength > 0 )
 	{
 		szResult.resize( static_cast< size_t >( nLength ) );
-	}
 
-	str->Write( reinterpret_cast< uint16_t* >( &szResult.at( 0 ) ) );
+		str->Write( reinterpret_cast< uint16_t* >( &szResult.at( 0 ) ) );
+	}
 
 	return szResult;
 }
@@ -93,10 +94,10 @@ inline void ThrowV8Exception( v8::Isolate* isolate, const std::wstring& szExcept
 {
 	v8::HandleScope scope( isolate );
 
-	auto szMessage = v8::String::NewFromTwoByte( 
+	auto szMessage = v8::String::NewFromTwoByte(
 		isolate,
 		reinterpret_cast< const uint16_t* >( szException.c_str( ) ),
-		v8::NewStringType::kNormal,		
+		v8::NewStringType::kNormal,
 		static_cast< int >( szException.length( ) )
 	);
 

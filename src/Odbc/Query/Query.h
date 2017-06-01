@@ -26,16 +26,6 @@
 #include "Odbc/Dispatcher/Async/UvJob.h"
 
 
-
-enum class EFetchMode : size_t
-{
-	eSingle,
-	eArray,
-
-	eNone,
-	eMax
-};
-
 enum class EQueryState : size_t
 {
 	eNone,
@@ -56,6 +46,7 @@ enum class EQueryReturn : size_t
 	eNeedUv,
 };
 
+
 class CConnectionPool;
 class COdbcConnectionHandle;
 class CQuery : public COdbcStatementHandle, public CQueryParameter, public CResultSet, public IUvJob
@@ -75,7 +66,7 @@ private:
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
 
-private:
+public:
 	void SetError( );
 
 public:
@@ -127,6 +118,7 @@ public:
 	{
 		return !IsIdle( );
 	}
+
 
 
 private:

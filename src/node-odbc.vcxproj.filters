@@ -103,6 +103,9 @@
     <ClCompile Include="Odbc\Query\QueryParameter.cpp">
       <Filter>Odbc\Query</Filter>
     </ClCompile>
+    <ClCompile Include="Odbc\Query\Helper\ResultSetData.cpp">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -194,6 +197,9 @@
     </ClInclude>
     <ClInclude Include="Odbc\Dispatcher\Async\UvJob.h">
       <Filter>Odbc\Dispatcher\Async</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\ResultSetData.h">
+      <Filter>Odbc\Query\Helper</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -55,8 +55,20 @@ bool CResultSet::FetchResults( )
 {
 	if( GetState( ) == EResultState::eNone )
 	{
-		//SetState()
+		if( !FindNextResultSet( ) )
+		{
+			SetError( );
+			return false;
+		}
+
+		SetState( EResultState::ePrepareFetch );
 	}
+
+	if( GetState( ) == EResultState::ePrepareFetch )
+	{
+
+	}
+
 
 	return true;
 }
@@ -71,8 +83,51 @@ EForegroundResult CResultSet::ProcessForeground( v8::Isolate* isolate )
 	return EForegroundResult::eDiscard;
 }
 
-bool CResultSet::AddResultSetHandler( v8::Isolate* isolate, v8::Local< Uint32 > fetchMode, v8::Local< v8::Function > fnCallback )
+void CResultSet::AddResultSetHandler( v8::Isolate* isolate, EFetchMode eFetchMode, v8::Local< v8::Function > fnCallback )
 {
+	HandleScope scope( isolate );
+
+	auto pResultSet = new SResultSetHandler;
+	{
+		pResultSet->m_eFetchMode = eFetchMode;
+		pResultSet->m_callback.Reset( isolate, fnCallback );
+	}
+	m_vecResultSet.push_back( pResultSet );
+}
+
+bool CResultSet::FindNextResultSet( )
+{
+	for( ;; )
+	{
+		//> skip first result sets (empty)
+		if( !m_bExecNoData )
+		{
+			if( !m_pQuery->NumResultCols( &m_nResultColumns ) )
+			{
+				return false;
+			}
+
+			return true;
+		}
+		else
+		{
+			m_bExecNoData = false;
+		}
+
+
+		auto sqlRet = m_pQuery->MoreResults( );
+
+		if( sqlRet == SQL_NO_DATA )
+		{
+			SetState( EResultState::eDone );
+			return true;
+		}
+		else if( !SQL_SUCCEEDED( sqlRet ) )
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -93,6 +148,11 @@ bool CResultSet::DrainRemainingResults( )
 	}
 
 	return true;
+}
+
+bool CResultSet::PrepareFetch( )
+{
+
 }
 
 void CResultSet::Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value )
@@ -178,6 +238,11 @@ void CResultSet::SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnR
 
 		Resolve( isolate, result );
 	}
+}
+
+void CResultSet::SetError( )
+{
+	SetState( EResultState::eDone );
 }
 
 /*

@@ -93,6 +93,7 @@ NAN_METHOD( EPreparedQuery::AddResultSetHandler )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
+	const auto context = isolate->GetCurrentContext( );
 
 	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "eMode: invalid type" );
 	V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: invalid type" );
@@ -100,10 +101,12 @@ NAN_METHOD( EPreparedQuery::AddResultSetHandler )
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
 
-	if( !pThis->GetQuery( )->AddResultSetHandler( isolate, info[ 0 ].As<Uint32>( ), info[ 1 ].As< Function >( ) ) )
-	{
-		return;
-	}
+	uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
+	V8_TYPE_VALIDATE( nFetchMode < ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
+
+
+	pThis->GetQuery( )->AddResultSetHandler( isolate, static_cast< EFetchMode >( nFetchMode ), info[ 1 ].As< Function >( ) );
+
 
 	info.GetReturnValue( ).Set( info.This( ) );
 }

@@ -133,7 +133,7 @@ bool CQuery::ExecuteStatement( )
 	}
 	else if( sqlRet == SQL_NO_DATA )
 	{
-		CResultSet::m_bExecIsNullData = true;
+		CResultSet::m_bExecNoData = true;
 	}
 	else if( !SQL_SUCCEEDED( sqlRet ) )
 	{

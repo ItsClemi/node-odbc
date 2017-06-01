@@ -184,7 +184,7 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
 	uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
-	V8_TYPE_VALIDATE( nFetchMode <= ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
+	V8_TYPE_VALIDATE( nFetchMode < ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
 
 	if( info[ 1 ]->IsFunction( ) )
 	{

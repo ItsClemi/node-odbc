@@ -19,41 +19,40 @@
 #pragma once
 
 #include "Odbc/Dispatcher/Async/UvJob.h"
+#include "Helper/ResultSetData.h"
 
 
-struct SMetaData
+enum class EFetchMode : size_t
 {
-	std::wstring	m_szColumnName;
-	SQLULEN			m_nColumnSize;
-	SQLSMALLINT		m_nDataType;
-	std::wstring	m_szDataTypeName;
-	SQLSMALLINT		m_nDecimalDigits;
-	SQLSMALLINT		m_bNullable;
-	bool			m_bLOBColumn;
+	eSingle,
+	eArray,
+
+	eMax,
+	eNone,
 };
+
 
 enum class EResultState
 {
 	eNone,
 
+	ePrepareFetch,
 
 	eDrain,
 	eDone,
 };
 
+
 struct SResultSetHandler
 {
-	SResultSetHandler( )
-	{
-
-	}
-
 	void Dispose( )
 	{
 		assert( v8::Isolate::GetCurrent( ) != nullptr );
-
+		m_callback.Reset( );
 	}
 
+	EFetchMode						m_eFetchMode;
+	v8::Persistent< v8::Function >	m_callback;
 };
 
 
@@ -79,10 +78,15 @@ public:
 
 	EForegroundResult ProcessForeground( v8::Isolate* isolate );
 
-	bool AddResultSetHandler( v8::Isolate* isolate, v8::Local< v8::Uint32 > fetchMode, v8::Local< v8::Function > fnCallback );
+	void AddResultSetHandler( v8::Isolate* isolate, EFetchMode eFetchMode, v8::Local< v8::Function > fnCallback );
 
 private:
+	bool FindNextResultSet( );
+
 	bool DrainRemainingResults( );
+
+	bool PrepareFetch( );
+
 
 protected:
 	void Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value );
@@ -105,6 +109,8 @@ private:
 		m_eState.store( eState, std::memory_order_relaxed );
 	}
 
+	void SetError( );
+
 protected:
 	inline EResolveType GetResolveType( ) const
 	{
@@ -126,24 +132,36 @@ public:
 public:
 	inline void EnableMetaData( )
 	{
-
+		m_bEnableMetaData = true;
 	}
 
+public:
+	inline bool IsMetaDataEnabled( ) const
+	{
+		return m_bEnableMetaData;
+	}
 
 protected:
-	bool				m_bExecIsNullData = false;
+	bool					m_bExecNoData = false;
 
 private:
-	mutable CQuery*		m_pQuery;
+	mutable CQuery*			m_pQuery;
 
-	uint32_t			m_nChunkSize = 20;
-	EResolveType		m_eResolveType = EResolveType::eNone;
+	uint32_t				m_nChunkSize = 20;
+	EResolveType			m_eResolveType = EResolveType::eNone;
+	
 
-	v8::Persistent< v8::Function >		m_callback;
-	v8::Persistent< v8::Function >		m_resolve;
-	v8::Persistent< v8::Function >		m_reject;
+	SQLSMALLINT				m_nResultColumns = 0;
 
-	v8::Persistent< v8::Value >			m_result;
+	bool					m_bEnableMetaData = false;
 
-	std::atomic< EResultState >			m_eState;
+	v8::Persistent< v8::Function >			m_callback;
+	v8::Persistent< v8::Function >			m_resolve;
+	v8::Persistent< v8::Function >			m_reject;
+
+	v8::Persistent< v8::Value >				m_result;
+
+	std::vector< SResultSetHandler* >		m_vecResultSet;
+
+	std::atomic< EResultState >				m_eState;
 };

@@ -29,7 +29,7 @@ class COdbcStatementHandle : public TOdbcHandle< eOdbcHandleType::eSqlHandleStmt
 {
 public:
 	COdbcStatementHandle( )
-	{ 
+	{
 #ifdef _DEBUG
 		g_nSqlStatementCount++;
 #endif
@@ -45,16 +45,13 @@ public:
 public:
 	inline const SQLRETURN ExecDirect( const std::wstring& szQuery )
 	{
-		auto pp = ( SQLWCHAR* )szQuery.c_str( );
-		auto nn = static_cast< SQLINTEGER >( szQuery.size( ) ) + 1;
-		
-		return SQLExecDirectW( 
-			GetSqlHandle( ), 
-			pp, 
-			SQL_NTS
+		return SQLExecDirectW(
+			GetSqlHandle( ),
+			const_cast< SQLWCHAR* >( szQuery.c_str( ) ),
+			static_cast< SQLINTEGER >( szQuery.size( ) )
 		);
 	}
-	
+
 	inline const SQLRETURN ParamData( SQLPOINTER* pValue )
 	{
 		return SQLParamData( GetSqlHandle( ), pValue );
@@ -63,17 +60,17 @@ public:
 	inline bool BindParameter( SQLUSMALLINT ParameterNumber, SQLSMALLINT InputOutputType, SQLSMALLINT ValueType, SQLSMALLINT ParameterType, SQLULEN ColumnSize, SQLSMALLINT DecimalDigits, SQLPOINTER ParameterValuePtr, SQLLEN BufferLength, SQLLEN* StrLen_or_IndPtr )
 	{
 		return VALIDATE_SQL_RESULT(
-			SQLBindParameter( 
-				GetSqlHandle( ), 
-				ParameterNumber, 
-				InputOutputType, 
-				ValueType, 
-				ParameterType, 
-				ColumnSize, 
-				DecimalDigits, 
-				ParameterValuePtr, 
-				BufferLength, 
-				StrLen_or_IndPtr 
+			SQLBindParameter(
+				GetSqlHandle( ),
+				ParameterNumber,
+				InputOutputType,
+				ValueType,
+				ParameterType,
+				ColumnSize,
+				DecimalDigits,
+				ParameterValuePtr,
+				BufferLength,
+				StrLen_or_IndPtr
 			)
 		);
 	}
@@ -86,14 +83,48 @@ public:
 	}
 
 
+	inline bool NumResultCols( SQLSMALLINT* nColumnCount )
+	{
+		return VALIDATE_SQL_RESULT( SQLNumResultCols( GetSqlHandle( ), nColumnCount ) );
+	}
+
 	inline SQLRETURN MoreResults( )
 	{
 		return SQLMoreResults( GetSqlHandle( ) );
 	}
 
-	inline SQLRETURN DescribeCol( SQLUSMALLINT icol, SQLWCHAR* szColName, SQLSMALLINT cchColNameMax, SQLSMALLINT* pcchColName, SQLSMALLINT* pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT* pibScale, SQLSMALLINT* pfNullable )
+	inline bool DescribeCol( SQLUSMALLINT icol, SQLWCHAR* szColName, SQLSMALLINT cchColNameMax, SQLSMALLINT* pcchColName, SQLSMALLINT* pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT* pibScale, SQLSMALLINT* pfNullable )
 	{
-		return SQLDescribeColW( GetSqlHandle( ), icol, szColName, cchColNameMax, pcchColName, pfSqlType, pcbColDef, pibScale, pfNullable );
+		return VALIDATE_SQL_RESULT( SQLDescribeColW( GetSqlHandle( ), icol, szColName, cchColNameMax, pcchColName, pfSqlType, pcbColDef, pibScale, pfNullable ) );
 	}
 
+	inline bool DescribeCol( SQLUSMALLINT icol, std::wstring* szColName, SQLSMALLINT* pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT* pibScale, SQLSMALLINT* pfNullable )
+	{
+		SQLSMALLINT nColNameLength = 0;
+		auto sqlRet = DescribeCol( icol, nullptr, 0, &nColNameLength, pfSqlType, pcbColDef, pibScale, pfNullable );
+
+		if( !SQL_SUCCEEDED( sqlRet ) )
+		{
+			return false;
+		}
+
+		szColName->resize( static_cast< size_t >( nColNameLength ) );
+
+		return DescribeCol( icol, &szColName->at( 0 ), nColNameLength, &nColNameLength, pfSqlType, pcbColDef, pibScale, pfNullable );
+	}
+
+
+	inline bool ColAttribute( SQLUSMALLINT iCol, SQLUSMALLINT iField, std::wstring* pCharAttr, SQLLEN* pNumAttr )
+	{
+		SQLSMALLINT nTextLength = 0;
+		auto sqlRet = SQLColAttributeW( GetSqlHandle( ), iCol, iField, nullptr, 0, &nTextLength, pNumAttr );
+		if( !SQL_SUCCEEDED( sqlRet ) )
+		{
+			return false;
+		}
+
+		pCharAttr->resize( static_cast< size_t >( nTextLength ) );
+		
+		return VALIDATE_SQL_RESULT( SQLColAttributeW( GetSqlHandle( ), iCol, iField, &pCharAttr->at( 0 ), nTextLength, &nTextLength, pNumAttr ) );
+	}
 };

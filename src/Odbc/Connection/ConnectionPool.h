@@ -72,6 +72,8 @@ public:
 
 	void ResolveDisconnect( );
 
+	void ExecuteQuery( std::shared_ptr< CQuery > pQuery );
+
 public:
 	virtual void ProcessBackground( ) override;
 	

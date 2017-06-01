@@ -43,16 +43,9 @@ void EModuleHelper::SetWriteStreamInitializer( const FunctionCallbackInfo< Value
 	const auto isolate = args.GetIsolate( );
 	HandleScope scope( isolate );
 
-	//RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ) );
+	V8_RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ), "cb: is not a function" );
 
-	if( s_fnWriteStreamInitializer.IsEmpty( ) )
-	{
-		s_fnWriteStreamInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
-	}
-	else
-	{
-		ThrowV8Exception( isolate, L"You can set the writestream initializer only once!" );
-	}
+	s_fnWriteStreamInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
 }
 
 void EModuleHelper::SetReadStreamInitializer( const FunctionCallbackInfo< Value >& args )
@@ -60,16 +53,9 @@ void EModuleHelper::SetReadStreamInitializer( const FunctionCallbackInfo< Value 
 	const auto isolate = args.GetIsolate( );
 	HandleScope scope( isolate );
 
-	//RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ) );
+	V8_RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ), "cb: is not a function" );
 
-	if( s_fnReadStreamInitializer.IsEmpty( ) )
-	{
-		s_fnReadStreamInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
-	}
-	else
-	{
-		ThrowV8Exception( isolate, L"You can set the readstream initializer only once!" );
-	}
+	s_fnReadStreamInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
 }
 
 void EModuleHelper::SetPromiseInitializer( const FunctionCallbackInfo< Value >& args )
@@ -77,16 +63,10 @@ void EModuleHelper::SetPromiseInitializer( const FunctionCallbackInfo< Value >& 
 	const auto isolate = args.GetIsolate( );
 	HandleScope scope( isolate );
 
-	//RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ) );
+	V8_RUNTIME_VALIDATE( args[ 0 ]->IsFunction( ), "cb: is not a function" );
 
-	if( s_fnPromiseInitializer.IsEmpty( ) )
-	{
-		s_fnPromiseInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
-	}
-	else
-	{
-		ThrowV8Exception( isolate, L"You can set the promise initializer only once!" );
-	}
+
+	s_fnPromiseInitializer.Reset( isolate, args[ 0 ].As< Function >( ) );
 }
 
 
@@ -111,15 +91,17 @@ const Local< Value > EModuleHelper::CreatePromise( Isolate* isolate, const Local
 	EscapableHandleScope scope( isolate );
 	const auto fnInitializer = node::PersistentToLocal( isolate, EModuleHelper::s_fnPromiseInitializer );
 	
-	TryCatch try_catch;
-
 	const unsigned argc = 1;
 	Local< Value > argv[ argc ] = { _this };
+
+	TryCatch try_catch;
+
 	auto promise = node::MakeCallback( isolate, Object::New( isolate ), fnInitializer, argc, argv );
 
 	if( try_catch.HasCaught( ) )
 	{
-		Nan::ThrowError( Nan::New( "exception occurred in promise initializer" ).ToLocalChecked( ) );
+		try_catch.ReThrow( );
+		return scope.Escape( Undefined( isolate ) );
 	}
 
 	return scope.Escape( promise );

@@ -99,6 +99,7 @@ protected:
 			if( !VALIDATE_SQL_RESULT( SQLFreeHandle( ToUnderlyingType< eOdbcHandleType >( T ), m_hSqlHandle ) ) )
 			{
 				auto pError = GetOdbcError( );
+
 				assert( false );
 			}
 
@@ -168,9 +169,8 @@ protected:
 
 		const auto pError = GetOdbcError( );
 
-		memcpy_s( szStatus, _Size, pError->GetSqlState( ), COdbcError::sStateLength * sizeof( wchar_t ) );
-
-
+		wcscpy_s( szStatus, pError->GetSqlState( ) );
+		
 		memcpy_s( &m_szLastSqlStatus, sSqlStateLength * sizeof( wchar_t ), pError->GetSqlState( ), COdbcError::sStateLength * sizeof( wchar_t ) );
 		
 

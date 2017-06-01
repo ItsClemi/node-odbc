@@ -76,12 +76,11 @@ export declare class Connection {
     getInfo(): ConnectionInfo;
 }
 export interface ISqlQuery {
-    addParameter(value: SqlTypes): ISqlQuery;
     addResultSetHandler(eMode: eFetchMode, cb: (result: SqlResultTypes) => void): ISqlQuery;
     enableReturnValue(): ISqlQuery;
     enableMetaData(): ISqlQuery;
     enableSlowQuery(): ISqlQuery;
-    asTransaction(): ISqlQuery;
+    enableTransaction(): ISqlQuery;
     setQueryTimeout(timeout: number): ISqlQuery;
     setChunkSize(chunkSize: number): ISqlQuery;
     toSingle(cb: (result: SqlResult, error: SqlError) => void): void;
@@ -92,12 +91,12 @@ export interface ISqlQuery {
     toArray<T>(cb: (result: SqlPartialResultArray<T>, error: SqlError) => void): void;
     toArray(): Promise<SqlResultArray>;
     toArray<T>(): Promise<SqlPartialResultArray<T>>;
-    rollback(cb: (err: SqlError) => void): void;
-    commit(cb: (err: SqlError) => void): void;
     execute(eMode: eFetchMode, cb: (result: SqlResultTypes, error: SqlError) => void): void;
     execute<T>(eMode: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void): void;
-    executeSql(query: string, cb: (result: SqlResultTypes, error: SqlError) => void): void;
-    executeSql<T>(query: string, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void): void;
+    executeRaw(query: string, cb: (result: SqlResultTypes, error: SqlError) => void): void;
+    executeRaw<T>(query: string, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void): void;
+    rollback(cb: (err: SqlError) => void): void;
+    commit(cb: (err: SqlError) => void): void;
 }
 export interface ISqlQueryEx extends ISqlQuery {
     setPromiseInfo(resolve: any, reject: any): void;
@@ -105,11 +104,11 @@ export interface ISqlQueryEx extends ISqlQuery {
 export declare function makeInputStream(stream: fs.ReadStream | stream.Readable, length: number): SqlStream;
 export declare function makeNumericValue(precision: number, scale: number, sign: boolean, value: Uint8Array): SqlNumeric;
 export declare function makeTimestampValue(date: Date): SqlTimestamp;
+export declare function setWriteStreamInitializer(cb: (targetStream: stream.Readable, query: ISqlQueryEx) => void): void;
 export declare function setPromiseInitializer<T>(cb: (query: ISqlQueryEx) => T): void;
-export declare function setReadStreamInitializer(cb: (query: number, column: number) => stream.Readable): void;
-export declare function setWriteStreamInitializer(cb: (targetStream: stream.Readable, query: number) => void): void;
-export declare function processNextChunk(query: number, chunk: Int8Array, cb: (error) => void): void;
-export declare function requestNextChunk(query: number, column: number, cb: (chunk: Int8Array) => void): Int8Array;
+export declare function setReadStreamInitializer(cb: (query: ISqlQueryEx, column: number) => stream.Readable): void;
+export declare function processNextChunk(query: ISqlQueryEx, chunk: Int8Array, cb: (error) => void): void;
+export declare function requestNextChunk(query: ISqlQueryEx, column: number, cb: (chunk: Int8Array) => void): Int8Array;
 export declare class ConnectionCluster {
     addConnection(connection: Connection): ConnectionCluster;
 }

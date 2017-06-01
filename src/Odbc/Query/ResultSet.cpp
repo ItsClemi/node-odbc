@@ -71,6 +71,11 @@ EForegroundResult CResultSet::ProcessForeground( v8::Isolate* isolate )
 	return EForegroundResult::eDiscard;
 }
 
+bool CResultSet::AddResultSetHandler( v8::Isolate* isolate, v8::Local< Uint32 > fetchMode, v8::Local< v8::Function > fnCallback )
+{
+	return true;
+}
+
 bool CResultSet::DrainRemainingResults( )
 {
 	for( ;; )
@@ -144,6 +149,34 @@ void CResultSet::Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value )
 		{
 			try_catch.ReThrow( );
 		}
+	}
+	else
+	{
+		assert( m_result.IsEmpty( ) );
+
+		//-> store pending result
+		m_result.Reset( isolate, value );
+	}
+}
+
+void CResultSet::SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector )
+{
+	HandleScope scope( isolate );
+
+	assert( v8::Isolate::GetCurrent( ) != nullptr );
+	assert( m_eResolveType == EResolveType::eNone );
+
+	m_eResolveType = EResolveType::ePromise;
+
+	m_resolve.Reset( isolate, fnResolver );
+	m_reject.Reset( isolate, fnRejector );
+	
+
+	if( m_pQuery->GetState( ) == EQueryState::eEnd && !m_result.IsEmpty( ) )
+	{
+		auto result = node::PersistentToLocal( isolate, m_result );
+
+		Resolve( isolate, result );
 	}
 }
 

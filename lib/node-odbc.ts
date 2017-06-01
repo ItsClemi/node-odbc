@@ -144,8 +144,6 @@ export declare class Connection
 
 export interface ISqlQuery 
 {
-	addParameter( value: SqlTypes ): ISqlQuery;
-
 	addResultSetHandler( eMode: eFetchMode, cb: ( result: SqlResultTypes ) => void ): ISqlQuery;
 
 
@@ -155,7 +153,7 @@ export interface ISqlQuery
 
 	enableSlowQuery(): ISqlQuery;
 
-	asTransaction(): ISqlQuery;
+	enableTransaction (): ISqlQuery;
 
 
 	setQueryTimeout( timeout: number ): ISqlQuery;
@@ -168,10 +166,13 @@ export interface ISqlQuery
 	toSingle( cb: ( result: SqlResult, error: SqlError ) => void ): void;
 
 	toSingle<T>( cb: ( result: SqlPartialResult<T>, error: SqlError ) => void ): void;
-	
+
+
 	toSingle(): Promise<SqlResult>;
 
 	toSingle<T>(): Promise<SqlPartialResult<T>>;
+
+
 
 	/*
 		Runs query and fetch all rows of data
@@ -181,16 +182,10 @@ export interface ISqlQuery
 
 	toArray<T>( cb: ( result: SqlPartialResultArray<T>, error: SqlError ) => void ): void;
 
+
 	toArray(): Promise<SqlResultArray>;
 
 	toArray<T>(): Promise<SqlPartialResultArray<T>>;
-
-
-
-	rollback( cb: ( err: SqlError ) => void ): void;
-
-	commit( cb: ( err: SqlError ) => void ): void;
-
 
 
 
@@ -199,10 +194,14 @@ export interface ISqlQuery
 	execute<T>( eMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void ): void;
 
 
-	executeSql( query: string, cb: ( result: SqlResultTypes, error: SqlError ) => void ): void; 
+	executeRaw( query: string, cb: ( result: SqlResultTypes, error: SqlError ) => void ): void; 
 
-	executeSql<T>( query: string, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void ): void; 
+	executeRaw<T>( query: string, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void ): void; 
 
+
+	rollback( cb: ( err: SqlError ) => void ): void;
+
+	commit( cb: ( err: SqlError ) => void ): void;
 }
 
 /*
@@ -249,22 +248,23 @@ exports = Object.assign( exports, require( "../bin/node-odbc.node" ) );
 	WARNING: you may cause undefined behaviour by changing these
 */
 
+export declare function setWriteStreamInitializer( cb: ( targetStream: stream.Readable, query: ISqlQueryEx ) => void ): void;
+
 export declare function setPromiseInitializer<T>( cb: ( query: ISqlQueryEx ) => T ): void;
 
 
-export declare function setReadStreamInitializer( cb: ( query: number, column: number ) => stream.Readable ): void;
-export declare function setWriteStreamInitializer( cb: ( targetStream: stream.Readable, query: number ) => void ): void;
+export declare function setReadStreamInitializer( cb: ( query: ISqlQueryEx, column: number ) => stream.Readable ): void;
 
-export declare function processNextChunk( query: number, chunk: Int8Array, cb: ( error ) => void ): void;
-export declare function requestNextChunk( query: number, column: number, cb: ( chunk: Int8Array ) => void ): Int8Array;
+export declare function processNextChunk( query: ISqlQueryEx, chunk: Int8Array, cb: ( error ) => void ): void;
+export declare function requestNextChunk( query: ISqlQueryEx, column: number, cb: ( chunk: Int8Array ) => void ): Int8Array;
 
 
 class SqlStreamReader extends stream.Readable
 {
-	private query: number;
+	private query: ISqlQueryEx;
 	private column: number;
 
-	constructor( _query: number, _column: number )
+	constructor( _query: ISqlQueryEx, _column: number )
 	{
 		super();
 
@@ -283,9 +283,9 @@ class SqlStreamReader extends stream.Readable
 
 class SqlStreamWriter extends stream.Writable
 {
-	private _query: number;
+	private _query: ISqlQueryEx;
 
-	constructor( query: number )
+	constructor( query: ISqlQueryEx )
 	{
 		super();
 
@@ -302,19 +302,19 @@ class SqlStreamWriter extends stream.Writable
 }
 
 
-exports.setWriteStreamInitializer(( targetStream: stream.Readable, query: number ) =>
+exports.setWriteStreamInitializer(( targetStream: stream.Readable, query: ISqlQueryEx ) =>
 {
 	let writer = new SqlStreamWriter( query );
 
 	targetStream.pipe( writer );
 } );
 
-exports.setReadStreamInitializer(( query: number, column: number ) =>
+exports.setReadStreamInitializer(( query: ISqlQueryEx, column: number ) =>
 {
 	return new SqlStreamReader( query, column );
 } );
 
-exports.setPromiseInitializer(( query ) => 
+exports.setPromiseInitializer(( query: ISqlQueryEx ) => 
 {
 	return new bluebird(( resolve, reject ) =>
 	{

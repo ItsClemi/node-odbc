@@ -1,10 +1,10 @@
 ﻿import * as odbc from "../lib/node-odbc";
 import * as assert from "assert";
 
-import module from "./module";
+import * as mod from "./module";
 
 
-module.connection.forEach(( con ) =>
+mod.connection.forEach(( con ) =>
 {
 	describe( `Insert test - ${con.name}`, function ()
 	{

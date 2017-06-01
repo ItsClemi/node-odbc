@@ -62,6 +62,7 @@ protected:
 		}
 	}
 
+
 protected:
 	T		m_pWork;
 };

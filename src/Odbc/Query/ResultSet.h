@@ -79,6 +79,7 @@ public:
 
 	EForegroundResult ProcessForeground( v8::Isolate* isolate );
 
+	bool AddResultSetHandler( v8::Isolate* isolate, v8::Local< v8::Uint32 > fetchMode, v8::Local< v8::Function > fnCallback );
 
 private:
 	bool DrainRemainingResults( );
@@ -95,15 +96,8 @@ public:
 		m_callback.Reset( isolate, fnCallback );
 	}
 
-	inline void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector )
-	{
-		assert( v8::Isolate::GetCurrent( ) != nullptr );
+	void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector );
 
-		m_eResolveType = EResolveType::ePromise;
-
-		m_resolve.Reset( isolate, fnResolver );
-		m_reject.Reset( isolate, fnRejector );
-	}
 
 private:
 	void SetState( EResultState eState )
@@ -149,7 +143,7 @@ private:
 	v8::Persistent< v8::Function >		m_resolve;
 	v8::Persistent< v8::Function >		m_reject;
 
-
+	v8::Persistent< v8::Value >			m_result;
 
 	std::atomic< EResultState >			m_eState;
 };

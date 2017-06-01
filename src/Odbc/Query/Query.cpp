@@ -38,7 +38,7 @@ CQuery::CQuery( const std::shared_ptr< CConnectionPool > pPool )
 
 CQuery::~CQuery( )
 {
-	m_pPool->PushConnection( m_pConnection );
+	assert( m_pConnection == nullptr );
 
 	CResultSet::Dispose( );
 
@@ -76,6 +76,13 @@ EQueryReturn CQuery::Process( )
 
 void CQuery::ProcessBackground( )
 {
+	if( GetState( ) == EQueryState::eEnd )
+	{
+		m_pPool->PushConnection( m_pConnection );
+#ifdef _DEBUG
+		m_pConnection = nullptr;
+#endif
+	}
 
 }
 
@@ -83,6 +90,7 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 {
 	if( HasError( ) )
 	{
+		//-> we can delete UvWorker because we still have a ref to CQuery from v8
 		Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
 	}
 	else
@@ -175,6 +183,8 @@ bool CQuery::BindOdbcParameters( )
 void CQuery::SetError( )
 {
 	m_pError = GetOdbcError( );
+	SetState( EQueryState::eEnd );
+		
 }
 
 //bool CResultSet::ReadColumn( SQLUSMALLINT nColumn )

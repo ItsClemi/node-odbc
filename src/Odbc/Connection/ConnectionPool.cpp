@@ -317,32 +317,7 @@ std::shared_ptr< CQuery > CConnectionPool::CreateQuery( )
 
 	auto pQuery = std::make_shared< CQuery >( m_pPool.lock( ) );
 	{
-		auto pConnection = PopConnection( );
 
-		if( pConnection != nullptr )
-		{
-			pQuery->SetConnection( pConnection );
-
-			m_nPending.fetch_add( 1, std::memory_order_relaxed );
-		}
-		else
-		{
-			pConnection = CreateConnection( );
-			
-			if( pConnection == nullptr )
-			{
-				return nullptr;
-			}
-
-			if( !ConnectToServer( pConnection ) )
-			{
-				return nullptr;
-			}
-
-			pQuery->SetConnection( pConnection );
-
-			m_nPending.fetch_add( 1, std::memory_order_relaxed );
-		}
 	}
 
 	return pQuery;
@@ -378,6 +353,36 @@ void CConnectionPool::ResolveDisconnect( )
 	auto pWorker = new CUvWorker< std::shared_ptr< CConnectionPool > >( m_pPool.lock( ) );
 
 	pWorker->RunOperation( );
+}
+
+
+void CConnectionPool::ExecuteQuery( std::shared_ptr< CQuery > pQuery )
+{
+	auto pConnection = PopConnection( );
+
+	if( pConnection == nullptr )
+	{
+		pConnection = CreateConnection( );
+
+		if( pConnection == nullptr )
+		{
+			assert( 0 );
+			return;
+		}
+
+		if( !ConnectToServer( pConnection ) )
+		{
+			assert( 0 );
+			return;
+		}
+	}
+
+	pQuery->SetConnection( pConnection );
+
+
+	m_nPending.fetch_add( 1, std::memory_order_relaxed );
+
+	gEnv->pDispatchManager->PushQuery( pQuery );
 }
 
 void CConnectionPool::ProcessBackground( )

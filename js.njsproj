@@ -52,6 +52,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\module.ts" />
+    <TypeScriptCompile Include="test\pooltest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="test\test.ts" />
   </ItemGroup>
   <ItemGroup>

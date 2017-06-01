@@ -59,23 +59,22 @@ NAN_METHOD( EConnection::New )
 {
 	if( info.IsConstructCall( ) )
 	{
-		V8_TYPE_VALIDATE( info.Length( ) <= 1, "invalid parameter length" );
-		V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined() || info[ 0 ]->IsObject( ), "^advancedProps: is not undefined or an object" );
+		V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsObject( ), "^advancedProps: is not undefined or an object" );
 
 		const auto pThis = new EConnection( );
 		{
 			pThis->Wrap( info.This( ) );
-			pThis->m_pPool->SetSharedInstance( pThis->m_pPool );
+			pThis->GetPool( )->SetSharedInstance( pThis->m_pPool );
 		}
 
 		if( info[ 0 ]->IsObject( ) )
 		{
-			if( !pThis->m_pPool->ReadConnectionProps( info.GetIsolate( ), info[ 0 ].As< Object >( ) ) )
+			if( !pThis->GetPool( )->ReadConnectionProps( info.GetIsolate( ), info[ 0 ].As< Object >( ) ) )
 			{
 				return;
 			}
 		}
-	
+
 		info.GetReturnValue( ).Set( info.This( ) );
 	}
 	else
@@ -92,22 +91,21 @@ NAN_METHOD( EConnection::Connect )
 {
 	HandleScope scope( info.GetIsolate( ) );
 
-	V8_TYPE_VALIDATE( info.Length( ) <= 2, "invalid parameter length" );
 	V8_TYPE_VALIDATE( info[ 0 ]->IsString( ), "^connectionString: is not a string" );
 	V8_TYPE_VALIDATE( info[ 1 ]->IsUndefined( ) || info[ 1 ]->Uint32Value( ), "^connectionTimeout: is not undefined or int32" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->GetState( ) == EPoolState::eNone, "invalid pool state" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->GetState( ) == EPoolState::eNone, "invalid pool state" );
 
 	const auto szConnectionString = FromV8String( info[ 0 ].As< String >( ) );
-	
+
 	uint32_t nTimeout = 0;
 	if( info[ 0 ]->IsUint32( ) )
 	{
 		nTimeout = info[ 0 ]->Uint32Value( Nan::GetCurrentContext( ) ).FromJust( );
 	}
 
-	if( !pThis->m_pPool->InitializePool( szConnectionString, nTimeout ) )
+	if( !pThis->GetPool( )->InitializePool( szConnectionString, nTimeout ) )
 	{
 		return;
 	}
@@ -120,13 +118,12 @@ NAN_METHOD( EConnection::Disconnect )
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
 
-	V8_RUNTIME_VALIDATE( info.Length( ) == 1, "invalid parameter length" );
-	V8_RUNTIME_VALIDATE( info[ 0 ]->IsFunction( ), "cb: invalid type" );
+	V8_RUNTIME_VALIDATE( info[ 0 ]->IsFunction( ), "cb: not a function" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->IsReady( ), "invalid pool state (connected to your datasource?)" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
-	pThis->m_pPool->RequestDisconnect( isolate, info[ 0 ].As< Function >( ) );
+	pThis->GetPool( )->RequestDisconnect( isolate, info[ 0 ].As< Function >( ) );
 }
 
 NAN_METHOD( EConnection::SetResilienceStrategy )
@@ -134,13 +131,12 @@ NAN_METHOD( EConnection::SetResilienceStrategy )
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
 
-	V8_RUNTIME_VALIDATE( info.Length( ) == 1, "invalid parameter length" );
-	V8_RUNTIME_VALIDATE( info[ 0 ]->IsObject( ), "strategy: invalid parameter type" );
+	V8_RUNTIME_VALIDATE( info[ 0 ]->IsObject( ), "strategy: not an object" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->GetState() == EPoolState::eNone, "invalid pool state (connected to your datasource?)" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->GetState( ) == EPoolState::eNone, "invalid pool state (connected to your datasource?)" );
 
-	if( !pThis->m_pPool->ReadResilienceStrategy( isolate, info[ 0 ].As< Object >( ) ) )
+	if( !pThis->GetPool( )->ReadResilienceStrategy( isolate, info[ 0 ].As< Object >( ) ) )
 	{
 		return;
 	}
@@ -154,12 +150,12 @@ NAN_METHOD( EConnection::PrepareQuery )
 	HandleScope scope( isolate );
 
 	V8_RUNTIME_VALIDATE( info[ 0 ]->IsString( ), "query: invalid parameter type" );
-	
+
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->IsReady( ), "invalid pool state (connected to your datasource?)" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
 
-	const auto pQuery = pThis->m_pPool->CreateQuery( );
+	const auto pQuery = pThis->GetPool( )->CreateQuery( );
 
 	pQuery->InitializeQuery( FromV8String( info[ 1 ].As< String >( ) ) );
 	{
@@ -169,8 +165,8 @@ NAN_METHOD( EConnection::PrepareQuery )
 		}
 	}
 
-	info.GetReturnValue( ).Set( 
-		EPreparedQuery::CreateInstance( isolate, pQuery ) 
+	info.GetReturnValue( ).Set(
+		EPreparedQuery::CreateInstance( isolate, pQuery )
 	);
 }
 
@@ -185,7 +181,7 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	V8_TYPE_VALIDATE( info[ 1 ]->IsString( ) || info[ 1 ]->IsFunction( ), "query || cb: is not a string or function" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->IsReady( ), "invalid pool state (connected to your datasource?)" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
 	uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
 	V8_TYPE_VALIDATE( nFetchMode <= ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
@@ -194,32 +190,43 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	{
 		V8_TYPE_VALIDATE( info[ 2 ]->IsString( ), "query: is not a string" );
 
-		const auto pQuery = pThis->m_pPool->CreateQuery( );
+		const auto pQuery = pThis->GetPool( )->CreateQuery( );
 
-		pQuery->InitializeQuery( static_cast< EFetchMode >( nFetchMode ), FromV8String( info[ 2 ].As< String >() ) );
-		pQuery->SetCallback( isolate, info[ 1 ].As< Function >( ) );
-
-		if( !pQuery->BindParameters( isolate, info, 3 ) )
+		if( !pQuery->SetParameters(
+			isolate,
+			static_cast< EFetchMode >( nFetchMode ),
+			FromV8String( info[ 2 ].As< String >( ) ),
+			info,
+			3,
+			info[ 1 ].As< Function >( )
+		) )
 		{
 			return;
 		}
 
-		gEnv->pDispatchManager->PushQuery( pQuery );
+		pThis->GetPool( )->ExecuteQuery( pQuery );
 	}
 	else
 	{
-		const auto pQuery = pThis->m_pPool->CreateQuery( );
+		const auto pQuery = pThis->GetPool( )->CreateQuery( );
 
-		pQuery->InitializeQuery( static_cast< EFetchMode >( nFetchMode ), FromV8String( info[ 1 ].As< String >( ) ) );
-
-		if( !pQuery->BindParameters( isolate, info, 2 ) )
+		if( !pQuery->SetParameters( 
+			isolate,
+			static_cast< EFetchMode >( nFetchMode ), 
+			FromV8String( info[ 1 ].As< String >( ) ),
+			info,
+			2
+		) )
 		{
 			return;
 		}
 
-		const auto jsPromise = EModuleHelper::CreatePromise( isolate, info.This( ) );
+		const auto jsPromise = EModuleHelper::CreatePromise( 
+			isolate, 
+			EPreparedQuery::CreateInstance(isolate, pQuery) 
+		);
 
-		gEnv->pDispatchManager->PushQuery( pQuery );
+		pThis->GetPool( )->ExecuteQuery( pQuery );
 
 		info.GetReturnValue( ).Set(
 			jsPromise
@@ -233,7 +240,7 @@ NAN_METHOD( EConnection::GetInfo )
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 
-	V8_RUNTIME_VALIDATE( pThis->m_pPool->IsReady( ), "invalid pool state (connected to your datasource?)" );
+	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
 	info.GetReturnValue( ).Set(
 		pThis->m_pPool->GetConnectionInfo( info.GetIsolate( ) )
@@ -246,14 +253,14 @@ extern std::atomic< size_t >	g_nJsConnectionCount;
 #endif
 
 EConnection::EConnection( )
-{ 
+{
 #ifdef _DEBUG
 	g_nJsConnectionCount++;
 #endif
 }
 
 EConnection::~EConnection( )
-{ 
+{
 #ifdef _DEBUG
 	g_nJsConnectionCount--;
 #endif

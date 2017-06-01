@@ -1,5 +1,9 @@
 ﻿import * as assert from "assert";
 import * as odbc from "../lib/node-odbc";
+import * as bluebird from "bluebird";
+import * as stream from "stream";
+
+import * as mod from "./module";
 
 
 describe( "api tests - connection", () =>
@@ -88,7 +92,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.setResilienceStrategy( (<any>(undefined)) );
+				.setResilienceStrategy(( <any>( undefined ) ) );
 		} );
 	} );
 
@@ -249,6 +253,7 @@ describe( "api tests - connection", () =>
 	} );
 
 
+
 	it( "executeQuery - invalid fetch mode", () =>
 	{
 		assert.throws(() =>
@@ -287,3 +292,210 @@ describe( "api tests - connection", () =>
 	} );
 } );
 
+describe( "api tests - internal", () =>
+{
+	afterEach(() =>
+	{
+		assert.doesNotThrow(() =>
+		{
+			odbc.setWriteStreamInitializer(( targetStream: stream.Readable, query: odbc.ISqlQueryEx ) =>
+			{
+				let writer = new mod.SqlStreamWriter( query );
+
+				targetStream.pipe( writer );
+			} );
+
+		} );
+
+		assert.doesNotThrow(() =>
+		{
+			odbc.setReadStreamInitializer(( query: odbc.ISqlQueryEx, column: number ) =>
+			{
+				return new mod.SqlStreamReader( query, column );
+			} )
+		} );
+
+		assert.doesNotThrow(() =>
+		{
+			odbc.setPromiseInitializer(( query ) => 
+			{
+				return new bluebird(( resolve, reject ) =>
+				{
+					query.setPromiseInfo( resolve, reject );
+				} );
+			} );
+		} );
+	} );
+
+
+	it( "setWriteStreamInitializer - invalid param", () =>
+	{
+		assert.throws(() =>
+		{
+			odbc.setWriteStreamInitializer(( <any>undefined ) );
+		} );
+	} );
+
+	it( "setWriteStreamInitializer - set", () =>
+	{
+		assert.doesNotThrow(() =>
+		{
+			odbc.setWriteStreamInitializer(() =>
+			{
+				console.log( "Hello World!" );
+			} );
+		} );
+	} );
+
+
+	it( "setReadStreamInitializer - invalid param", () =>
+	{
+		assert.throws(() =>
+		{
+			odbc.setReadStreamInitializer(( <any>false ) );
+		} );
+	} );
+
+	it( "setReadStreamInitializer - set", () =>
+	{
+		assert.doesNotThrow(() =>
+		{
+			odbc.setReadStreamInitializer(() =>
+			{
+				console.log( "Awww yeah!" );
+				return (<any>null);
+			} );
+		} );
+	} );
+
+
+	it( "setPromiseInitializer - invalid param", () =>
+	{
+		assert.throws(() =>
+		{
+			odbc.setPromiseInitializer(( <any>null ) );
+		} );
+	} );
+
+	it( "setPromiseInitializer - set", () =>
+	{
+		assert.doesNotThrow(() =>
+		{
+			odbc.setPromiseInitializer(() =>
+			{
+				console.log( "yay" );
+			} );
+		} );
+	} );
+
+} );
+
+
+mod.connection.forEach(( con ) =>
+{
+	describe( `api tests - internal promise (${con.name})`, function ()
+	{
+		this.timeout( con.timeout );
+
+		it( "setPromiseInitializer - called", ( done ) =>
+		{
+			let _called = false;
+			assert.doesNotThrow(() =>
+			{
+				odbc.setPromiseInitializer(( query ) =>
+				{
+					return new Promise(( resolve, reject ) =>
+					{
+						_called = true;
+
+						try
+						{
+							query.setPromiseInfo( resolve, reject );
+						}
+						catch( err )
+						{
+							done( err );
+						}
+					} );
+				} );
+			} );
+
+			assert.doesNotThrow(() =>
+			{
+				new odbc.Connection()
+					.connect( con.connectionString )
+					.executeQuery( odbc.eFetchMode.eSingle, "****invalid*quey***", null )
+					.then(() =>
+					{
+						done( new Error( "not rejected" ) );
+					} )
+					.catch(( err ) =>
+					{
+						if( _called )
+						{
+							done();
+						}
+						else
+						{
+							done( err );
+						}
+					} );
+			} );
+		} );
+	
+		for( var i = 0; i < 10; i++ )
+		{
+			it( `setPromiseInitializer - called(deferred) it ${i}`, ( done ) =>
+			{
+				let _called = false;
+				assert.doesNotThrow(() =>
+				{
+					odbc.setPromiseInitializer(( query ) =>
+					{
+						return new Promise(( resolve, reject ) =>
+						{
+							try
+							{
+								setTimeout(() =>
+								{
+									_called = true;
+									query.setPromiseInfo( resolve, reject );
+								}, ( Math.random() * 1000 ) + 250 );
+							}
+							catch( err )
+							{
+								done( err );
+							}
+						} );
+					} );
+				} );
+
+				assert.doesNotThrow(() =>
+				{
+					new odbc.Connection()
+						.connect( con.connectionString )
+						.executeQuery( odbc.eFetchMode.eSingle, "****invalid*quey***", null )
+						.then(() =>
+						{
+							done( new Error( "not rejected" ) );
+						} )
+						.catch(( err: odbc.SqlError ) =>
+						{
+ 							if( _called )
+							{
+								done();
+							}
+							else
+							{
+								done( err );
+							}
+						} );
+				} );
+			} );
+
+		}
+
+
+	} );
+
+} );

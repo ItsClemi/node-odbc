@@ -1,7 +1,7 @@
 {
   "name": "node-odbc",
   "description": "ODBC interface for NodeJS",
-  "author": "Clemens Susenbeth",
+  "author": "ItsClemi",
 
   "version": "0.9.5",
   "keywords": [
@@ -10,7 +10,6 @@
     "mssql",
     "azure",
     "sqlserver",
-    "tds",
     "msnodesql",
     "node-sqlserver"
   ],

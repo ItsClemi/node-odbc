@@ -118,6 +118,16 @@ public:
 		return m_pError != nullptr;
 	}
 
+	inline bool IsIdle( ) const
+	{
+		return (GetState( ) == EQueryState::eNone || GetState( ) == EQueryState::eEnd);
+	}
+
+	inline bool IsActive( ) const
+	{
+		return !IsIdle( );
+	}
+
 
 private:
 	inline void SetState( EQueryState eState ) const
@@ -141,6 +151,28 @@ public:
 		m_nQueryTimeout = static_cast< SQLUINTEGER >( nTimeout );
 	}
 
+	inline void SetFetchMode( EFetchMode eFetchMode )
+	{
+		m_eFetchMode = eFetchMode;
+	}
+
+
+
+public:
+	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos, const v8::Local< v8::Function > fnCallback )
+	{
+		SetCallback( isolate, fnCallback );
+
+		return SetParameters( isolate, eFetchMode, szQuery, args, nPos );
+	}
+
+	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos )
+	{
+		InitializeQuery( eFetchMode, szQuery );
+
+		return BindParameters( isolate, args, nPos );
+	}
+
 public:
 	inline void EnableReturnValue( )
 	{
@@ -156,6 +188,7 @@ public:
 	{
 
 	}
+
 
 
 private:

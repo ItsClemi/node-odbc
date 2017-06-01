@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "EPreparedQuery.h"
+#include "EModuleHelper.h"
 
 #include "Odbc/Query/Query.h"
 
@@ -37,6 +38,24 @@ NAN_MODULE_INIT( EPreparedQuery::InitializeModule )
 
 	tpl->SetClassName( strClassName );
 	{
+		Nan::SetPrototypeMethod( tpl, "addResultSetHandler", EPreparedQuery::AddResultSetHandler );
+
+		Nan::SetPrototypeMethod( tpl, "enableReturnValue", EPreparedQuery::EnableReturnValue );
+		Nan::SetPrototypeMethod( tpl, "enableMetaData", EPreparedQuery::EnableMetaData );
+		Nan::SetPrototypeMethod( tpl, "enableSlowQuery", EPreparedQuery::EnableSlowQuery );
+		Nan::SetPrototypeMethod( tpl, "enableTransaction", EPreparedQuery::EnableTransaction );
+
+		Nan::SetPrototypeMethod( tpl, "setQueryTimeout", EPreparedQuery::SetQueryTimeout );
+		Nan::SetPrototypeMethod( tpl, "setChunkSize", EPreparedQuery::SetChunkSize );
+
+		Nan::SetPrototypeMethod( tpl, "toSingle", EPreparedQuery::ToSingle );
+		Nan::SetPrototypeMethod( tpl, "toArray", EPreparedQuery::ToArray );
+		Nan::SetPrototypeMethod( tpl, "execute", EPreparedQuery::Execute );
+		Nan::SetPrototypeMethod( tpl, "executeRaw", EPreparedQuery::ExecuteRaw );
+
+		Nan::SetPrototypeMethod( tpl, "rollback", EPreparedQuery::Rollback );
+		Nan::SetPrototypeMethod( tpl, "commit", EPreparedQuery::Commit );
+
 		Nan::SetPrototypeMethod( tpl, "setPromiseInfo", EPreparedQuery::SetPromiseInfo );
 	}
 
@@ -70,28 +89,33 @@ NAN_METHOD( EPreparedQuery::New )
 	info.GetReturnValue( ).Set( info.This( ) );
 }
 
-
-NAN_METHOD( EPreparedQuery::AddParameter )
+NAN_METHOD( EPreparedQuery::AddResultSetHandler )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
 
-	//const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "eMode: invalid type" );
+	V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: invalid type" );
 
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
 
+	if( !pThis->GetQuery( )->AddResultSetHandler( isolate, info[ 0 ].As<Uint32>( ), info[ 1 ].As< Function >( ) ) )
+	{
+		return;
+	}
 
+	info.GetReturnValue( ).Set( info.This( ) );
 }
 
-NAN_METHOD( EPreparedQuery::AddResultSetHandler )
-{
-
-}
 
 NAN_METHOD( EPreparedQuery::EnableReturnValue )
 {
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
 
 	pThis->GetQuery( )->EnableReturnValue( );
 
@@ -103,6 +127,7 @@ NAN_METHOD( EPreparedQuery::EnableMetaData )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
 
 	pThis->GetQuery( )->EnableMetaData( );
 
@@ -114,11 +139,26 @@ NAN_METHOD( EPreparedQuery::EnableSlowQuery )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
 
 	pThis->GetQuery( )->EnableSlowQuery( );
 
 	info.GetReturnValue( ).Set( info.This( ) );
 }
+
+NAN_METHOD( EPreparedQuery::EnableTransaction )
+{
+	HandleScope scope( info.GetIsolate( ) );
+
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
+	pThis->GetQuery( )->EnableTransaction( );
+
+	info.GetReturnValue( ).Set( info.This( ) );
+}
+
 
 NAN_METHOD( EPreparedQuery::SetQueryTimeout )
 {
@@ -126,10 +166,11 @@ NAN_METHOD( EPreparedQuery::SetQueryTimeout )
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "setQueryTimeout: not an uint32" );
-	V8_RUNTIME_VALIDATE( info.Length( ) > 1, "too many arguments" );
-
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "setQueryTimeout: is not an uint32" );
+	
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
 
 	auto nTimeout = info[ 0 ].As< Uint32 >( )->Uint32Value( context ).FromJust( );
 
@@ -144,48 +185,110 @@ NAN_METHOD( EPreparedQuery::SetChunkSize )
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 	
-	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "chunkSize: not an uint32" );
-	V8_RUNTIME_VALIDATE( info.Length( ) > 1, "too many arguments" );
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "chunkSize: is not an uint32" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
 
 	auto nChunkSize = info[ 0 ].As< Uint32 >( )->Uint32Value( context ).FromJust( );
-	V8_RUNTIME_VALIDATE( nChunkSize >= 1, "chunkSize is too small" );
+	V8_RUNTIME_VALIDATE( nChunkSize >= 1, "invalid chunkSize" );
+
 
 	pThis->GetQuery( )->SetChunkSize( nChunkSize );
+
 
 	info.GetReturnValue( ).Set( info.This( ) );
 }
 
+
+
 NAN_METHOD( EPreparedQuery::ToSingle )
 {
+	auto isolate = info.GetIsolate( );
+	HandleScope scope( isolate );
 
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsFunction( ), "not undefined or function");
+
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
+
+	pThis->GetQuery( )->SetFetchMode( EFetchMode::eSingle );
+
+	if( info[ 0 ]->IsFunction( ) )
+	{
+
+	}
+	else
+	{
+
+	}
 }
 
 NAN_METHOD( EPreparedQuery::ToArray )
 {
+	auto isolate = info.GetIsolate( );
+	HandleScope scope( isolate );
+
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsFunction( ), "not undefined or function" );
+
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+
+	pThis->GetQuery( )->SetFetchMode( EFetchMode::eArray );
+
+	if( info[ 0 ]->IsFunction( ) )
+	{
+
+	}
+	else
+	{
+
+	}
+}
+
+NAN_METHOD( EPreparedQuery::Execute )
+{
+	HandleScope scope( info.GetIsolate( ) );
+
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "eMode: not uint32" );
+	V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: not a function" );
+
+
+}
+
+NAN_METHOD( EPreparedQuery::ExecuteRaw )
+{
+	HandleScope scope( info.GetIsolate( ) );
+
+	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "eMode: not uint32" );
+	V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: not a function" );
+
 
 }
 
 NAN_METHOD( EPreparedQuery::Rollback )
 {
+	HandleScope scope( info.GetIsolate( ) );
+
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is not running" );
+
 
 }
 
 NAN_METHOD( EPreparedQuery::Commit )
 {
+	HandleScope scope( info.GetIsolate( ) );
 
+	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is not running" );
+
+	
 }
 
-NAN_METHOD( EPreparedQuery::AsTransaction )
-{
 
-}
 
-NAN_METHOD( EPreparedQuery::Execute )
-{
-
-}
 
 NAN_METHOD( EPreparedQuery::SetPromiseInfo )
 {
@@ -197,9 +300,7 @@ NAN_METHOD( EPreparedQuery::SetPromiseInfo )
 
 	const auto pThis = Unwrap< EPreparedQuery >( info.This( ) );
 	{
-		//RUNTIME_VALIDATE( pThis->GetQuery( )->HasPendingPromise( ) );
-
-		//pThis->GetQuery( )->SetPromiseInfo( isolate, args[ 0 ].As< Function >( ), args[ 1 ].As< Function >( ) );
+		pThis->GetQuery( )->SetPromise( isolate, info[ 0 ].As< Function >( ), info[ 1 ].As< Function >( ) );
 	}
 }
 

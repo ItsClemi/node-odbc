@@ -61,18 +61,8 @@ public:
 		return true;
 	}
 
-	bool AddParameter( v8::Isolate* ioslate, const v8::Local< v8::Value > value )
-	{
-		size_t nSize = m_vecParameter.size( );
-
-		m_vecParameter.resize( nSize );
-		
-		return AddParameter( ioslate, value, &m_vecParameter[ nSize ] );
-	}
-
 private:
 	bool AddParameter( v8::Isolate* isolate, const v8::Local< v8::Value > value, CBindParam* pParam );
-
 
 private:
 	bool IsComplexType( v8::Isolate* isolate, v8::Local< v8::Value > value, uint32_t id )

@@ -101,14 +101,14 @@ public:
 	inline bool DescribeCol( SQLUSMALLINT icol, std::wstring* szColName, SQLSMALLINT* pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT* pibScale, SQLSMALLINT* pfNullable )
 	{
 		SQLSMALLINT nColNameLength = 0;
-		auto sqlRet = DescribeCol( icol, nullptr, 0, &nColNameLength, pfSqlType, pcbColDef, pibScale, pfNullable );
 
-		if( !SQL_SUCCEEDED( sqlRet ) )
+		if( !DescribeCol( icol, nullptr, 0, &nColNameLength, pfSqlType, pcbColDef, pibScale, pfNullable ) )
 		{
 			return false;
 		}
 
 		szColName->resize( static_cast< size_t >( nColNameLength ) );
+		nColNameLength += 1;
 
 		return DescribeCol( icol, &szColName->at( 0 ), nColNameLength, &nColNameLength, pfSqlType, pcbColDef, pibScale, pfNullable );
 	}
@@ -124,7 +124,19 @@ public:
 		}
 
 		pCharAttr->resize( static_cast< size_t >( nTextLength ) );
-		
+		nTextLength += 1;
+
 		return VALIDATE_SQL_RESULT( SQLColAttributeW( GetSqlHandle( ), iCol, iField, &pCharAttr->at( 0 ), nTextLength, &nTextLength, pNumAttr ) );
 	}
+
+	inline SQLRETURN GetData( SQLUSMALLINT ColumnNumber, SQLSMALLINT TargetType, SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_IndPtr )
+	{
+		return SQLGetData( GetSqlHandle( ), ColumnNumber, TargetType, TargetValue, BufferLength, StrLen_or_IndPtr );
+	}
+
+	inline SQLRETURN FetchScroll( SQLSMALLINT FetchOrientation, SQLLEN FetchOffset )
+	{
+		return SQLFetchScroll( GetSqlHandle( ), FetchOrientation, FetchOffset );
+	}
+
 };

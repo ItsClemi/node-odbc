@@ -20,29 +20,46 @@ mod.connection.forEach(( con ) =>
 		//		);
 		//} );
 
-		it( "create table", (done) =>
+		//it( "create table", (done) =>
+		//{
+		//	new odbc.Connection()
+		//		.connect( con.connectionString )
+		//		.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
+		//		{
+		//			done( err );
+		//		},
+		//		"create table tblinsert1(test int, test2 int, test3 int );"
+		//		);
+		//} );
+
+		//it( "call stored proc (return value)", ( done ) =>
+		//{
+		//	new odbc.Connection()
+		//		.connect( con.connectionString )
+		//		.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
+		//		{
+
+		//			done( err );
+		//		},
+		//		""
+		//		);
+		//} );
+
+
+		it( "select", ( done ) =>
 		{
 			new odbc.Connection()
 				.connect( con.connectionString )
-				.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
+				.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
 				{
-					done( err );
-				},
-				"create table tblinsert1(test int, test2 int, test3 int );"
-				);
-		} );
+					for( var i of res )
+					{
+						//console.log( i );
+						console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
+					}
 
-		it( "call stored proc (return value)", ( done ) =>
-		{
-			new odbc.Connection()
-				.connect( con.connectionString )
-				.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-				{
+				}, "SELECT * FROM TblTest;" );
 
-					done( err );
-				},
-				""
-				);
 		} );
 
 	} );

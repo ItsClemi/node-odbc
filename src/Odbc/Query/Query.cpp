@@ -22,6 +22,7 @@
 #include "Odbc/Connection/ConnectionPool.h"
 
 
+
 using namespace v8;
 
 
@@ -69,6 +70,8 @@ EQueryReturn CQuery::Process( )
 			SetError( );
 			return EQueryReturn::eNeedUv;
 		}
+
+		SetState( EQueryState::eEnd );
 	}
 
 	return EQueryReturn::eNeedUv;
@@ -95,14 +98,11 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 	}
 	else
 	{
-
+		Resolve( isolate, ConstructResult( isolate ) );
 	}
 
 	return EForegroundResult::eDiscard;
 }
-
-
-
 
 bool CQuery::ExecuteStatement( )
 {
@@ -148,7 +148,7 @@ bool CQuery::ExecuteStatement( )
 bool CQuery::BindOdbcParameters( )
 {
 	SQLUSMALLINT nParam = 1;
-	if( m_bHasReturnValue )
+	if( m_bReturnValue )
 	{
 		if( !BindParameter( nParam++, SQL_PARAM_OUTPUT, SQL_C_SSHORT, SQL_INTEGER, 0, 0, &m_nReturnValue, 0, &m_nCbReturnValue ) )
 		{
@@ -177,242 +177,8 @@ bool CQuery::BindOdbcParameters( )
 	return true;
 }
 
-
-
-
 void CQuery::SetError( )
 {
 	m_pError = GetOdbcError( );
-	SetState( EQueryState::eEnd );
-		
+	SetState( EQueryState::eEnd );	
 }
-
-//bool CResultSet::ReadColumn( SQLUSMALLINT nColumn )
-//{
-//	/*	MetaDefinition* pMeta = &m_pMetaData[ nColumn ];
-//	sColumnData* pColumn = &m_pActiveRow[ nColumn ];
-//
-//	SQLLEN strLen_or_IndPtr;
-//
-//	switch( pMeta->m_nDataType )
-//	{
-//	case SQL_CHAR:
-//	case SQL_VARCHAR:
-//	case SQL_LONGVARCHAR:
-//	case SQL_WCHAR:
-//	case SQL_WVARCHAR:
-//	case SQL_WLONGVARCHAR:
-//	case SQL_GUID:
-//	{
-//	if( !ReadString( nColumn ) )
-//	{
-//	return false;
-//	}
-//	}
-//	break;
-//	case SQL_BIT:
-//	{
-//	bool val;
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_BIT, &val, sizeof( bool ), &strLen_or_IndPtr ) )
-//	{
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetBool( val );
-//	}
-//	}
-//	break;
-//	case SQL_SMALLINT:
-//	case SQL_TINYINT:
-//	case SQL_INTEGER:
-//	{
-//	long nValue;
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_SLONG, &nValue, sizeof( long ), &strLen_or_IndPtr ) )
-//	{
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetInt( nValue );
-//	}
-//	}
-//	break;
-//	case SQL_BIGINT:
-//	{
-//	__int64 val;
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_SBIGINT, &val, sizeof( val ), &strLen_or_IndPtr ) )
-//	{
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetInt64( val );
-//	}
-//	}
-//	break;
-//	case SQL_DECIMAL:
-//	case SQL_NUMERIC:
-//	{
-//	SQL_NUMERIC_STRUCT numeric;
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_NUMERIC, &numeric, sizeof( SQL_NUMERIC_STRUCT ), &strLen_or_IndPtr ) )
-//	{
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetNumeric( numeric );
-//	}
-//	}
-//	break;
-//	case SQL_REAL:
-//	case SQL_FLOAT:
-//	case SQL_DOUBLE:
-//	{
-//	double val;
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_DOUBLE, &val, sizeof( double ), &strLen_or_IndPtr ) )
-//	{
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetDouble( val );
-//	}
-//	}
-//	break;
-//	case SQL_BINARY:
-//	case SQL_VARBINARY:
-//	case SQL_LONGVARBINARY:
-//	{
-//	if( pMeta->m_nColumnSize == 0 )
-//	{
-//	pColumn->SetNull( );
-//	return true;
-//	}
-//
-//	uint8_t* pBuffer = new uint8_t[ strLen_or_IndPtr ];
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_BINARY, pBuffer, strLen_or_IndPtr, &strLen_or_IndPtr ) )
-//	{
-//	SafeDeleteArray( pBuffer );
-//	return false;
-//	}
-//
-//	if( strLen_or_IndPtr == SQL_NULL_DATA )
-//	{
-//	SafeDeleteArray( pBuffer );
-//	pColumn->SetNull( );
-//	}
-//	else
-//	{
-//	pColumn->SetBuffer( pBuffer, strLen_or_IndPtr );
-//	}
-//	}
-//	break;
-//	case SQL_TYPE_TIMESTAMP:
-//	case SQL_TYPE_DATE:
-//
-//	case SQL_SS_TIMESTAMPOFFSET:
-//	{
-//	__debugbreak( );
-//	}
-//	break;
-//	case SQL_TYPE_TIME:
-//	case SQL_SS_TIME2:
-//	{
-//	__debugbreak( );
-//	}
-//	break;
-//	}
-//	*/
-//	return true;
-//}
-//
-//bool CResultSet::ReadString( SQLUSMALLINT nColumn )
-//{
-//	/*	sColumnData* pColumn = &m_pActiveRow[ nColumn ];
-//	MetaDefinition* pMeta = &m_pMetaData[ nColumn ];
-//
-//	SQLLEN display_size = pMeta->m_nColumnSize;
-//
-//	if( pMeta->m_nColumnSize == 0 )
-//	{
-//	pColumn->SetNull( );
-//	return true;
-//	}
-//
-//
-//	SQLLEN value_len = 0;
-//
-//	if( pMeta->m_nDataType == SQL_CHAR || pMeta->m_nDataType == SQL_VARCHAR || pMeta->m_nDataType == SQL_LONGVARCHAR )
-//	{
-//	char* pBuffer = new char[ display_size + 1 ];
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_CHAR, pBuffer, ( display_size + 1 ), &value_len ) )
-//	{
-//	SafeDeleteArray( pBuffer );
-//	return false;
-//	}
-//
-//	if( value_len == SQL_NO_DATA )
-//	{
-//	pColumn->SetNull( );
-//	SafeDeleteArray( pBuffer );
-//	}
-//	else
-//	{
-//	pColumn->SetString( pBuffer, value_len );
-//	}
-//	}
-//	else
-//	{
-//	wchar_t* pBuffer = new wchar_t[ display_size + 1 ];
-//
-//	if( !GetQuery( )->GetStatement( ).GetData( nColumn + 1, SQL_C_WCHAR, pBuffer, ( display_size + 1 ) * sizeof( wchar_t ), &value_len ) )
-//	{
-//	SafeDeleteArray( pBuffer );
-//	return false;
-//	}
-//
-//	if( value_len == SQL_NO_DATA )
-//	{
-//	pColumn->SetNull( );
-//	SafeDeleteArray( pBuffer );
-//	}
-//	else
-//	{
-//	pColumn->SetString( pBuffer, value_len / sizeof( wchar_t ) );
-//	}
-//	}
-//	*/
-//
-//	return true;
-//}

@@ -33,21 +33,15 @@ public:
 private:
 	static NAN_METHOD( New );
 
-	static NAN_METHOD( AddResultSetHandler );
-
 	static NAN_METHOD( EnableReturnValue );
 	static NAN_METHOD( EnableMetaData );
 	static NAN_METHOD( EnableSlowQuery );
 	static NAN_METHOD( EnableTransaction );
 
-
 	static NAN_METHOD( SetQueryTimeout );
-	static NAN_METHOD( SetChunkSize );
 	
 	static NAN_METHOD( ToSingle );
 	static NAN_METHOD( ToArray );
-	static NAN_METHOD( Execute );
-	static NAN_METHOD( ExecuteRaw );
 
 
 	static NAN_METHOD( Rollback );
@@ -63,7 +57,7 @@ private:
 public:
 	inline auto GetQuery( ) const
 	{
-		return m_pQuery.get( );
+		return m_pQuery;
 	}
 
 private:

@@ -33,7 +33,6 @@
     <ClCompile Include="Odbc\Dispatcher\IoWorker.cpp" />
     <ClCompile Include="Odbc\Helper\OdbcError.cpp" />
     <ClCompile Include="Odbc\OdbcEnvironment.cpp" />
-    <ClCompile Include="Odbc\Query\Helper\ResultSetData.cpp" />
     <ClCompile Include="Odbc\Query\Query.cpp" />
     <ClCompile Include="Odbc\Query\QueryParameter.cpp" />
     <ClCompile Include="Odbc\Query\ResultSet.cpp" />
@@ -69,7 +68,6 @@
     <ClInclude Include="Odbc\Query\Helper\ColumnData.h" />
     <ClInclude Include="Odbc\Query\Helper\JSDate.h" />
     <ClInclude Include="Odbc\Query\Helper\ParamData.h" />
-    <ClInclude Include="Odbc\Query\Helper\ResultSetData.h" />
     <ClInclude Include="Odbc\Query\Query.h" />
     <ClInclude Include="Odbc\Query\QueryParameter.h" />
     <ClInclude Include="Odbc\Query\ResultSet.h" />

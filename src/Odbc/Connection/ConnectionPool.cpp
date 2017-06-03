@@ -345,7 +345,6 @@ void CConnectionPool::PushConnection( std::shared_ptr< COdbcConnectionHandle > p
 	}
 }
 
-
 void CConnectionPool::ResolveDisconnect( )
 {
 	assert( m_nPending.load( std::memory_order_relaxed ) == 0 );
@@ -354,7 +353,6 @@ void CConnectionPool::ResolveDisconnect( )
 
 	pWorker->RunOperation( );
 }
-
 
 void CConnectionPool::ExecuteQuery( std::shared_ptr< CQuery > pQuery )
 {

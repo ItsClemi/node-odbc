@@ -65,9 +65,14 @@ public:
 	{
 		return m_nCode;
 	}
+
+public:
+	inline bool IsSqlState( const wchar_t* szSqlState ) const
+	{
+		return memcmp( szSqlState, m_szSqlState, SQL_SQLSTATE_SIZEW ) == 0;
+	}
 	
 private:
-	//#TODO: align to 16 bytes so that the compiler may optimize memcpy
 	wchar_t					m_szSqlState[ sStateLength ];
 
 	SQLINTEGER				m_nCode;

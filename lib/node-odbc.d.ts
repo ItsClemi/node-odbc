@@ -76,13 +76,11 @@ export declare class Connection {
     getInfo(): ConnectionInfo;
 }
 export interface ISqlQuery {
-    addResultSetHandler(eMode: eFetchMode, cb: (result: SqlResultTypes) => void): ISqlQuery;
     enableReturnValue(): ISqlQuery;
     enableMetaData(): ISqlQuery;
     enableSlowQuery(): ISqlQuery;
     enableTransaction(): ISqlQuery;
     setQueryTimeout(timeout: number): ISqlQuery;
-    setChunkSize(chunkSize: number): ISqlQuery;
     toSingle(cb: (result: SqlResult, error: SqlError) => void): void;
     toSingle<T>(cb: (result: SqlPartialResult<T>, error: SqlError) => void): void;
     toSingle(): Promise<SqlResult>;
@@ -91,10 +89,6 @@ export interface ISqlQuery {
     toArray<T>(cb: (result: SqlPartialResultArray<T>, error: SqlError) => void): void;
     toArray(): Promise<SqlResultArray>;
     toArray<T>(): Promise<SqlPartialResultArray<T>>;
-    execute(eMode: eFetchMode, cb: (result: SqlResultTypes, error: SqlError) => void): void;
-    execute<T>(eMode: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void): void;
-    executeRaw(query: string, cb: (result: SqlResultTypes, error: SqlError) => void): void;
-    executeRaw<T>(query: string, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void): void;
     rollback(cb: (err: SqlError) => void): void;
     commit(cb: (err: SqlError) => void): void;
 }
@@ -109,7 +103,4 @@ export declare function setPromiseInitializer<T>(cb: (query: ISqlQueryEx) => T):
 export declare function setReadStreamInitializer(cb: (query: ISqlQueryEx, column: number) => stream.Readable): void;
 export declare function processNextChunk(query: ISqlQueryEx, chunk: Int8Array, cb: (error) => void): void;
 export declare function requestNextChunk(query: ISqlQueryEx, column: number, cb: (chunk: Int8Array) => void): Int8Array;
-export declare class ConnectionCluster {
-    addConnection(connection: Connection): ConnectionCluster;
-}
 export declare function getMssqlAzureReconnectStrategy(): IResilienceStrategy;

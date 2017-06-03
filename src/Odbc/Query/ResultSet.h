@@ -19,7 +19,19 @@
 #pragma once
 
 #include "Odbc/Dispatcher/Async/UvJob.h"
-#include "Helper/ResultSetData.h"
+#include "Helper/ColumnData.h"
+
+
+struct SMetaData
+{
+	std::wstring	m_szColumnName;
+	SQLULEN			m_nColumnSize;
+	SQLSMALLINT		m_nDataType;
+	std::wstring	m_szDataTypeName;
+	SQLSMALLINT		m_nDecimalDigits;
+	SQLSMALLINT		m_bNullable;
+	bool			m_bLOBColumn;
+};
 
 
 enum class EFetchMode : size_t
@@ -42,26 +54,22 @@ enum class EResultState
 	eDone,
 };
 
-
-struct SResultSetHandler
+enum class EFecthResult : size_t
 {
-	void Dispose( )
-	{
-		assert( v8::Isolate::GetCurrent( ) != nullptr );
-		m_callback.Reset( );
-	}
-
-	EFetchMode						m_eFetchMode;
-	v8::Persistent< v8::Function >	m_callback;
+	eError,
+	eDone,
+	eHasMoreData
 };
 
 
 class CQuery;
 class CResultSet
 {
+	static const size_t sDefaultChunkSize = 32;
+
 	enum class EResolveType
 	{
-		eNone, eCallback, ePromise,
+		eNone, eCallback, ePromise
 	};
 
 public:	
@@ -73,35 +81,35 @@ public:
 protected:
 	bool FetchResults( );
 
-public:
-	void ProcessBackground( );
-
-	EForegroundResult ProcessForeground( v8::Isolate* isolate );
-
-	void AddResultSetHandler( v8::Isolate* isolate, EFetchMode eFetchMode, v8::Local< v8::Function > fnCallback );
-
 private:
+	bool PrepareColumns( );
+	
 	bool FindNextResultSet( );
 
-	bool DrainRemainingResults( );
+	EFecthResult FetchChunk( size_t nChunkSize, size_t* nFetched );
 
-	bool PrepareFetch( );
+	bool ReadColumn( size_t nColumn );
+
+	bool GetSqlData( size_t ColumnNumber, SQLSMALLINT TargetType, SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_IndPtr );
 
 
 protected:
 	void Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value );
 
+	v8::Local< v8::Value > ConstructResult( v8::Isolate* isolate );
+
+	v8::Local< v8::Value > ConstructResultRow( v8::Isolate* isolate, int nRow );
+
+	void AddResultExtensions( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+	void AddMetaDataExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+	void AddReturnValueExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+	void AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
 public:
-	inline void SetCallback( v8::Isolate* isolate, v8::Local< v8::Function > fnCallback )
-	{
-		assert( v8::Isolate::GetCurrent( ) != nullptr );
-
-		m_eResolveType = EResolveType::eCallback;
-		m_callback.Reset( isolate, fnCallback );
-	}
-
 	void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector );
-
 
 private:
 	void SetState( EResultState eState )
@@ -112,21 +120,55 @@ private:
 	void SetError( );
 
 protected:
-	inline EResolveType GetResolveType( ) const
+	inline const EResolveType GetResolveType( ) const
 	{
 		return m_eResolveType;
 	}
 
-	inline EResultState GetState( ) const
+	inline const EResultState GetState( ) const
 	{
 		return m_eState.load( std::memory_order_relaxed );
 	}
 
-public:
-	inline void SetChunkSize( uint32_t nChunkSize )
+	inline const EFetchMode GetFetchMode( ) const
 	{
-		m_nChunkSize = nChunkSize;
+		return m_eFetchMode;
 	}
+
+	inline auto GetMetaData( size_t nColumn )
+	{
+		return &m_vecMetaData[ nColumn ];
+	}
+
+	inline auto GetColumnData( size_t nRow, size_t nColumn )
+	{
+		return &m_vecData[ ( nRow * m_nColumns ) + nColumn ];
+	}
+
+	inline auto GetColumnData( size_t nColumn )
+	{
+		return GetColumnData( m_nActiveRow, nColumn );
+	}
+
+public:
+	inline void SetFetchMode( EFetchMode eFetchMode )
+	{
+		m_eFetchMode = eFetchMode;
+	}
+
+	inline void SetCallback( v8::Isolate* isolate, v8::Local< v8::Function > fnCallback )
+	{
+		assert( v8::Isolate::GetCurrent( ) != nullptr );
+
+		m_eResolveType = EResolveType::eCallback;
+		m_callback.Reset( isolate, fnCallback );
+	}
+
+	inline void SetPromise( )
+	{
+		m_eResolveType = EResolveType::ePromise;
+	}
+
 
 
 public:
@@ -143,17 +185,21 @@ public:
 
 protected:
 	bool					m_bExecNoData = false;
+	mutable EFetchMode		m_eFetchMode;
+
+
+	v8::Persistent< v8::Value >				m_queryInstance;
 
 private:
 	mutable CQuery*			m_pQuery;
-
-	uint32_t				m_nChunkSize = 20;
 	EResolveType			m_eResolveType = EResolveType::eNone;
-	
-
-	SQLSMALLINT				m_nResultColumns = 0;
 
 	bool					m_bEnableMetaData = false;
+
+	SQLSMALLINT				m_nColumns = 0;
+	size_t					m_nActiveRow = 0;
+	bool					m_bHasLobColumns = false;
+
 
 	v8::Persistent< v8::Function >			m_callback;
 	v8::Persistent< v8::Function >			m_resolve;
@@ -161,7 +207,9 @@ private:
 
 	v8::Persistent< v8::Value >				m_result;
 
-	std::vector< SResultSetHandler* >		m_vecResultSet;
 
 	std::atomic< EResultState >				m_eState;
+
+	std::vector< SMetaData, tbb::scalable_allocator< SMetaData > >			m_vecMetaData;
+	std::vector< SColumnData, tbb::scalable_allocator< SColumnData > >		m_vecData;
 };

@@ -18,12 +18,13 @@
 
 #pragma once
 
-struct SBufferDesc
-{
-	uint8_t*	pBuffer;
-	size_t		nLen;
-};
 
+
+union UStringData
+{
+	wchar_t*	pWString;
+	char*		pString;
+};
 
 enum class EStringType : size_t
 {
@@ -32,30 +33,58 @@ enum class EStringType : size_t
 
 struct SStringDesc
 {
-	EStringType		eType;
-	size_t			nLen;
-
-	union
+	void SetString( char* szString, size_t nLen )
 	{
-		wchar_t*	pWString;
-		char*		pString;
-	} stringData;
+		m_eType = EStringType::eAnsi;
+		m_nLength = nLen;
+		m_stringData.pString = szString;
+	}
+
+	void SetString( wchar_t* szString, size_t nLen )
+	{
+		m_eType = EStringType::eUnicode;
+		m_nLength = nLen;
+		m_stringData.pWString = szString;
+	}
+
+	bool IsAnsiString( )
+	{
+		return m_eType == EStringType::eAnsi;
+	}
+
+
+	EStringType		m_eType;
+	size_t			m_nLength;
+	UStringData		m_stringData;
+};
+
+
+struct SBufferDesc
+{
+	void SetBuffer( uint8_t* pBuffer, size_t nLen )
+	{
+		m_pBuffer = pBuffer;
+		m_nLength = nLen;
+	}
+
+	uint8_t*	m_pBuffer;
+	size_t		m_nLength;
 };
 
 
 union SParamData
 {
-	bool			bValue;
-	int32_t			nValue;
-	uint32_t		unValue;
-	int64_t			llValue;
-	float			fValue;
-	double			dValue;
+	bool						bValue;
+	int32_t						nInt32;
+	uint32_t					nUint32;
+	int64_t						nInt64;
+	//float						fValue;
+	double						dNumber;
 
-	SBufferDesc		m_buffer;
-	SStringDesc		m_string;
+	SBufferDesc					bufferDesc;
+	SStringDesc					stringDesc;
 
-	SQL_DATE_STRUCT					m_sqlDate;
-	SQL_TIMESTAMP_STRUCT			m_sqlTimestamp;
-	SQL_NUMERIC_STRUCT				m_sqlNumeric;
+	SQL_DATE_STRUCT				sqlDate;
+	SQL_TIMESTAMP_STRUCT		sqlTimestamp;
+	SQL_NUMERIC_STRUCT			sqlNumeric;
 };

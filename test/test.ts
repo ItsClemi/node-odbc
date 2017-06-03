@@ -9,9 +9,9 @@ tests.checkLeaks();
 
 //tests.addFile( "./test/api.js" );
 //tests.addFile( "./test/connection.js" );
-tests.addFile( "./test/pooltest.js" );
+//tests.addFile( "./test/pooltest.js" );
 
-//tests.addFile( "./test/insert.js" );
+tests.addFile( "./test/insert.js" );
 
 
 tests.run();

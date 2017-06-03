@@ -46,7 +46,6 @@ enum class EQueryReturn : size_t
 	eNeedUv,
 };
 
-
 class CConnectionPool;
 class COdbcConnectionHandle;
 class CQuery : public COdbcStatementHandle, public CQueryParameter, public CResultSet, public IUvJob
@@ -65,6 +64,7 @@ public:
 private:
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
+	
 
 public:
 	void SetError( );
@@ -88,11 +88,6 @@ public:
 		return m_szQuery;
 	}
 
-	inline const EFetchMode GetFetchMode( ) const
-	{
-		return m_eFetchMode;
-	}
-
 	inline EQueryState GetState( ) const
 	{
 		return m_eState.load( std::memory_order_relaxed );
@@ -101,6 +96,11 @@ public:
 	inline const std::shared_ptr< CConnectionPool > GetPool( ) const
 	{
 		return m_pPool;
+	}
+
+	inline const int32_t GetReturnValue( )
+	{
+		return static_cast< int32_t >( m_nReturnValue );
 	}
 
 public:
@@ -119,7 +119,10 @@ public:
 		return !IsIdle( );
 	}
 
-
+	inline bool IsReturnValueEnabled( ) const
+	{
+		return m_bReturnValue;
+	}
 
 private:
 	inline void SetState( EQueryState eState ) const
@@ -143,10 +146,6 @@ public:
 		m_nQueryTimeout = static_cast< SQLUINTEGER >( nTimeout );
 	}
 
-	inline void SetFetchMode( EFetchMode eFetchMode )
-	{
-		m_eFetchMode = eFetchMode;
-	}
 
 
 
@@ -165,6 +164,8 @@ public:
 		return BindParameters( isolate, args, nPos );
 	}
 
+
+
 public:
 	inline void EnableReturnValue( )
 	{
@@ -176,11 +177,11 @@ public:
 		m_bSlowQuery = true;
 	}
 
-	inline void EnableTransaction( )
+	inline void EnableTransaction( v8::Isolate* isolate, v8::Local< v8::Value > instance )
 	{
-
+		m_queryInstance.Reset( isolate, instance );
+		m_bTransactionEnabled = true;
 	}
-
 
 
 private:
@@ -188,19 +189,20 @@ private:
 	std::shared_ptr< COdbcConnectionHandle >	m_pConnection;
 
 	mutable std::wstring						m_szQuery;
-	mutable EFetchMode							m_eFetchMode;
 
 	mutable std::atomic< EQueryState >			m_eState;
+
 
 
 	std::shared_ptr< COdbcError >				m_pError;
 
 	bool			m_bSlowQuery = false;
-	bool			m_bHasReturnValue = false;
+	bool			m_bReturnValue = false;
+	bool			m_bTransactionEnabled = false;
+
+
 	SQLUINTEGER		m_nQueryTimeout = 0;
 	SQLSMALLINT		m_nReturnValue = 0;
 	SQLLEN			m_nCbReturnValue = 0;
 
-	size_t			m_nRetries = 0;
-	
 };

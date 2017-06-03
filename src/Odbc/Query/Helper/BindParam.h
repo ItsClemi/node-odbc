@@ -49,11 +49,11 @@ public:
 
 		if( m_nParameterType == SQL_WVARCHAR )
 		{
-			scalable_free( m_data.m_string.stringData.pWString );
+			scalable_free( m_data.stringDesc.m_stringData.pWString );
 		}
 		else if( m_nParameterType == SQL_VARBINARY )
 		{
-			scalable_free( m_data.m_buffer.pBuffer );
+			scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
 
@@ -74,36 +74,36 @@ public:
 
 	inline void SetInt32( int32_t nValue )
 	{
-		m_data.nValue = nValue;
+		m_data.nInt32 = nValue;
 
-		SetPrimitve< int32_t >( SQL_C_SLONG, SQL_INTEGER, &m_data.nValue );
+		SetPrimitve< int32_t >( SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 
 		//SetData( SQL_C_SLONG, SQL_INTEGER, sizeof( int32_t ), 0, &m_data.nValue, sizeof( int32_t ), sizeof( int32_t ) );
 	}
 
 	inline void SetUint32( uint32_t nValue )
 	{
-		m_data.unValue = nValue;
+		m_data.nUint32 = nValue;
 
-		SetPrimitve< uint32_t >( SQL_C_ULONG, SQL_BIGINT, &m_data.unValue );
+		SetPrimitve< uint32_t >( SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
 
 		//SetData( SQL_C_ULONG, SQL_BIGINT, sizeof( uint32_t ), 0, &m_data.unValue, sizeof( uint32_t ), sizeof( uint32_t ) );
 	}
 
 	inline void SetInt64( int64_t nValue )
 	{
-		m_data.llValue = nValue;
+		m_data.nInt64 = nValue;
 
-		SetPrimitve< int64_t >( SQL_C_SBIGINT, SQL_BIGINT, &m_data.llValue );
+		SetPrimitve< int64_t >( SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
 
 		//SetData( SQL_C_SBIGINT, SQL_BIGINT, sizeof( int64_t ), 0, &m_data.llValue, sizeof( int64_t ), sizeof( int64_t ) );
 	}
 
 	inline void SetDouble( double dValue )
 	{
-		m_data.dValue = dValue;
+		m_data.dNumber = dValue;
 
-		SetPrimitve< double >( SQL_C_DOUBLE, SQL_DOUBLE, &m_data.dValue );
+		SetPrimitve< double >( SQL_C_DOUBLE, SQL_DOUBLE, &m_data.dNumber );
 
 		//SetData( SQL_C_DOUBLE, SQL_DOUBLE, sizeof( double ), 0, &m_data.dValue, sizeof( double ), sizeof( double ) );
 	}
@@ -112,22 +112,22 @@ public:
 	{
 		int nLength = value->Length( );
 
-		m_data.m_string.eType = EStringType::eUnicode;
-		m_data.m_string.nLen = nLength;
-		m_data.m_string.stringData.pWString = static_cast< wchar_t* >( scalable_malloc( ( nLength + 1 ) * sizeof( wchar_t ) ) );
+		m_data.stringDesc.m_eType = EStringType::eUnicode;
+		m_data.stringDesc.m_nLength = nLength;
+		m_data.stringDesc.m_stringData.pWString = static_cast< wchar_t* >( scalable_malloc( ( nLength + 1 ) * sizeof( wchar_t ) ) );
 		{
-			value->Write( reinterpret_cast< uint16_t* >( m_data.m_string.stringData.pWString ) );
+			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.m_stringData.pWString ) );
 		}
-		m_data.m_string.stringData.pWString[ nLength ] = '\0';
+		m_data.stringDesc.m_stringData.pWString[ nLength ] = '\0';
 
-		SetData( SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.m_string.stringData.pWString, nLength, nLength );
+		SetData( SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
 	}
 
 	inline void SetDate( int64_t ms )
 	{
-		CJSDate::ToSqlDate( ms, m_data.m_sqlDate );
+		CJSDate::ToSqlDate( ms, m_data.sqlDate );
 
-		SetData( SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.m_sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
+		SetData( SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
 	}
 
 	inline void SetBuffer( v8::Local< v8::Value > value )
@@ -135,12 +135,12 @@ public:
 		size_t nLength = node::Buffer::Length( value );
 		const char* pBuffer = node::Buffer::Data( value );
 
-		m_data.m_buffer.nLen = nLength;
-		m_data.m_buffer.pBuffer = static_cast< uint8_t* >( scalable_malloc( nLength ) );
+		m_data.bufferDesc.m_nLength = nLength;
+		m_data.bufferDesc.m_pBuffer = static_cast< uint8_t* >( scalable_malloc( nLength ) );
 		{
-			memcpy_s( m_data.m_buffer.pBuffer, nLength, pBuffer, nLength );
+			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 
-			SetData( SQL_C_BINARY, SQL_VARBINARY, 0, 0, &m_data.m_buffer.pBuffer, nLength, nLength );
+			SetData( SQL_C_BINARY, SQL_VARBINARY, 0, 0, &m_data.bufferDesc.m_pBuffer, nLength, nLength );
 		}
 	}
 
@@ -214,13 +214,13 @@ public:
 
 
 		{
-			m_data.m_sqlNumeric.precision = static_cast< SQLCHAR >( nPrecision );
-			m_data.m_sqlNumeric.scale = static_cast< SQLSCHAR >( nScale );
-			m_data.m_sqlNumeric.sign = static_cast< SQLCHAR >( bSign ? 1 : 2 );
-			memcpy_s( m_data.m_sqlNumeric.val, SQL_MAX_NUMERIC_LEN, contents.Data( ), contents.ByteLength( ) );
+			m_data.sqlNumeric.precision = static_cast< SQLCHAR >( nPrecision );
+			m_data.sqlNumeric.scale = static_cast< SQLSCHAR >( nScale );
+			m_data.sqlNumeric.sign = static_cast< SQLCHAR >( bSign ? 1 : 2 );
+			memcpy_s( m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN, contents.Data( ), contents.ByteLength( ) );
 		}
 
-		SetData( SQL_C_NUMERIC, SQL_NUMERIC, 0, 0, &m_data.m_sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
+		SetData( SQL_C_NUMERIC, SQL_NUMERIC, 0, 0, &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
 
 		return true;
 	}
@@ -247,10 +247,10 @@ public:
 		auto nMs = date.As< v8::Date >( )->IntegerValue( context ).FromJust( );
 
 		{
-			CJSDate::ToSqlTimestamp( nMs, m_data.m_sqlTimestamp );
+			CJSDate::ToSqlTimestamp( nMs, m_data.sqlTimestamp );
 		}
 
-		SetData( SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 0, &m_data.m_sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
+		SetData( SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 0, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
 
 		return true;
 	}

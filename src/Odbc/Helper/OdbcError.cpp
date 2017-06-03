@@ -34,8 +34,6 @@ void COdbcError::FetchError( SQLSMALLINT fHandleType, SQLHANDLE sqlHandle )
 	std::wstring szMessage;
 	SQLRETURN sqlRet = GetDiagRec( fHandleType, sqlHandle, ++it, &m_szSqlState[ 0 ], &m_nCode, &szMessage );
 
-	assert( SQL_SUCCEEDED( sqlRet ) );
-
 	if( sqlRet != SQL_NO_DATA )
 	{
 		m_stream << L"[" << m_szSqlState << L"](" << m_nCode << L")" << szMessage;
@@ -45,6 +43,8 @@ void COdbcError::FetchError( SQLSMALLINT fHandleType, SQLHANDLE sqlHandle )
 		m_stream << L"no error data (SQL_NO_DATA)";
 		return;
 	}
+
+	assert( SQL_SUCCEEDED( sqlRet ) );
 	
 	while( sqlRet != SQL_NO_DATA )
 	{

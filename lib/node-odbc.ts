@@ -60,7 +60,7 @@ export type SqlColumnMetaData = {
 export type SqlResultExtension = {
 	readonly $sqlReturnValue?: number;
 	readonly $sqlMetaData?: Array<SqlColumnMetaData>;
-	readonly $sqlQuery?: ISqlQuery;	//transaction
+	readonly $sqlQuery?: ISqlQuery;
 };
 
 export type SqlResult = SqlResultExtension & Partial<any>;
@@ -79,8 +79,6 @@ export type SqlPartialResultTypes<T> = SqlPartialResult<T> & SqlPartialResultArr
 
 export type SqlTypes = null | string | boolean | number | Date | Buffer | SqlStream | SqlNumeric | SqlTimestamp;
 
-
-//note: you still have to limit your queries. This is used only for buffer optimization
 
 export const enum eFetchMode {
 	eSingle,
@@ -119,34 +117,21 @@ export declare class Connection
 
 	setResilienceStrategy( strategy: IResilienceStrategy ): Connection;
 
-	//onConnectionFail( cb: ( FailedConnection: con ) => void ): Connection;
-	/*
-		sets up connection pool
-		throws: ISqlError if connect test failed
-	*/
 	connect( connectionString: string, connectionTimeout?: number ): Connection;
 
 	disconnect( cb: ( ) => void ): void;
 
 	prepareQuery( query: string, ...args: ( SqlTypes )[] ): ISqlQuery;
 	
-	/*
-		callbacks inside execute functions will be called multiple times if chunkSize < resultSet
-		this doesn't work with promises because they can't be resolved multiple times
-	*/
 	executeQuery( eMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
 
 	executeQuery( eMode: eFetchMode, query: string, ...args: ( SqlTypes )[] ): Promise<SqlResultTypes>;
-
 
 	getInfo(): ConnectionInfo;
 }
 
 export interface ISqlQuery 
 {
-	addResultSetHandler( eMode: eFetchMode, cb: ( result: SqlResultTypes ) => void ): ISqlQuery;
-
-
 	enableReturnValue(): ISqlQuery;
 
 	enableMetaData(): ISqlQuery;
@@ -158,11 +143,7 @@ export interface ISqlQuery
 
 	setQueryTimeout( timeout: number ): ISqlQuery;
 
-	setChunkSize( chunkSize: number ): ISqlQuery;
 
-	/*
-		Runs query and fetch the first row of data
-	*/
 	toSingle( cb: ( result: SqlResult, error: SqlError ) => void ): void;
 
 	toSingle<T>( cb: ( result: SqlPartialResult<T>, error: SqlError ) => void ): void;
@@ -173,11 +154,6 @@ export interface ISqlQuery
 	toSingle<T>(): Promise<SqlPartialResult<T>>;
 
 
-
-	/*
-		Runs query and fetch all rows of data
-		(fetches only 'chunkSize' number of rows, because promises can't be fired multiple times)
-	*/
 	toArray( cb: ( result: SqlResultArray, error: SqlError ) => void ): void;
 
 	toArray<T>( cb: ( result: SqlPartialResultArray<T>, error: SqlError ) => void ): void;
@@ -187,16 +163,6 @@ export interface ISqlQuery
 
 	toArray<T>(): Promise<SqlPartialResultArray<T>>;
 
-
-
-	execute( eMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void ): void;
-
-	execute<T>( eMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void ): void;
-
-
-	executeRaw( query: string, cb: ( result: SqlResultTypes, error: SqlError ) => void ): void; 
-
-	executeRaw<T>( query: string, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void ): void; 
 
 
 	rollback( cb: ( err: SqlError ) => void ): void;
@@ -213,8 +179,6 @@ export interface ISqlQueryEx extends ISqlQuery
 }
 
 
-
-//> complex type helper
 const ID_INPUT_STREAM: number = 0;
 const ID_NUMERIC_VALUE: number = 1;
 const ID_TIMESTAMP_VALUE: number = 2;
@@ -329,10 +293,6 @@ exports.setPromiseInitializer(( query: ISqlQueryEx ) =>
 
 ///ext
 
-export declare class ConnectionCluster
-{
-	addConnection( connection: Connection ): ConnectionCluster;
-}
 
 //> from https://github.com/aspnet/EntityFramework/blob/f386095005e46ea3aa4d677e4439cdac113dbfb1/src/EFCore.SqlServer/Storage/Internal/SqlServerTransientExceptionDetector.cs
 export function getMssqlAzureReconnectStrategy(): IResilienceStrategy

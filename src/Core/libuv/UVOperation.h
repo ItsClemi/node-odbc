@@ -28,7 +28,9 @@ public:
 	}
 
 	virtual ~CUvOperation( )
-	{ }
+	{ 
+		m_work.data = (void*)0xFCFCFCFCFCFFC;
+	}
 
 protected:
 	virtual void OnInvokeBackground( ) = 0;

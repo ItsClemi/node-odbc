@@ -65,7 +65,7 @@ enum class EFecthResult : size_t
 class CQuery;
 class CResultSet
 {
-	static const size_t sDefaultChunkSize = 32;
+	static const size_t sDefaultChunkSize = 16;
 
 	enum class EResolveType
 	{

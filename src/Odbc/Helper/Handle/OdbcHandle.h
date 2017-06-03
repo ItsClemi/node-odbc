@@ -91,18 +91,12 @@ public:
 		return VALIDATE_SQL_RESULT( SQLEndTran( ToUnderlyingType( T ), GetSqlHandle( ), ToUnderlyingType( eType ) ) );
 	}
 
-protected:
+public:
 	void FreeHandle( )
 	{
 		if( m_hSqlHandle != SQL_NULL_HANDLE )
 		{
-			if( !VALIDATE_SQL_RESULT( SQLFreeHandle( ToUnderlyingType< eOdbcHandleType >( T ), m_hSqlHandle ) ) )
-			{
-				auto pError = GetOdbcError( );
-
-				assert( false );
-			}
-
+			SQLFreeHandle( ToUnderlyingType< eOdbcHandleType >( T ), m_hSqlHandle );
 			m_hSqlHandle = SQL_NULL_HANDLE;
 
 #ifdef _DEBUG
@@ -170,9 +164,9 @@ protected:
 		const auto pError = GetOdbcError( );
 
 		wcscpy_s( szStatus, pError->GetSqlState( ) );
-		
+
 		memcpy_s( &m_szLastSqlStatus, sSqlStateLength * sizeof( wchar_t ), pError->GetSqlState( ), COdbcError::sStateLength * sizeof( wchar_t ) );
-		
+
 
 		return SQL_SUCCEEDED( sqlResult );
 	}

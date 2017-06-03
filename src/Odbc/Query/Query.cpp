@@ -101,6 +101,10 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 		Resolve( isolate, ConstructResult( isolate ) );
 	}
 
+// 	CResultSet::Dispose( );
+// 	COdbcStatementHandle::FreeHandle( );
+
+
 	return EForegroundResult::eDiscard;
 }
 

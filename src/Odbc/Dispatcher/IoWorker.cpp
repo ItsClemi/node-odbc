@@ -104,7 +104,6 @@ void CIoWorker::Run( )
 					m_bHighLoad.store( false, std::memory_order_relaxed );
 				}
 
-				//#TODO check for work to steal
 				
 				m_bYield.store( true, std::memory_order_relaxed );
 				{

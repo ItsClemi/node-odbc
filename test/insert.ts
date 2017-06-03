@@ -46,19 +46,58 @@ mod.connection.forEach(( con ) =>
 		//} );
 
 
-		it( "select", ( done ) =>
-		{
-			new odbc.Connection()
-				.connect( con.connectionString )
-				.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
-				{
-					for( var i of res )
-					{
-						//console.log( i );
-						console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
-					}
+		//it( "select", ( done ) =>
+		//{
+		//	new odbc.Connection()
+		//		.connect( con.connectionString )
+		//		.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
+		//		{
+		//			for( var i of res )
+		//			{
+		//				//console.log( i );
+		//				console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
+		//			}
 
-				}, "SELECT * FROM TblTest;" );
+		//		}, "SELECT * FROM TblTest;" );
+
+		//} );
+
+		it( "select bench", () =>
+		{
+			let _con: odbc.Connection;
+			assert.doesNotThrow(() =>
+			{
+				_con = new odbc.Connection()
+					.connect( con.connectionString )
+
+			} );
+
+
+			assert.doesNotThrow(() =>
+			{
+				let t = () =>
+				{
+					_con.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
+					{
+						for( var i of res )
+						{
+							//console.log( i );
+							//console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
+						}
+
+					}, "SELECT * FROM TblTest;" );
+
+				};
+
+				for( var i = 0; i < 40000; i++ )
+				{
+					t();
+				}
+
+
+
+			} );
+
 
 		} );
 

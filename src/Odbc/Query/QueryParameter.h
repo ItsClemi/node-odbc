@@ -45,7 +45,7 @@ public:
 
 		m_vecParameter.resize( nLength );
 
-		for( int i = 0; i < nLength; i++ )
+		for( int i = 0; i < static_cast< int >( nLength ); i++ )
 		{
 			if( !AddParameter( isolate, args[ nPos + i ], &m_vecParameter[ i ] ) )
 			{

@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef _DEBUG
 class CQuery;
 class CQueryTracker
 {
@@ -19,3 +20,4 @@ private:
 	std::vector< TQuery >	m_vecQuery;
 	
 };
+#endif // _DEBUG

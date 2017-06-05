@@ -65,7 +65,10 @@ bool CResultSet::FetchResults( )
 		return false;
 	}
 
-	m_vecMetaData.resize( m_nColumns );
+	if( m_nColumns <= 0 )
+	{
+		return true;
+	}
 
 	if( !PrepareColumns( ) )
 	{
@@ -115,6 +118,8 @@ bool CResultSet::FetchResults( )
 
 bool CResultSet::PrepareColumns( )
 {
+	m_vecMetaData.resize( m_nColumns );
+
 	for( size_t i = 0; i < m_nColumns; i++ )
 	{
 		auto pMetaData = GetMetaData( i );
@@ -582,6 +587,10 @@ Local< Value > CResultSet::ConstructResult( Isolate* isolate )
 
 		value = array;
 	}
+	else
+	{
+		assert( false );
+	}
 
 	AddResultExtensions( isolate, value.As< Object >( ) );
 
@@ -651,7 +660,7 @@ void CResultSet::AddMetaDataExtension( v8::Isolate* isolate, v8::Local< v8::Obje
 		auto entry = Object::New( isolate );
 		{
 			if( !entry->Set( context, Nan::New( "name" ).ToLocalChecked( ), ToV8String( isolate, pMetaData->m_szColumnName ) ).IsNothing( ) ||
-				!entry->Set( context, Nan::New( "size" ).ToLocalChecked( ), Uint32::New( isolate, pMetaData->m_nColumnSize ) ).IsNothing( ) ||
+				!entry->Set( context, Nan::New( "size" ).ToLocalChecked( ), Uint32::New( isolate, static_cast< uint32_t >( pMetaData->m_nColumnSize ) ) ).IsNothing( ) ||
 				!entry->Set( context, Nan::New( "dataType" ).ToLocalChecked( ), ToV8String( isolate, pMetaData->m_szDataTypeName ) ).IsNothing( ) ||
 				!entry->Set( context, Nan::New( "digits" ).ToLocalChecked( ), Uint32::New( isolate, pMetaData->m_nDecimalDigits ) ).IsNothing( ) ||
 				!entry->Set( context, Nan::New( "nullable" ).ToLocalChecked( ), Boolean::New( isolate, pMetaData->m_bNullable ) ).IsNothing( )

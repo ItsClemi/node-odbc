@@ -87,59 +87,59 @@ describe( "api tests - connection", () =>
 	} );
 
 
-	it( "setResilienceStrategy - invalid parameter", () =>
-	{
-		assert.throws(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy(( <any>( undefined ) ) );
-		} );
-	} );
+	//it( "setResilienceStrategy - invalid parameter", () =>
+	//{
+	//	assert.throws(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy(( <any>( undefined ) ) );
+	//	} );
+	//} );
 
-	it( "setResilienceStrategy - no parameter", () =>
-	{
-		assert.throws(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy( <any>{ noretries: false } );
-		} );
-	} );
+	//it( "setResilienceStrategy - no parameter", () =>
+	//{
+	//	assert.throws(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy( <any>{ noretries: false } );
+	//	} );
+	//} );
 
-	it( "setResilienceStrategy - valid parameter A", () =>
-	{
-		assert.throws(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy( <any>{ retries: 25, errorCodes: undefined } );
-		} );
-	} );
+	//it( "setResilienceStrategy - valid parameter A", () =>
+	//{
+	//	assert.throws(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy( <any>{ retries: 25, errorCodes: undefined } );
+	//	} );
+	//} );
 
-	it( "setResilienceStrategy - valid parameter B", () =>
-	{
-		assert.throws(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy( <any>{ retries: false, errorCodes: [25, 30] } );
-		} );
-	} );
+	//it( "setResilienceStrategy - valid parameter B", () =>
+	//{
+	//	assert.throws(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy( <any>{ retries: false, errorCodes: [25, 30] } );
+	//	} );
+	//} );
 
-	it( "setResilienceStrategy - valid parameters", () =>
-	{
-		assert.doesNotThrow(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy( { retries: 5, errorCodes: [128, 40005, 23] } );
-		} );
-	} );
+	//it( "setResilienceStrategy - valid parameters", () =>
+	//{
+	//	assert.doesNotThrow(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy( { retries: 5, errorCodes: [128, 40005, 23] } );
+	//	} );
+	//} );
 
-	it( "setResilienceStrategy - invalid array parameters", () =>
-	{
-		assert.throws(() =>
-		{
-			new odbc.Connection()
-				.setResilienceStrategy( <any>{ retries: 5, errorCodes: [128, undefined, 40005, "asdasd", 23] } );
-		} );
-	} );
+	//it( "setResilienceStrategy - invalid array parameters", () =>
+	//{
+	//	assert.throws(() =>
+	//	{
+	//		new odbc.Connection()
+	//			.setResilienceStrategy( <any>{ retries: 5, errorCodes: [128, undefined, 40005, "asdasd", 23] } );
+	//	} );
+	//} );
 
 
 	it( "connect - too many arguments", () =>
@@ -197,6 +197,8 @@ describe( "api tests - connection", () =>
 					done();
 					return;
 				}
+
+				done();
 			}
 
 			console.log( `${err.message}, ${err.sqlState}, ${err.code}` );
@@ -259,7 +261,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.executeQuery( <odbc.eFetchMode>( <any>"hello world" ), "" );
+				.executeQuery( <odbc.eFetchMode>( <any>"hello world" ), (res, err) => { }, "" );
 		} );
 	} );
 
@@ -268,7 +270,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.executeQuery( odbc.eFetchMode.eSingle, <string>( <any>undefined ) );
+				.executeQuery( odbc.eFetchMode.eSingle, <(res,err) => {}>( <any>undefined ), "hello world" );
 		} );
 	} );
 
@@ -277,7 +279,7 @@ describe( "api tests - connection", () =>
 		assert.throws(() =>
 		{
 			new odbc.Connection()
-				.executeQuery( odbc.eFetchMode.eSingle, "" );
+				.executeQuery( odbc.eFetchMode.eSingle, (res,err) => { }, "" );
 		} );
 	} );
 
@@ -291,6 +293,9 @@ describe( "api tests - connection", () =>
 		} );
 	} );
 } );
+
+
+
 
 describe( "api tests - internal", () =>
 {
@@ -386,116 +391,6 @@ describe( "api tests - internal", () =>
 				console.log( "yay" );
 			} );
 		} );
-	} );
-
-} );
-
-
-mod.connection.forEach(( con ) =>
-{
-	describe( `api tests - internal promise (${con.name})`, function ()
-	{
-		this.timeout( con.timeout );
-
-		it( "setPromiseInitializer - called", ( done ) =>
-		{
-			let _called = false;
-			assert.doesNotThrow(() =>
-			{
-				odbc.setPromiseInitializer(( query ) =>
-				{
-					return new Promise(( resolve, reject ) =>
-					{
-						_called = true;
-
-						try
-						{
-							query.setPromiseInfo( resolve, reject );
-						}
-						catch( err )
-						{
-							done( err );
-						}
-					} );
-				} );
-			} );
-
-			assert.doesNotThrow(() =>
-			{
-				new odbc.Connection()
-					.connect( con.connectionString )
-					.executeQuery( odbc.eFetchMode.eSingle, "****invalid*quey***", null )
-					.then(() =>
-					{
-						done( new Error( "not rejected" ) );
-					} )
-					.catch(( err ) =>
-					{
-						if( _called )
-						{
-							done();
-						}
-						else
-						{
-							done( err );
-						}
-					} );
-			} );
-		} );
-	
-		for( var i = 0; i < 10; i++ )
-		{
-			it( `setPromiseInitializer - called(deferred) it ${i}`, ( done ) =>
-			{
-				let _called = false;
-				assert.doesNotThrow(() =>
-				{
-					odbc.setPromiseInitializer(( query ) =>
-					{
-						return new Promise(( resolve, reject ) =>
-						{
-							try
-							{
-								setTimeout(() =>
-								{
-									_called = true;
-									query.setPromiseInfo( resolve, reject );
-								}, ( Math.random() * 1000 ) + 250 );
-							}
-							catch( err )
-							{
-								done( err );
-							}
-						} );
-					} );
-				} );
-
-				assert.doesNotThrow(() =>
-				{
-					new odbc.Connection()
-						.connect( con.connectionString )
-						.executeQuery( odbc.eFetchMode.eSingle, "****invalid*quey***", null )
-						.then(() =>
-						{
-							done( new Error( "not rejected" ) );
-						} )
-						.catch(( err: odbc.SqlError ) =>
-						{
- 							if( _called )
-							{
-								done();
-							}
-							else
-							{
-								done( err );
-							}
-						} );
-				} );
-			} );
-
-		}
-
-
 	} );
 
 } );

@@ -73,8 +73,7 @@ public:
 
 	inline void InitializeQuery( const std::wstring& szQuery )
 	{
-		GetResultSet()->m_eFetchMode = EFetchMode::eNone;
-		m_szQuery = szQuery;
+		InitializeQuery( EFetchMode::eNone, szQuery );
 	}
 
 public:
@@ -143,7 +142,7 @@ public:
 
 
 public:
-	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos, const v8::Local< v8::Function > fnCallback )
+	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const v8::Local< v8::Function > fnCallback, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos )
 	{
 		GetResultSet()->SetCallback( isolate, fnCallback );
 

@@ -13,14 +13,14 @@ function runMotcha()
 
 	tests.checkLeaks();
 
-	//tests.addFile( "./test/api.js" );
-	//tests.addFile( "./test/connection.js" );
+	tests.addFile( "./test/api.js" );
+	tests.addFile( "./test/connection.js" );
 	//tests.addFile( "./test/pooltest.js" );
 
 	//tests.addFile( "./test/insert.js" );
 
 
-	//tests.run();
+	tests.run();
 }
 
 function runBenchmark()
@@ -35,6 +35,8 @@ function runBenchmark()
 
 }
 
+//runMotcha();
+
 
 runBenchmark();
 
@@ -44,4 +46,8 @@ global.gc();
 
 
 //> don't close console window
-//setInterval( () => { }, 1000 );
+let inv = setInterval(() => { }, 1000 );
+setTimeout(() =>
+{
+	clearInterval( inv );
+}, 2000 );

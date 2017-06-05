@@ -42,10 +42,6 @@ export declare type SqlTypes = null | string | boolean | number | Date | Buffer 
 export declare function makeInputStream(stream: fs.ReadStream | stream.Readable, length: number): SqlStream;
 export declare function makeNumericValue(precision: number, scale: number, sign: boolean, value: Uint8Array): SqlNumeric;
 export declare function makeTimestampValue(date: Date): SqlTimestamp;
-export declare const enum eFetchMode {
-    eSingle = 0,
-    eArray = 1,
-}
 export interface IResilienceStrategy {
     retries: number;
     errorCodes: Array<number>;
@@ -57,9 +53,6 @@ export declare type ConnectionInfo = {
     odbcVersion: string;
     dbmsName: string;
     internalServerType: number;
-    memoryUsage: number;
-    perf: number;
-    ioWorker: number;
     odbcConnectionString: string;
     resilienceStrategy: IResilienceStrategy;
 };
@@ -67,13 +60,19 @@ export declare type ConnectionProps = {
     enableMssqlMars?: boolean;
     poolSize?: number;
 };
+export declare const enum eFetchMode {
+    eSingle = 0,
+    eArray = 1,
+}
 export declare class Connection {
     constructor(advancedProps?: ConnectionProps);
     connect(connectionString: string, connectionTimeout?: number): Connection;
     disconnect(cb: () => void): void;
     prepareQuery(query: string, ...args: (SqlTypes)[]): ISqlQuery;
-    executeQuery(eMode: eFetchMode, cb: (result: SqlResultTypes, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
-    executeQuery(eMode: eFetchMode, query: string, ...args: (SqlTypes)[]): Promise<SqlResultTypes>;
+    executeQuery(cb: (result: SqlResult, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
+    executeQuery(eFetchMode: eFetchMode, cb: (result: SqlResultTypes, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
+    executeQuery<T>(cb: (result: SqlPartialResult<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
+    executeQuery<T>(eFetchMode: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
     getInfo(): ConnectionInfo;
 }
 export interface ISqlQuery {

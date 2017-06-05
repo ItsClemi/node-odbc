@@ -4,6 +4,7 @@
 #include "Odbc/Connection/ConnectionPool.h"
 
 
+#ifdef _DEBUG
 CConnectionTracker::CConnectionTracker( )
 {
 }
@@ -44,4 +45,5 @@ void CConnectionTracker::DetachFromJs( )
 		pShared._Decref( );
 	}
 }
+#endif // _DEBUG
 

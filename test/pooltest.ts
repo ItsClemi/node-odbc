@@ -10,7 +10,7 @@ let cpus = os.cpus().length;
 
 async function fCreateTable( con: odbc.Connection )
 {
-	await con.executeQuery( odbc.eFetchMode.eSingle, "CREATE TABLE tblMassInsert( a int, b int, c int )" );
+	await con.prepareQuery( "CREATE TABLE tblMassInsert( a int, b int, c int )" ).toSingle( );
 }
 
 

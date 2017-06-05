@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "QueryTracker.h"
 
+#ifdef _DEBUG
 CQueryTracker::CQueryTracker( )
 {
 
@@ -28,3 +29,4 @@ void CQueryTracker::RemoveQuery( TQuery pQuery )
 	m_vecQuery.erase( it );
 }
 
+#endif // _DEBUG

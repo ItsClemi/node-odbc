@@ -60,11 +60,18 @@ enum class EFecthResult : size_t
 	eHasMoreData
 };
 
+enum class EFoundResultSet
+{
+	eError,
+	eEmpty,
+	eSuccess,
+};
+
 
 class CQuery;
 class CResultSet
 {
-	static const size_t sDefaultChunkSize = 4;
+	static const size_t sDefaultChunkSize = 5;
 
 	enum class EResolveType
 	{
@@ -182,7 +189,7 @@ public:
 
 public:
 	bool					m_bExecNoData = false;
-	mutable EFetchMode		m_eFetchMode;
+	mutable EFetchMode		m_eFetchMode = EFetchMode::eNone;
 
 	size_t					m_nMemoryUsage = 0;
 

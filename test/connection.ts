@@ -35,38 +35,38 @@ mod.connection.forEach(( con ) =>
 		} );
 
 
-		it( "setResilienceStrategy - after connect", () =>
-		{
-			assert.throws(() =>
-			{
-				new odbc.Connection()
-					.connect( con.connectionString )
-					.setResilienceStrategy( { retries: 5, errorCodes: [50, 120, 500] } );
-			} );
-		} );
+		//it( "setResilienceStrategy - after connect", () =>
+		//{
+		//	assert.throws(() =>
+		//	{
+		//		new odbc.Connection()
+		//			.connect( con.connectionString )
+		//			.setResilienceStrategy( { retries: 5, errorCodes: [50, 120, 500] } );
+		//	} );
+		//} );
 
-		it( "setResilienceStrategy - equal", () =>
-		{
-			let _retries = 25;
-			let _errorCodes = [50, 120, 5000, 4000];
+		//it( "setResilienceStrategy - equal", () =>
+		//{
+		//	let _retries = 25;
+		//	let _errorCodes = [50, 120, 5000, 4000];
 
-			let info: odbc.ConnectionInfo = <any>{};
-			assert.doesNotThrow(() =>
-			{
-				info = new odbc.Connection()
-					.setResilienceStrategy( { retries: _retries, errorCodes: _errorCodes } )
-					.connect( con.connectionString )
-					.getInfo();
-			} );
+		//	let info: odbc.ConnectionInfo = <any>{};
+		//	assert.doesNotThrow(() =>
+		//	{
+		//		info = new odbc.Connection()
+		//			.setResilienceStrategy( { retries: _retries, errorCodes: _errorCodes } )
+		//			.connect( con.connectionString )
+		//			.getInfo();
+		//	} );
 
-			assert.ok( info.resilienceStrategy.retries == _retries );
-			assert.ok( info.resilienceStrategy.errorCodes.length == _errorCodes.length );
+		//	assert.ok( info.resilienceStrategy.retries == _retries );
+		//	assert.ok( info.resilienceStrategy.errorCodes.length == _errorCodes.length );
 
-			for( var i = 0; i < _errorCodes.length; i++ )
-			{
-				assert.ok( _errorCodes[i] === info.resilienceStrategy.errorCodes[i] );
-			}
-		} );
+		//	for( var i = 0; i < _errorCodes.length; i++ )
+		//	{
+		//		assert.ok( _errorCodes[i] === info.resilienceStrategy.errorCodes[i] );
+		//	}
+		//} );
 
 
 
@@ -95,7 +95,7 @@ mod.connection.forEach(( con ) =>
 			{
 				new odbc.Connection()
 					.connect( con.connectionString )
-					.executeQuery( <odbc.eFetchMode>( 2500 ), "****select****" );
+					.executeQuery( <odbc.eFetchMode>( 2500 ), () => { }, "****select****" );
 			} );
 		} );
 
@@ -458,75 +458,6 @@ mod.connection.forEach(( con ) =>
 		} );
 
 
-	
-		//> use pool after dc
-
-
-		//	assert.throws(() =>
-		//	{
-		//		_con.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//			{
-		//				throw "Hello World!";
-		//			},
-		//			"print 'hello world'"
-		//		);
-		//	} );
-
-		//} );
-
-
-		//it( "executeQuery - param binding ", ( done ) =>
-		//{
-		//	assert.doesNotThrow(() =>
-		//	{
-		//		new odbc.Connection()
-		//			.connect( con.connectionString )
-		//			.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//			{	
-		//				done( err );
-
-		//			}, ";", "asdf", 235, 32.0 );
-		//	} );
-		//} );
-
-
-
-		//it( "executeQuery - memory check", () =>
-		//{
-
-		//	assert.doesNotThrow(() =>
-		//	{
-		//		let _con = new odbc.Connection().connect( con.connectionString );
-
-		//		let count = 0;
-		//		let gcount = 0;
-		//		let bench = new Benchmark();
-
-		//		let t0 = bench.elapsed();
-		//		for( var i = 0; i < 2500000/*Number.MAX_SAFE_INTEGER*/; i++ )
-		//		{
-		//			_con.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//			{
-
-		//			}, "SELECT * TRUE;", "asdf", 235, 32.0 );
-
-
-		//			count++;
-
-		//			let t1 = bench.elapsed();
-		//			if( t0 + 1000 <= t1 )
-		//			{
-		//				t0 = t1 + 1000;
-		//				console.log( `${count} p/sec (${gcount})` );
-		//				gcount += count;
-		//				count = 0;
-		//			}
-		//		}
-		//	} );
-
-		//} );
-
-
 
 		it( "getInfo - basic", () =>
 		{
@@ -547,9 +478,6 @@ mod.connection.forEach(( con ) =>
 
 
 			assert.ok( typeof ( info.internalServerType ) === "number" );
-			assert.ok( typeof ( info.memoryUsage ) === "number" );
-			assert.ok( typeof ( info.perf ) === "number" );
-
 			assert.ok( info.databaseName.length > 0 );
 			assert.ok( info.driverName.length > 0 );
 			assert.ok( info.driverVersion.length > 0 );

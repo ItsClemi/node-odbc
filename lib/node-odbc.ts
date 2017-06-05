@@ -102,11 +102,6 @@ export function makeTimestampValue( date: Date ): SqlTimestamp
 
 
 
-export const enum eFetchMode {
-	eSingle,
-	eArray,
-};
-
 
 export interface IResilienceStrategy
 {
@@ -130,6 +125,12 @@ export type ConnectionProps = {
 	poolSize?: number;
 };
 
+export const enum eFetchMode
+{
+	eSingle,
+	eArray,
+};
+
 export declare class Connection 
 {
 	constructor( advancedProps?: ConnectionProps );
@@ -139,10 +140,18 @@ export declare class Connection
 	disconnect( cb: ( ) => void ): void;
 
 	prepareQuery( query: string, ...args: ( SqlTypes )[] ): ISqlQuery;
-	
-	executeQuery( eMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
 
-	executeQuery( eMode: eFetchMode, query: string, ...args: ( SqlTypes )[] ): Promise<SqlResultTypes>;
+
+	//> defaults odbc.eFetchMode.eSingle 
+	executeQuery( cb: ( result: SqlResult, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery( eFetchMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery<T>( cb: ( result: SqlPartialResult<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+
 
 	getInfo(): ConnectionInfo;
 }

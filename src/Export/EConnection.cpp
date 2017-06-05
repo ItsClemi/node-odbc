@@ -44,7 +44,7 @@ NAN_MODULE_INIT( EConnection::InitializeModule )
 		Nan::SetPrototypeMethod( tpl, "connect", EConnection::Connect );
 		Nan::SetPrototypeMethod( tpl, "disconnect", EConnection::Disconnect );
 
-		Nan::SetPrototypeMethod( tpl, "setResilienceStrategy", EConnection::SetResilienceStrategy );
+		//Nan::SetPrototypeMethod( tpl, "setResilienceStrategy", EConnection::SetResilienceStrategy );
 		Nan::SetPrototypeMethod( tpl, "prepareQuery", EConnection::PrepareQuery );
 		Nan::SetPrototypeMethod( tpl, "executeQuery", EConnection::ExecuteQuery );
 		Nan::SetPrototypeMethod( tpl, "getInfo", EConnection::GetInfo );
@@ -159,7 +159,7 @@ NAN_METHOD( EConnection::PrepareQuery )
 
 	pQuery->InitializeQuery( FromV8String( info[ 1 ].As< String >( ) ) );
 	{
-		if( !pQuery->GetQueryParam()->BindParameters( isolate, info, 1 ) )
+		if( !pQuery->GetQueryParam( )->BindParameters( isolate, info, 1 ) )
 		{
 			return;
 		}
@@ -177,42 +177,23 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "eMode: is not an uint32" );
-	V8_TYPE_VALIDATE( info[ 1 ]->IsString( ) || info[ 1 ]->IsFunction( ), "query || cb: is not a string or function" );
+	V8_TYPE_VALIDATE( info[ 0 ]->IsFunction( ) || info[ 0 ]->IsUint32( ), "cb || eFetchMode: is not a callback or a number" );
+
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
-	uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
-	V8_TYPE_VALIDATE( nFetchMode < ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
 
-	if( info[ 1 ]->IsFunction( ) )
+	const auto pQuery = pThis->GetPool( )->CreateQuery( );
+
+	if( info[ 0 ]->IsFunction( ) )
 	{
-		V8_TYPE_VALIDATE( info[ 2 ]->IsString( ), "query: is not a string" );
-
- 		const auto pQuery = pThis->GetPool( )->CreateQuery( );
+		V8_TYPE_VALIDATE( info[ 1 ]->IsString( ), "query: is not a string" );
 
 		if( !pQuery->SetParameters(
 			isolate,
-			static_cast< EFetchMode >( nFetchMode ),
-			FromV8String( info[ 2 ].As< String >( ) ),
-			info,
-			3,
-			info[ 1 ].As< Function >( )
-		) )
-		{
-			return;
-		}
-
- 		pThis->GetPool( )->ExecuteQuery( pQuery );
-	}
-	else
-	{
-		const auto pQuery = pThis->GetPool( )->CreateQuery( );
-
-		if( !pQuery->SetParameters( 
-			isolate,
-			static_cast< EFetchMode >( nFetchMode ), 
+			EFetchMode::eSingle,
+			info[ 0 ].As< Function >( ),
 			FromV8String( info[ 1 ].As< String >( ) ),
 			info,
 			2
@@ -220,19 +201,31 @@ NAN_METHOD( EConnection::ExecuteQuery )
 		{
 			return;
 		}
-
-		const auto jsPromise = EModuleHelper::CreatePromise( 
-			isolate, 
-			EPreparedQuery::CreateInstance(isolate, pQuery) 
-		);
-
-		pThis->GetPool( )->ExecuteQuery( pQuery );
-
-		info.GetReturnValue( ).Set(
-			jsPromise
-		);
 	}
+	else
+	{
+		uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
+		V8_TYPE_VALIDATE( nFetchMode < ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
 
+		V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: is not a function" );
+		V8_TYPE_VALIDATE( info[ 2 ]->IsString( ), "query: is not a string" );
+
+
+		if( !pQuery->SetParameters(
+			isolate,
+			static_cast< EFetchMode >( nFetchMode ),
+			info[ 1 ].As< Function >( ),
+			FromV8String( info[ 2 ].As< String >( ) ),
+			info,
+			3
+		) )
+		{
+			return;
+		}
+	}
+		
+
+	pThis->GetPool( )->ExecuteQuery( pQuery );
 
 	isolate->AdjustAmountOfExternalAllocatedMemory( sizeof( CQuery ) );
 }

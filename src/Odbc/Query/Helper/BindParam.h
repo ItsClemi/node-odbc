@@ -122,6 +122,8 @@ public:
 		}
 		m_data.stringDesc.m_stringData.pWString[ nLength ] = '\0';
 
+		nLength *= sizeof( wchar_t );
+
 		SetData( SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
 	}
 

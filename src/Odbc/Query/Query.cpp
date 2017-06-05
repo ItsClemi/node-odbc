@@ -126,7 +126,7 @@ bool CQuery::ExecuteStatement( )
 
 	if( m_nQueryTimeout > 0 )
 	{
-		if( !GetStatement( )->SetStmtAttr( SQL_ATTR_QUERY_TIMEOUT, ( SQLPOINTER )m_nQueryTimeout, SQL_IS_UINTEGER ) )
+		if( !GetStatement( )->SetStmtAttr( SQL_ATTR_QUERY_TIMEOUT, reinterpret_cast< SQLPOINTER >( m_nQueryTimeout ), SQL_IS_UINTEGER ) )
 		{
 			return false;
 		}

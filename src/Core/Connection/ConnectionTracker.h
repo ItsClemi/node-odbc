@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef _DEBUG
 class CConnectionPool;
 class CConnectionTracker
 {
@@ -21,3 +22,4 @@ private:
 	std::vector< TPool >	m_vecPool;
 
 };
+#endif // _DEBUG

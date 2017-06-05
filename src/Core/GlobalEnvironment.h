@@ -18,10 +18,12 @@
 
 #pragma once
 
-#include "Processor.h"
-
 #include "Odbc/OdbcEnvironment.h"
-#include "Odbc/Dispatcher/DispatchManager.h"
+
+#ifdef _DEBUG
+#include "Core/Connection/QueryTracker.h"
+#include "Core/Connection/ConnectionTracker.h"
+#endif // _DEBUG
 
 
 bool InitializeGlobalEnvironment( );
@@ -30,13 +32,12 @@ void DestroyGlobalEnvironment( );
 
 struct SGlobalEnvironment
 {
-	SGlobalEnvironment( );
-	~SGlobalEnvironment( );
-
-
 	std::unique_ptr< COdbcEnvironment >		pOdbcEnv = std::make_unique< COdbcEnvironment >( );
-	std::unique_ptr< CProcessor >			pProcessor;
-	std::unique_ptr< CDispatchManager >		pDispatchManager = std::make_unique< CDispatchManager >( );
+
+#ifdef _DEBUG
+	std::unique_ptr< CQueryTracker >		pQueryTracker = std::make_unique< CQueryTracker >( );
+	std::unique_ptr< CConnectionTracker >	pConnectionTracker = std::make_unique< CConnectionTracker >( );
+#endif // _DEBUG
 };
 
-extern std::unique_ptr< SGlobalEnvironment > gEnv;
+extern SGlobalEnvironment* gEnv;

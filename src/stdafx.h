@@ -91,6 +91,8 @@
 #include <array>
 #include <chrono>
 #include <condition_variable>
+#include <queue>
+
 
 #include <tbb/tbb.h>
 #include <tbb/scalable_allocator.h>
@@ -99,10 +101,12 @@
 
 #include "Odbc/Drivers/msodbcsql.h"
 
-
+#include "Common/Helper/SharedPtrHolder.h"
 #include "Common/Helper/Utility.h"
 #include "Common/Helper/NodeExt.h"
 
 #include "Core/GlobalEnvironment.h"
 
 #include "Core/libuv/UvOperation.h"
+
+

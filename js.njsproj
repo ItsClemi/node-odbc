@@ -41,6 +41,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\api.ts" />
+    <TypeScriptCompile Include="test\bench.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="test\connection.ts" />
     <TypeScriptCompile Include="test\crash.ts">
       <SubType>Code</SubType>

@@ -62,12 +62,12 @@ public:
 
 private:
 
-	inline void SetQuery( const std::shared_ptr< CQuery > pQuery ) const
+	inline void SetQuery( const std::shared_ptr< CQuery > pQuery ) 
 	{
 		m_pQuery = pQuery;
 	}
 
 private:
-	mutable std::shared_ptr< CQuery >		m_pQuery;
+	std::shared_ptr< CQuery >		m_pQuery;
 
 };

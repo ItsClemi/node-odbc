@@ -20,7 +20,7 @@
 
 #include "Odbc/Helper/Handle/OdbcConnectionHandle.h"
 #include "Extension/PoolExtension.h"
-#include "Odbc/Dispatcher/Async/UvJob.h"
+
 
 struct SConnectionProps
 {
@@ -39,14 +39,14 @@ enum class EPoolState : size_t
 };
 
 class CQuery;
-class CConnectionPool : public IUvJob
+class CConnectionPool
 {
 public:
 	typedef std::shared_ptr< COdbcConnectionHandle > TConnection;
 
 public:
 	CConnectionPool( );
-	virtual ~CConnectionPool( );
+	~CConnectionPool( );
 
 public:
 	bool ReadConnectionProps( v8::Isolate* isolate, v8::Local< v8::Object > value );
@@ -75,9 +75,9 @@ public:
 	void ExecuteQuery( std::shared_ptr< CQuery > pQuery );
 
 public:
-	virtual void ProcessBackground( ) override;
+	//virtual void ProcessBackground( ) override;
 	
-	virtual EForegroundResult ProcessForeground( v8::Isolate* isolate ) override;
+	//virtual EForegroundResult ProcessForeground( v8::Isolate* isolate ) override;
 
 
 private:
@@ -91,15 +91,25 @@ private:
 		{
 			std::shared_ptr< COdbcConnectionHandle > pConnection;
 
-			for( size_t i = 0; i < 10; i++ )
+			m_cs.lock( );
 			{
-				if( m_queueConnection.try_pop( pConnection ) )
+				if( m_queueConnection.size( ) > 0 )
 				{
-					return pConnection;
+					pConnection = m_queueConnection.front( );
+					m_queueConnection.pop( );
 				}
-
-				tbb::this_tbb_thread::yield( );
 			}
+			m_cs.unlock( );
+
+// 			for( ;; )
+// 			{
+// 				if( m_queueConnection.try_pop( pConnection ) )
+// 				{
+// 					return pConnection;
+// 				}
+// 
+// 				tbb::this_tbb_thread::yield( );
+// 			}			
 
 			return nullptr;
 		}
@@ -108,7 +118,7 @@ private:
 public:
 	inline void StallQuery( std::shared_ptr< CQuery > pQuery )
 	{
-		m_queueStalledQueries.push( pQuery );
+		//m_queueStalledQueries.push( pQuery );
 	}
 
 
@@ -144,6 +154,7 @@ private:
 public:
 	inline void SetSharedInstance( std::shared_ptr< CConnectionPool > pPool )
 	{
+
 		m_pPool = pPool;
 	}
 
@@ -188,6 +199,14 @@ public:
 		return false;
 	}
 
+public:
+#ifdef _DEBUG
+	inline auto GetSharedInstance( )
+	{
+		assert( !m_pPool.expired( ) );
+		return m_pPool.lock( );
+	}
+#endif
 
 
 private:
@@ -223,7 +242,10 @@ private:
 
 	std::shared_ptr< COdbcConnectionHandle >	m_pMarsConnection;
 
-	tbb::concurrent_queue< std::shared_ptr< CQuery > >	m_queueStalledQueries;
+	//tbb::concurrent_queue< std::shared_ptr< CQuery > >					m_queueStalledQueries;
 
-	tbb::concurrent_queue< std::shared_ptr< COdbcConnectionHandle >	>	m_queueConnection;
+	std::mutex		m_cs;
+	std::queue< std::shared_ptr< COdbcConnectionHandle > >	m_queueConnection;
+
+	//tbb::concurrent_queue< std::shared_ptr< COdbcConnectionHandle >	>	m_queueConnection;
 };

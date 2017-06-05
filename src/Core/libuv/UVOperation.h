@@ -19,47 +19,53 @@
 #pragma once
 
 
+#include "Odbc/Query/Query.h"
+
+
+
+class CQuery;
 class CUvOperation
 {
 public:
 	CUvOperation( )
-	{
+	{ 
 		m_work.data = this;
 	}
 
-	virtual ~CUvOperation( )
-	{ 
-		m_work.data = (void*)0xFCFCFCFCFCFFC;
+	~CUvOperation( )
+	{
 	}
 
 protected:
-	virtual void OnInvokeBackground( ) = 0;
-	virtual void OnCompleteForeground( ) = 0;
+	static void OnInvokeBackground( uv_work_t* req );
 
-private:
-	static void OnBackground( uv_work_t* work )
-	{
-		const auto pOperation = reinterpret_cast< CUvOperation* >( work->data );
-		{
-			pOperation->OnInvokeBackground( );
-		}
-	}
+	static void OnCompleteForeground( uv_work_t* req, int status );
 
-	static void OnForeground( uv_work_t* work, int nStatus )
-	{
-		const auto pOperation = reinterpret_cast< CUvOperation* >( work->data );
-		{
-			pOperation->OnCompleteForeground( );
-		}
-	}
+protected: 
+
 
 public:
-	inline void RunOperation( )
+	void RunOperation( )
 	{
-		int res = uv_queue_work( uv_default_loop( ), &m_work, OnBackground, OnForeground );
-		assert( res == 0 );
+		//> uv_queue_work is not threadsafe!
+		assert( v8::Isolate::GetCurrent( ) != nullptr );
+
+		int result = uv_queue_work( uv_default_loop( ), &m_work, OnInvokeBackground, OnCompleteForeground );
+		assert( result == 0 );
 	}
 
+	void RunOperation( std::shared_ptr< CQuery > pInstance )
+	{
+		m_pInstance = pInstance;
+		RunOperation( );
+	}
+
+
 private:
-	uv_work_t		m_work;
+	std::shared_ptr< CQuery >		m_pInstance;
+	uv_work_t						m_work;
+
 };
+
+
+

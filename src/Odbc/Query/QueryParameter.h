@@ -82,7 +82,7 @@ private:
 			return false;
 		}
 
-		auto typeId = _typeId.ToLocalChecked( ); 
+		auto typeId = _typeId.ToLocalChecked( );
 
 		if( !typeId->IsUint32( ) )
 		{
@@ -92,6 +92,6 @@ private:
 		return ( typeId.As< v8::Uint32 >( ) )->Uint32Value( context ).FromJust( ) == id;
 	}
 
-protected:
-	std::vector< CBindParam, tbb::scalable_allocator< CBindParam > >	m_vecParameter;
+public:
+	std::vector< CBindParam/*, tbb::scalable_allocator< CBindParam >*/ >	m_vecParameter;
 };

@@ -33,17 +33,14 @@ CResultSet::CResultSet( CQuery* pQuery )
 
 CResultSet::~CResultSet( )
 {
-
-}
-
-void CResultSet::Dispose( )
-{
 	assert( Isolate::GetCurrent( ) != nullptr );
 
 	for( auto& i : m_vecData )
 	{
 		i.Dispose( );
 	}
+
+	m_vecMetaData.clear( );
 
 	if( m_eResolveType == EResolveType::eCallback )
 	{
@@ -124,7 +121,7 @@ bool CResultSet::PrepareColumns( )
 
 		pMetaData->m_bLOBColumn = false;
 
-		if( !m_pQuery->DescribeCol(
+		if( !m_pQuery->GetStatement( )->DescribeCol(
 			static_cast< SQLUSMALLINT >( i + 1 ),
 			&pMetaData->m_szColumnName,
 			&pMetaData->m_nDataType,
@@ -136,9 +133,9 @@ bool CResultSet::PrepareColumns( )
 			return false;
 		}
 
-		if( m_pQuery->IsMetaDataEnabled( ) )
+		if( m_pQuery->GetResultSet( )->IsMetaDataEnabled( ) )
 		{
-			if( !m_pQuery->ColAttribute(
+			if( !m_pQuery->GetStatement( )->ColAttribute(
 				static_cast< SQLUSMALLINT >( i + 1 ),
 				SQL_DESC_TYPE_NAME,
 				&pMetaData->m_szDataTypeName,
@@ -175,7 +172,7 @@ bool CResultSet::FindNextResultSet( )
 		if( !m_bExecNoData )
 		{
 			SQLSMALLINT nColumns = 0;
-			if( !m_pQuery->NumResultCols( &nColumns ) )
+			if( !m_pQuery->GetStatement( )->NumResultCols( &nColumns ) )
 			{
 				return false;
 			}
@@ -189,7 +186,7 @@ bool CResultSet::FindNextResultSet( )
 		}
 
 
-		auto sqlRet = m_pQuery->MoreResults( );
+		auto sqlRet = m_pQuery->GetStatement( )->MoreResults( );
 
 		if( sqlRet == SQL_NO_DATA )
 		{
@@ -209,7 +206,7 @@ EFecthResult CResultSet::FetchChunk( size_t nChunkSize, size_t* nFetched )
 {
 	for( size_t it = 0; it < nChunkSize; it++ )
 	{
-		auto sqlRet = m_pQuery->FetchScroll( SQL_FETCH_NEXT, 1 );
+		auto sqlRet = m_pQuery->GetStatement( )->FetchScroll( SQL_FETCH_NEXT, 1 );
 		if( sqlRet == SQL_NO_DATA )
 		{
 			return EFecthResult::eDone;
@@ -249,7 +246,7 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		{
 			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( char );
 
-			auto pBuffer = static_cast< char* >( scalable_malloc( nBufferSize ) );
+			auto pBuffer = new char[ nBufferSize ];//static_cast< char* >( scalable_malloc( nBufferSize ) );
 
 			if( !GetSqlData( nColumn, SQL_C_CHAR, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
 			{
@@ -259,8 +256,8 @@ bool CResultSet::ReadColumn( size_t nColumn )
 			if( strLen_or_IndPtr == SQL_NO_DATA )
 			{
 				pData->SetNull( );
-
-				scalable_free( pBuffer );
+				delete[ ] pBuffer;
+				//scalable_free( pBuffer );
 			}
 			else
 			{
@@ -273,8 +270,8 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		case SQL_WCHAR:
 		case SQL_WVARCHAR:
 		{
-			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( char );
-			auto pBuffer = static_cast< wchar_t* >( scalable_malloc( nBufferSize * sizeof( wchar_t ) ) );
+			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( wchar_t );
+			auto pBuffer = new wchar_t[ nBufferSize ]; //static_cast< wchar_t* >( scalable_malloc( nBufferSize * sizeof( wchar_t ) ) );
 
 			if( !GetSqlData( nColumn, SQL_C_WCHAR, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
 			{
@@ -284,8 +281,8 @@ bool CResultSet::ReadColumn( size_t nColumn )
 			if( strLen_or_IndPtr == SQL_NO_DATA )
 			{
 				pData->SetNull( );
-
-				scalable_free( pBuffer );
+				delete[ ] pBuffer;
+				//scalable_free( pBuffer );
 			}
 			else
 			{
@@ -439,7 +436,8 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		{
 			const size_t nBufferSize = pMetaData->m_nColumnSize;
 
-			auto pBuffer = static_cast< uint8_t* >( scalable_malloc( nBufferSize ) );
+			auto pBuffer = new uint8_t[ nBufferSize ];
+			//auto pBuffer = static_cast< uint8_t* >( scalable_malloc( nBufferSize ) );
 
 			if( !GetSqlData( nColumn, SQL_C_BINARY, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
 			{
@@ -479,11 +477,11 @@ bool CResultSet::ReadColumn( size_t nColumn )
 
 bool CResultSet::GetSqlData( size_t ColumnNumber, SQLSMALLINT TargetType, SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_IndPtr )
 {
-	auto sqlRet = m_pQuery->GetData( static_cast< SQLUSMALLINT >( ColumnNumber + 1 ), TargetType, TargetValue, BufferLength, StrLen_or_IndPtr );
+	auto sqlRet = m_pQuery->GetStatement( )->GetData( static_cast< SQLUSMALLINT >( ColumnNumber + 1 ), TargetType, TargetValue, BufferLength, StrLen_or_IndPtr );
 
 	if( sqlRet == SQL_SUCCESS_WITH_INFO )
 	{
-		auto pError = m_pQuery->GetOdbcError( );
+		auto pError = m_pQuery->GetStatement( )->GetOdbcError( );
 
 		if( pError->IsSqlState( L"01004" ) )
 		{

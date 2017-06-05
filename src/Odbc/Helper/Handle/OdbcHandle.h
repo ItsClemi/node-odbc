@@ -75,7 +75,7 @@ public:
 	{
 		assert( m_hSqlHandle == SQL_NULL_HANDLE );
 
-		if( VALIDATE_SQL_RESULT( SQLAllocHandle( ToUnderlyingType< eOdbcHandleType >( T ), hSqlParent, &m_hSqlHandle ) ) )
+		if( VALIDATE_SQL_RESULT( SQLAllocHandle( ToUnderlyingType( T ), hSqlParent, &m_hSqlHandle ) ) )
 		{
 #ifdef _DEBUG
 			g_nSqlHandleCount++;
@@ -96,7 +96,9 @@ public:
 	{
 		if( m_hSqlHandle != SQL_NULL_HANDLE )
 		{
-			SQLFreeHandle( ToUnderlyingType< eOdbcHandleType >( T ), m_hSqlHandle );
+			auto sqlRet = SQLFreeHandle( ToUnderlyingType( T ), m_hSqlHandle );
+			assert( SQL_SUCCEEDED( sqlRet ) );
+			
 			m_hSqlHandle = SQL_NULL_HANDLE;
 
 #ifdef _DEBUG
@@ -118,6 +120,7 @@ protected:
 		{
 			const auto pError = GetOdbcError( );
 
+			__debugbreak( );
 			return true;
 		}
 
@@ -161,12 +164,14 @@ protected:
 			return true;
 		}
 
-		const auto pError = GetOdbcError( );
-
-		wcscpy_s( szStatus, pError->GetSqlState( ) );
-
-		memcpy_s( &m_szLastSqlStatus, sSqlStateLength * sizeof( wchar_t ), pError->GetSqlState( ), COdbcError::sStateLength * sizeof( wchar_t ) );
-
+// 		__debugbreak( );
+// 
+// 		const auto pError = GetOdbcError( );
+// 
+// 		wcscpy_s( szStatus, pError->GetSqlState( ) );
+// 
+// 		memcpy_s( &m_szLastSqlStatus, sSqlStateLength * sizeof( wchar_t ), pError->GetSqlState( ), COdbcError::sStateLength * sizeof( wchar_t ) );
+// 
 
 		return SQL_SUCCEEDED( sqlResult );
 	}

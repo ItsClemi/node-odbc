@@ -23,8 +23,10 @@
 #include "Odbc/Query/QueryParameter.h"
 #include "Odbc/Query/ResultSet.h"
 
-#include "Odbc/Dispatcher/Async/UvJob.h"
+#include "Core/libuv/UvOperation.h"
 
+
+#include "Core/libuv/IUvOperation.h"
 
 enum class EQueryState : size_t
 {
@@ -38,47 +40,40 @@ enum class EQueryState : size_t
 };
 
 
-enum class EQueryReturn : size_t
-{
-	//used if CQuery pushes data to JS (bucket data fetching)
-	eNeedIo,
-
-	eNeedUv,
-};
-
 class CConnectionPool;
 class COdbcConnectionHandle;
-class CQuery : public COdbcStatementHandle, public CQueryParameter, public CResultSet, public IUvJob
+class CQuery : public IUvOperation
 {
 public:
 	CQuery( const std::shared_ptr< CConnectionPool > pPool );
-	virtual ~CQuery( );
-
-public:
-	EQueryReturn Process( );
+	~CQuery( );
+	
 
 public:
 	virtual void ProcessBackground( ) override;
+
 	virtual EForegroundResult ProcessForeground( v8::Isolate* isolate ) override;
 
 private:
+	void ProcessQuery( );
+
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
-	
 
 public:
 	void SetError( );
 
+
 public:
-	inline void InitializeQuery( EFetchMode eMode, const std::wstring& szQuery ) const
+	inline void InitializeQuery( EFetchMode eMode, const std::wstring& szQuery )
 	{
-		m_eFetchMode = eMode;
+		GetResultSet( )->m_eFetchMode = eMode;
 		m_szQuery = szQuery;
 	}
 
-	inline void InitializeQuery( const std::wstring& szQuery ) const
+	inline void InitializeQuery( const std::wstring& szQuery )
 	{
-		m_eFetchMode = EFetchMode::eNone;
+		GetResultSet()->m_eFetchMode = EFetchMode::eNone;
 		m_szQuery = szQuery;
 	}
 
@@ -125,7 +120,7 @@ public:
 	}
 
 private:
-	inline void SetState( EQueryState eState ) const
+	inline void SetState( EQueryState eState )
 	{
 		m_eState.store( eState, std::memory_order_relaxed );
 	}
@@ -147,12 +142,10 @@ public:
 	}
 
 
-
-
 public:
 	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos, const v8::Local< v8::Function > fnCallback )
 	{
-		SetCallback( isolate, fnCallback );
+		GetResultSet()->SetCallback( isolate, fnCallback );
 
 		return SetParameters( isolate, eFetchMode, szQuery, args, nPos );
 	}
@@ -161,11 +154,10 @@ public:
 	{
 		InitializeQuery( eFetchMode, szQuery );
 
-		return BindParameters( isolate, args, nPos );
+		return GetQueryParam()->BindParameters( isolate, args, nPos );
 	}
 
-
-
+	
 public:
 	inline void EnableReturnValue( )
 	{
@@ -179,8 +171,24 @@ public:
 
 	inline void EnableTransaction( v8::Isolate* isolate, v8::Local< v8::Value > instance )
 	{
-		m_queryInstance.Reset( isolate, instance );
+		GetResultSet()->m_queryInstance.Reset( isolate, instance );
 		m_bTransactionEnabled = true;
+	}
+
+public:
+	COdbcStatementHandle* GetStatement( )
+	{
+		return &m_statement;
+	}
+
+	CQueryParameter* GetQueryParam( )
+	{
+		return &m_queryParam;
+	}
+
+	CResultSet* GetResultSet( )
+	{
+		return &m_resultSet;
 	}
 
 
@@ -188,10 +196,14 @@ private:
 	const std::shared_ptr< CConnectionPool >	m_pPool;
 	std::shared_ptr< COdbcConnectionHandle >	m_pConnection;
 
-	mutable std::wstring						m_szQuery;
+	std::wstring								m_szQuery;
 
-	mutable std::atomic< EQueryState >			m_eState;
+	std::atomic< EQueryState >					m_eState;
 
+
+	COdbcStatementHandle	m_statement;
+	CQueryParameter			m_queryParam;
+	CResultSet				m_resultSet;
 
 
 	std::shared_ptr< COdbcError >				m_pError;

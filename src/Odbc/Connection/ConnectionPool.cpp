@@ -22,7 +22,6 @@
 #include "Extension/PoolExtension.h"
 #include "Extension/MssqlExtension.h"
 #include "Odbc/Query/Query.h"
-#include "Odbc/Dispatcher/Async/UvWorker.h"
 
 using namespace v8;
 
@@ -41,6 +40,8 @@ CConnectionPool::CConnectionPool( )
 
 #ifdef _DEBUG
 	g_nConnectionPoolCount++;
+
+	gEnv->pConnectionTracker->AddPool( this );
 #endif
 }
 
@@ -48,6 +49,8 @@ CConnectionPool::~CConnectionPool( )
 {
 #ifdef _DEBUG
 	g_nConnectionPoolCount--;
+
+	gEnv->pConnectionTracker->RemovePool( this );
 #endif
 }
 
@@ -313,14 +316,7 @@ std::shared_ptr< CQuery > CConnectionPool::CreateQuery( )
 {
 	assert( !m_pPool.expired( ) );
 
-	//#TODO refactor
-
-	auto pQuery = std::make_shared< CQuery >( m_pPool.lock( ) );
-	{
-
-	}
-
-	return pQuery;
+	return std::make_shared< CQuery >( m_pPool.lock( ) );
 }
 
 
@@ -341,17 +337,18 @@ void CConnectionPool::PushConnection( std::shared_ptr< COdbcConnectionHandle > p
 	}
 	else
 	{
+		std::lock_guard< std::mutex > l( m_cs );
 		m_queueConnection.push( pConnection );
 	}
 }
 
 void CConnectionPool::ResolveDisconnect( )
 {
-	assert( m_nPending.load( std::memory_order_relaxed ) == 0 );
-
-	auto pWorker = new CUvWorker< std::shared_ptr< CConnectionPool > >( m_pPool.lock( ) );
-
-	pWorker->RunOperation( );
+// 	assert( m_nPending.load( std::memory_order_relaxed ) == 0 );
+// 
+// 	auto pWorker = new CUvWorker< std::shared_ptr< CConnectionPool > >( m_pPool.lock( ) );
+// 
+// 	pWorker->RunOperation( );
 }
 
 void CConnectionPool::ExecuteQuery( std::shared_ptr< CQuery > pQuery )
@@ -377,43 +374,45 @@ void CConnectionPool::ExecuteQuery( std::shared_ptr< CQuery > pQuery )
 
 	pQuery->SetConnection( pConnection );
 
-
 	m_nPending.fetch_add( 1, std::memory_order_relaxed );
 
-	gEnv->pDispatchManager->PushQuery( pQuery );
+
+	auto pOperation = new CUvOperation;
+
+	pOperation->RunOperation( pQuery );
 }
 
-void CConnectionPool::ProcessBackground( )
-{
-
-}
-
-EForegroundResult CConnectionPool::ProcessForeground( v8::Isolate* isolate )
-{
-	HandleScope scope( isolate );
-
-	if( GetState( ) == EPoolState::eReqShutdown )
-	{
-		const auto fnDisconnect = node::PersistentToLocal( isolate, m_fnDisconnect );
-
-		Nan::TryCatch try_catch;
-
-		node::MakeCallback( isolate, Object::New( isolate ), fnDisconnect, 0, nullptr );
-
-		if( try_catch.HasCaught( ) )
-		{
-			try_catch.ReThrow( );
-		}
-
-		if( !m_fnDisconnect.IsEmpty( ) )
-		{
-			m_fnDisconnect.Reset( );
-		}
-	}
-
-
-	return EForegroundResult::eDiscard;
-}
+// void CConnectionPool::ProcessBackground( )
+// {
+// 
+// }
+// 
+// EForegroundResult CConnectionPool::ProcessForeground( v8::Isolate* isolate )
+// {
+// 	HandleScope scope( isolate );
+// 
+// 	if( GetState( ) == EPoolState::eReqShutdown )
+// 	{
+// 		const auto fnDisconnect = node::PersistentToLocal( isolate, m_fnDisconnect );
+// 
+// 		Nan::TryCatch try_catch;
+// 
+// 		node::MakeCallback( isolate, Object::New( isolate ), fnDisconnect, 0, nullptr );
+// 
+// 		if( try_catch.HasCaught( ) )
+// 		{
+// 			try_catch.ReThrow( );
+// 		}
+// 
+// 		if( !m_fnDisconnect.IsEmpty( ) )
+// 		{
+// 			m_fnDisconnect.Reset( );
+// 		}
+// 	}
+// 
+// 
+// 	return EForegroundResult::eDiscard;
+// }
 
 Local< Value > CConnectionPool::GetConnectionInfo( Isolate* isolate )
 {
@@ -447,9 +446,6 @@ Local< Value > CConnectionPool::GetConnectionInfo( Isolate* isolate )
 			obj->Set( context, Nan::New( "odbcVersion" ).ToLocalChecked( ), ToV8String( m_szOdbcVersion ) ).IsNothing( ) ||
 			obj->Set( context, Nan::New( "dbmsName" ).ToLocalChecked( ), ToV8String( m_szDBMSName ) ).IsNothing( ) ||
 			obj->Set( context, Nan::New( "internalServerType" ).ToLocalChecked( ), Nan::New( static_cast< double >( ToUnderlyingType( m_eDriverType ) ) ) ).IsNothing( ) ||
-			obj->Set( context, Nan::New( "memoryUsage" ).ToLocalChecked( ), Nan::New( static_cast< double >( m_nMemoryUsage ) ) ).IsNothing( ) ||
-			obj->Set( context, Nan::New( "perf" ).ToLocalChecked( ), Nan::New( static_cast< double >( m_nPerf ) ) ).IsNothing( ) ||
-			obj->Set( context, Nan::New( "ioWorker" ).ToLocalChecked( ), Nan::New( static_cast< double >( gEnv->pDispatchManager->GetWorkerCount( ) ) ) ).IsNothing( ) ||
 			obj->Set( context, Nan::New( "odbcConnectionString" ).ToLocalChecked( ), ToV8String( m_szOdbcConnectionString ) ).IsNothing( ) ||
 			obj->Set( context, Nan::New( "resilienceStrategy" ).ToLocalChecked( ), resilienceStrategy ).IsNothing( )
 			)

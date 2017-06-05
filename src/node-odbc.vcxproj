@@ -20,8 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\Helper\Utility.cpp" />
+    <ClCompile Include="Core\Connection\ConnectionTracker.cpp" />
+    <ClCompile Include="Core\Connection\QueryTracker.cpp" />
     <ClCompile Include="Core\GlobalEnvironment.cpp" />
-    <ClCompile Include="Core\Processor.cpp" />
+    <ClCompile Include="Core\libuv\UvOperation.cpp" />
     <ClCompile Include="Export\EConnection.cpp" />
     <ClCompile Include="Export\EModuleHelper.cpp" />
     <ClCompile Include="Export\EPreparedQuery.cpp" />
@@ -29,8 +31,6 @@
     <ClCompile Include="Odbc\Connection\ConnectionPool.cpp" />
     <ClCompile Include="Odbc\Connection\Extension\MssqlExtension.cpp" />
     <ClCompile Include="Odbc\Connection\Extension\PoolExtension.cpp" />
-    <ClCompile Include="Odbc\Dispatcher\DispatchManager.cpp" />
-    <ClCompile Include="Odbc\Dispatcher\IoWorker.cpp" />
     <ClCompile Include="Odbc\Helper\OdbcError.cpp" />
     <ClCompile Include="Odbc\OdbcEnvironment.cpp" />
     <ClCompile Include="Odbc\Query\Query.cpp" />
@@ -43,20 +43,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Helper\NodeExt.h" />
+    <ClInclude Include="Common\Helper\SharedPtrHolder.h" />
     <ClInclude Include="Common\Helper\Utility.h" />
+    <ClInclude Include="Core\Connection\ConnectionTracker.h" />
+    <ClInclude Include="Core\Connection\QueryTracker.h" />
     <ClInclude Include="Core\GlobalEnvironment.h" />
+    <ClInclude Include="Core\libuv\IUvOperation.h" />
     <ClInclude Include="Core\libuv\UvOperation.h" />
-    <ClInclude Include="Core\Processor.h" />
     <ClInclude Include="Export\EConnection.h" />
     <ClInclude Include="Export\EModuleHelper.h" />
     <ClInclude Include="Export\EPreparedQuery.h" />
     <ClInclude Include="Odbc\Connection\ConnectionPool.h" />
     <ClInclude Include="Odbc\Connection\Extension\MssqlExtension.h" />
     <ClInclude Include="Odbc\Connection\Extension\PoolExtension.h" />
-    <ClInclude Include="Odbc\Dispatcher\Async\UvJob.h" />
-    <ClInclude Include="Odbc\Dispatcher\Async\UvWorker.h" />
-    <ClInclude Include="Odbc\Dispatcher\DispatchManager.h" />
-    <ClInclude Include="Odbc\Dispatcher\IoWorker.h" />
     <ClInclude Include="Odbc\Drivers\msodbcsql.h" />
     <ClInclude Include="Odbc\Helper\Handle\OdbcConnectionHandle.h" />
     <ClInclude Include="Odbc\Helper\Handle\OdbcEnvironmentHandle.h" />
@@ -131,7 +130,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.node</TargetExt>
-    <IncludePath>.;H:\Workspaces\node\src;H:\Workspaces\node\deps\uv\include;H:\Workspaces\node\deps\v8\include;.\lib\tbb-2017_U5\include;..\node_modules\nan;$(IncludePath)</IncludePath>
+    <IncludePath>.;H:\Workspaces\node\src;H:\Workspaces\node\deps\uv\include;H:\Workspaces\node\deps\v8\include;.\lib\tbb-2017_U5\include;..\node_modules\nan;C:\Program Files (x86)\Visual Leak Detector\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -174,7 +173,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(USERPROFILE)\.node-gyp\7.10.0\x64;.\lib\tbb-2017_U5\build\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>H:\Workspaces\node\Release;.\lib\tbb-2017_U5\build\Debug;C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>node.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -209,7 +208,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(USERPROFILE)\.node-gyp\7.10.0\x64;.\lib\tbb-2017_U5\build\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>H:\Workspaces\node\Release;.\lib\tbb-2017_U5\build\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>node.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>

@@ -37,17 +37,11 @@
     <Filter Include="Odbc\Query\Helper">
       <UniqueIdentifier>{57451ba5-ad1b-45b5-8211-25c4ca22e1dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Odbc\Connection\Helper">
-      <UniqueIdentifier>{43ac6158-457e-4165-866f-8c3b2b19b1d6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Odbc\Connection\Extension">
       <UniqueIdentifier>{f33e4295-dcd5-485d-b9cd-ef829ca04153}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Odbc\Dispatcher">
-      <UniqueIdentifier>{1ed6df06-61c9-417d-b26c-b9f43bddb130}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Odbc\Dispatcher\Async">
-      <UniqueIdentifier>{3d627b46-f2e3-4aaa-a2c9-3bf274b38d69}</UniqueIdentifier>
+    <Filter Include="Core\Connection">
+      <UniqueIdentifier>{97369b95-b0f9-4c41-807d-dabd24a8ef36}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -76,15 +70,6 @@
     <ClCompile Include="Odbc\Query\Query.cpp">
       <Filter>Odbc\Query</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Processor.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Odbc\Dispatcher\IoWorker.cpp">
-      <Filter>Odbc\Dispatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="Odbc\Dispatcher\DispatchManager.cpp">
-      <Filter>Odbc\Dispatcher</Filter>
-    </ClCompile>
     <ClCompile Include="Export\EPreparedQuery.cpp">
       <Filter>Export</Filter>
     </ClCompile>
@@ -102,6 +87,15 @@
     </ClCompile>
     <ClCompile Include="Odbc\Query\QueryParameter.cpp">
       <Filter>Odbc\Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Connection\QueryTracker.cpp">
+      <Filter>Core\Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\libuv\UvOperation.cpp">
+      <Filter>Core\libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Connection\ConnectionTracker.cpp">
+      <Filter>Core\Connection</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -144,17 +138,8 @@
     <ClInclude Include="Odbc\Drivers\msodbcsql.h">
       <Filter>Odbc\Drivers</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Processor.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Odbc\Connection\Extension\MssqlExtension.h">
       <Filter>Odbc\Connection\Extension</Filter>
-    </ClInclude>
-    <ClInclude Include="Odbc\Dispatcher\IoWorker.h">
-      <Filter>Odbc\Dispatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="Odbc\Dispatcher\DispatchManager.h">
-      <Filter>Odbc\Dispatcher</Filter>
     </ClInclude>
     <ClInclude Include="Export\EPreparedQuery.h">
       <Filter>Export</Filter>
@@ -186,14 +171,20 @@
     <ClInclude Include="Odbc\Query\QueryParameter.h">
       <Filter>Odbc\Query</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Dispatcher\Async\UvWorker.h">
-      <Filter>Odbc\Dispatcher\Async</Filter>
-    </ClInclude>
     <ClInclude Include="Core\libuv\UvOperation.h">
       <Filter>Core\libuv</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Dispatcher\Async\UvJob.h">
-      <Filter>Odbc\Dispatcher\Async</Filter>
+    <ClInclude Include="Core\Connection\QueryTracker.h">
+      <Filter>Core\Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\libuv\IUvOperation.h">
+      <Filter>Core\libuv</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Helper\SharedPtrHolder.h">
+      <Filter>Common\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Connection\ConnectionTracker.h">
+      <Filter>Core\Connection</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

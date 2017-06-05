@@ -105,7 +105,7 @@ NAN_METHOD( EPreparedQuery::EnableMetaData )
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
 
-	pThis->GetQuery( )->EnableMetaData( );
+	pThis->GetQuery( )->GetResultSet( )->EnableMetaData( );
 
 	info.GetReturnValue( ).Set( info.This( ) );
 }
@@ -167,16 +167,16 @@ NAN_METHOD( EPreparedQuery::ToSingle )
 	
 	auto pQuery = pThis->GetQuery( );
 
-	pQuery->SetFetchMode( EFetchMode::eSingle );
+	pQuery->GetResultSet()->SetFetchMode( EFetchMode::eSingle );
 
 
 	if( info[ 0 ]->IsFunction( ) )
 	{
-		pQuery->SetCallback( isolate, info[ 0 ].As< Function >( ) );
+		pQuery->GetResultSet( )->SetCallback( isolate, info[ 0 ].As< Function >( ) );
 	}
 	else
 	{
-		pQuery->SetPromise( );
+		pQuery->GetResultSet( )->SetPromise( );
 	}
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
@@ -194,15 +194,15 @@ NAN_METHOD( EPreparedQuery::ToArray )
 
 	auto pQuery = pThis->GetQuery( );
 
-	pQuery->SetFetchMode( EFetchMode::eArray );
+	pQuery->GetResultSet( )->SetFetchMode( EFetchMode::eArray );
 
 	if( info[ 0 ]->IsFunction( ) )
 	{
-		pQuery->SetCallback( isolate, info[ 0 ].As< Function >( ) );
+		pQuery->GetResultSet( )->SetCallback( isolate, info[ 0 ].As< Function >( ) );
 	}
 	else
 	{
-		pQuery->SetPromise( );
+		pQuery->GetResultSet( )->SetPromise( );
 	}
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
@@ -240,7 +240,7 @@ NAN_METHOD( EPreparedQuery::SetPromiseInfo )
 
 	const auto pThis = Unwrap< EPreparedQuery >( info.This( ) );
 	{
-		pThis->GetQuery( )->SetPromise( isolate, info[ 0 ].As< Function >( ), info[ 1 ].As< Function >( ) );
+		pThis->GetQuery( )->GetResultSet( )->SetPromise( isolate, info[ 0 ].As< Function >( ), info[ 1 ].As< Function >( ) );
 	}
 }
 

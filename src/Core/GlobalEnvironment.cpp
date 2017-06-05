@@ -21,7 +21,9 @@
 
 using namespace v8;
 
-std::unique_ptr< SGlobalEnvironment > gEnv = std::make_unique< SGlobalEnvironment >( );
+
+SGlobalEnvironment* gEnv = nullptr;
+
 
 #ifdef _DEBUG
 std::atomic< size_t >	g_nSqlHandleCount;
@@ -29,52 +31,48 @@ std::atomic< size_t >	g_nSqlConnectionCount;
 std::atomic< size_t >	g_nSqlStatementCount;
 std::atomic< size_t >	g_nConnectionPoolCount;
 std::atomic< size_t >	g_nJsConnectionCount;
+std::atomic< size_t >	g_nActiveQueries;
 #endif
-
-
-
-SGlobalEnvironment::SGlobalEnvironment( )
-{
-
-}
-
-SGlobalEnvironment::~SGlobalEnvironment( )
-{
-	//-> dtor gets called first, if node crashes by exception
-	DestroyGlobalEnvironment( );
-}
 
 
 bool InitializeGlobalEnvironment( )
 {
+	gEnv = new SGlobalEnvironment( );
+
 #ifdef _DEBUG
 	g_nSqlHandleCount = 0;
 	g_nSqlConnectionCount = 0;
 	g_nSqlStatementCount = 0;
 	g_nConnectionPoolCount = 0;
 	g_nJsConnectionCount = 0;
+	g_nActiveQueries = 0;
 #endif
-
-	gEnv->pDispatchManager->CreateIoWorkers( );
-
+	
 	if( !gEnv->pOdbcEnv->InitializeEnvironment( ) )
 	{
 		Nan::ThrowError( gEnv->pOdbcEnv->GetOdbcError( )->ConstructErrorObject( Isolate::GetCurrent( ) ) );
 		return false;
 	}
 
+
 	return true;
 }
 
 void DestroyGlobalEnvironment( )
 {
-	gEnv->pDispatchManager.reset( );
-	gEnv->pOdbcEnv.reset( );
+	if( !gEnv )
+	{
+		//> check if already freed from dtor/node::AtExit
+		return;
+	}
 
-	assert( g_nSqlHandleCount == 0 );
-	assert( g_nSqlConnectionCount == 0 );
-	assert( g_nSqlStatementCount == 0 );
-	assert( g_nConnectionPoolCount == 0 );
-	assert( g_nJsConnectionCount == 0 );
+#ifdef _DEBUG
+	gEnv->pQueryTracker = nullptr;
+	gEnv->pConnectionTracker->DetachFromJs( );
+	gEnv->pConnectionTracker = nullptr;
+#endif
 
+	gEnv->pOdbcEnv = nullptr;
+
+	SafeDelete( gEnv );
 }

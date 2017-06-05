@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Odbc/Dispatcher/Async/UvJob.h"
 #include "Helper/ColumnData.h"
 
 
@@ -65,7 +64,7 @@ enum class EFecthResult : size_t
 class CQuery;
 class CResultSet
 {
-	static const size_t sDefaultChunkSize = 16;
+	static const size_t sDefaultChunkSize = 4;
 
 	enum class EResolveType
 	{
@@ -76,9 +75,7 @@ public:
 	CResultSet( CQuery* pQuery );
 	virtual ~CResultSet( );
 
-	void Dispose( );
-
-protected:
+public:
 	bool FetchResults( );
 
 private:
@@ -93,7 +90,7 @@ private:
 	bool GetSqlData( size_t ColumnNumber, SQLSMALLINT TargetType, SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_IndPtr );
 
 
-protected:
+public:
 	void Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value );
 
 	v8::Local< v8::Value > ConstructResult( v8::Isolate* isolate );
@@ -119,7 +116,7 @@ private:
 
 	void SetError( );
 
-protected:
+public:
 	inline const EResolveType GetResolveType( ) const
 	{
 		return m_eResolveType;
@@ -183,10 +180,11 @@ public:
 		return m_bEnableMetaData;
 	}
 
-protected:
+public:
 	bool					m_bExecNoData = false;
 	mutable EFetchMode		m_eFetchMode;
 
+	size_t					m_nMemoryUsage = 0;
 
 	v8::Persistent< v8::Value >				m_queryInstance;
 
@@ -201,6 +199,7 @@ private:
 	bool					m_bHasLobColumns = false;
 
 
+
 	v8::Persistent< v8::Function >			m_callback;
 	v8::Persistent< v8::Function >			m_resolve;
 	v8::Persistent< v8::Function >			m_reject;
@@ -210,6 +209,6 @@ private:
 
 	std::atomic< EResultState >				m_eState;
 
-	std::vector< SMetaData, tbb::scalable_allocator< SMetaData > >			m_vecMetaData;
-	std::vector< SColumnData, tbb::scalable_allocator< SColumnData > >		m_vecData;
+	std::vector< SMetaData/*, tbb::scalable_allocator< SMetaData >*/ >			m_vecMetaData;
+	std::vector< SColumnData/*, tbb::scalable_allocator< SColumnData >*/ >		m_vecData;
 };

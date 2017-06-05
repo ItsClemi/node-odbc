@@ -35,7 +35,7 @@ void InitializeModule( Local< Object > exports )
 #endif
 	
 	if( !InitializeGlobalEnvironment( ) )
-	{
+	{ 
 		return;
 	}
 
@@ -48,7 +48,12 @@ void InitializeModule( Local< Object > exports )
 		DestroyGlobalEnvironment( );
 
 #ifdef _WIN_DBG
-		_CrtDumpMemoryLeaks( );
+		_CrtCheckMemory( );
+
+		if( _CrtDumpMemoryLeaks( ) == TRUE )
+		{
+			__debugbreak( );
+		}
 #endif
 	} );
 }

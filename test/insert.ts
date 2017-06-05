@@ -3,104 +3,50 @@ import * as assert from "assert";
 
 import * as mod from "./module";
 
+import * as Benchmark from "benchmark";
+import * as async from "async";
 
-mod.connection.forEach(( con ) =>
-{
-	describe( `Insert test - ${con.name}`, function ()
+
+
+let _con: odbc.Connection;
+
+export default {
+	name: "test",
+	profileIterations: 10,
+
+	setup: function ( )
 	{
-		//before(( done ) =>
-		//{
-		//	new odbc.Connection()
-		//		.connect( con.connectionString )
-		//		.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//		{
-		//			done( );
-		//		},
-		//		"drop table tblinsert1;"
-		//		);
-		//} );
+		_con = new odbc.Connection()
+			.connect( mod.connection[0].connectionString );
+	},
 
-		//it( "create table", (done) =>
-		//{
-		//	new odbc.Connection()
-		//		.connect( con.connectionString )
-		//		.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//		{
-		//			done( err );
-		//		},
-		//		"create table tblinsert1(test int, test2 int, test3 int );"
-		//		);
-		//} );
-
-		//it( "call stored proc (return value)", ( done ) =>
-		//{
-		//	new odbc.Connection()
-		//		.connect( con.connectionString )
-		//		.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
-		//		{
-
-		//			done( err );
-		//		},
-		//		""
-		//		);
-		//} );
-
-
-		//it( "select", ( done ) =>
-		//{
-		//	new odbc.Connection()
-		//		.connect( con.connectionString )
-		//		.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
-		//		{
-		//			for( var i of res )
-		//			{
-		//				//console.log( i );
-		//				console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
-		//			}
-
-		//		}, "SELECT * FROM TblTest;" );
-
-		//} );
-
-		it( "select bench", () =>
+	exec: function ( cb )
+	{
+		async.times( 10000, ( n, next ) =>
 		{
-			let _con: odbc.Connection;
-			assert.doesNotThrow(() =>
+			_con.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
 			{
-				_con = new odbc.Connection()
-					.connect( con.connectionString )
-
-			} );
-
-
-			assert.doesNotThrow(() =>
-			{
-				let t = () =>
+				if( err != null )
 				{
-					_con.executeQuery( odbc.eFetchMode.eArray, ( res, err ) =>
-					{
-						for( var i of res )
-						{
-							//console.log( i );
-							//console.log( `${i.userName} ${i.password} ${i.nn} ${i.asdf} ${i.asdaddf}` );
-						}
-
-					}, "SELECT * FROM TblTest;" );
-
-				};
-
-				for( var i = 0; i < 40000; i++ )
-				{
-					t();
+					console.log( err );
+					throw "LuL";
 				}
 
+				for( let i of res )
+				{
+					console.log( i );
+				}
 
+				console.log( n  );
 
-			} );
+				
+				next();
+			}, "SELECT * FROM TblTest;" );
+		}, cb );
+	},
 
+	teardown: ( cb ) =>
+	{
 
-		} );
-
-	} );
-} );
-
+	},
+};

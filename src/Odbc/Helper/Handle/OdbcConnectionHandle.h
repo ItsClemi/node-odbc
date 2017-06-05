@@ -166,29 +166,33 @@ public:
 	{
 		SQLSMALLINT nStringLength = 0;
 
-		if( GetInfo( fInfoType, nullptr, 0, &nStringLength ) )
+		std::wstring szInfo;
+		if( !GetInfo( fInfoType, nullptr, 0, &nStringLength ) )
 		{
-			const auto nUnicodeLength = nStringLength / sizeof( wchar_t );
-
-			std::vector< wchar_t > vecInfo;
-			{
-				vecInfo.resize( nUnicodeLength + 2 );
-			}
-
-			SQLSMALLINT nNewStringLength = 0;
-			if( GetInfo(
-				fInfoType,
-				&vecInfo[ 0 ],
-				static_cast< SQLSMALLINT >( ( nUnicodeLength + 1 ) * sizeof( wchar_t ) ),
-				&nNewStringLength
-			) )
-			{
-				assert( nNewStringLength == ( nUnicodeLength * sizeof( wchar_t ) ) );
-				return std::wstring( vecInfo.data( ), nUnicodeLength );
-			}
+			return L"";
 		}
 
-		return L"";
+		if( nStringLength <= 0 )
+		{
+			return L"";
+		}
+
+		szInfo.resize( nStringLength / sizeof( wchar_t ) );
+
+		SQLSMALLINT nNewStringLength = 0;
+		if( !GetInfo(
+			fInfoType,
+			&szInfo.at( 0 ),
+
+			//> add + sizeof( wchar_t ) for nullterminator (not included in size)
+			static_cast< SQLSMALLINT >( (szInfo.length( ) + sizeof( wchar_t ) ) * sizeof( wchar_t ) ),
+			&nNewStringLength
+		) )
+		{
+			return L"";
+		}
+
+		return szInfo;
 	}
 
 	inline bool GetInfoNumeric16( SQLUSMALLINT fInfoType, SQLUSMALLINT* pResult ) const

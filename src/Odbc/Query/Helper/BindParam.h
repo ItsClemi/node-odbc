@@ -49,11 +49,12 @@ public:
 
 		if( m_nParameterType == SQL_WVARCHAR )
 		{
-			scalable_free( m_data.stringDesc.m_stringData.pWString );
+			delete[ ]m_data.stringDesc.m_stringData.pWString;
+			//scalable_free( m_data.stringDesc.m_stringData.pWString );
 		}
 		else if( m_nParameterType == SQL_VARBINARY )
 		{
-			scalable_free( m_data.bufferDesc.m_pBuffer );
+			delete[ ]m_data.bufferDesc.m_pBuffer; //scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
 
@@ -114,7 +115,8 @@ public:
 
 		m_data.stringDesc.m_eType = EStringType::eUnicode;
 		m_data.stringDesc.m_nLength = nLength;
-		m_data.stringDesc.m_stringData.pWString = static_cast< wchar_t* >( scalable_malloc( ( nLength + 1 ) * sizeof( wchar_t ) ) );
+		m_data.stringDesc.m_stringData.pWString = new wchar_t[ ( nLength + 1 ) ];
+		//m_data.stringDesc.m_stringData.pWString = static_cast< wchar_t* >( scalable_malloc( ( nLength + 1 ) * sizeof( wchar_t ) ) );
 		{
 			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.m_stringData.pWString ) );
 		}
@@ -136,7 +138,8 @@ public:
 		const char* pBuffer = node::Buffer::Data( value );
 
 		m_data.bufferDesc.m_nLength = nLength;
-		m_data.bufferDesc.m_pBuffer = static_cast< uint8_t* >( scalable_malloc( nLength ) );
+		//m_data.bufferDesc.m_pBuffer = static_cast< uint8_t* >( scalable_malloc( nLength ) );
+		m_data.bufferDesc.m_pBuffer = new uint8_t[ nLength ];
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 

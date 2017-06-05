@@ -30,7 +30,7 @@ COdbcEnvironment::~COdbcEnvironment( )
 
 bool COdbcEnvironment::InitializeEnvironment( )
 {
-	SetEnvironmentAttribute( SQL_ATTR_CONNECTION_POOLING, ( SQLPOINTER )SQL_CP_DRIVER_AWARE );
+	//SetEnvironmentAttribute( SQL_ATTR_CONNECTION_POOLING, ( SQLPOINTER )SQL_CP_DRIVER_AWARE );
 	
 	if( !AllocHandle( ) )
 	{
@@ -45,7 +45,7 @@ bool COdbcEnvironment::InitializeEnvironment( )
 		}
 	}
 
-	SetEnvironmentAttribute( SQL_ATTR_CP_MATCH, ( SQLPOINTER )SQL_CP_RELAXED_MATCH );
+	//SetEnvironmentAttribute( SQL_ATTR_CP_MATCH, ( SQLPOINTER )SQL_CP_RELAXED_MATCH );
 
 	return true;
 }

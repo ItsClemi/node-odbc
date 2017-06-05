@@ -46,17 +46,21 @@ struct SColumnData
 		{
 			if( m_data.stringDesc.IsAnsiString( ) )
 			{
-				scalable_free( m_data.stringDesc.m_stringData.pString );
+				delete[ ] m_data.stringDesc.m_stringData.pString;
+				//scalable_free( m_data.stringDesc.m_stringData.pString );
 			}
 			else
 			{
-				scalable_free( m_data.stringDesc.m_stringData.pWString );
+				delete[ ] m_data.stringDesc.m_stringData.pWString;
+
+				//scalable_free( m_data.stringDesc.m_stringData.pWString );
 			}
 
 		}
 		else if( m_eType == EJSType::eBuffer )
 		{
-			scalable_free( m_data.bufferDesc.m_pBuffer );
+			__debugbreak( );
+			//scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
 

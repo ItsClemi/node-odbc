@@ -159,7 +159,7 @@ NAN_METHOD( EConnection::PrepareQuery )
 
 	pQuery->InitializeQuery( FromV8String( info[ 1 ].As< String >( ) ) );
 	{
-		if( !pQuery->BindParameters( isolate, info, 1 ) )
+		if( !pQuery->GetQueryParam()->BindParameters( isolate, info, 1 ) )
 		{
 			return;
 		}
@@ -190,7 +190,7 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	{
 		V8_TYPE_VALIDATE( info[ 2 ]->IsString( ), "query: is not a string" );
 
-		const auto pQuery = pThis->GetPool( )->CreateQuery( );
+ 		const auto pQuery = pThis->GetPool( )->CreateQuery( );
 
 		if( !pQuery->SetParameters(
 			isolate,
@@ -204,7 +204,7 @@ NAN_METHOD( EConnection::ExecuteQuery )
 			return;
 		}
 
-		pThis->GetPool( )->ExecuteQuery( pQuery );
+ 		pThis->GetPool( )->ExecuteQuery( pQuery );
 	}
 	else
 	{
@@ -232,6 +232,9 @@ NAN_METHOD( EConnection::ExecuteQuery )
 			jsPromise
 		);
 	}
+
+
+	isolate->AdjustAmountOfExternalAllocatedMemory( sizeof( CQuery ) );
 }
 
 NAN_METHOD( EConnection::GetInfo )

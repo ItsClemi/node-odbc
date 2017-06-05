@@ -26,61 +26,35 @@
 using namespace v8;
 
 
+CQuery::CQuery( const std::shared_ptr< CConnectionPool > pPool )
+	: m_pPool( pPool ), m_resultSet( this )
+{
 #ifdef _DEBUG
-extern std::atomic< size_t >	g_nConnectionPoolCount;
+	gEnv->pQueryTracker->AddQuery( this );
 #endif
 
-
-CQuery::CQuery( const std::shared_ptr< CConnectionPool > pPool )
-	: CResultSet( this ), m_pPool( pPool )
-{
 	SetState( EQueryState::eExecuteStatement );
 }
 
 CQuery::~CQuery( )
 {
 	assert( m_pConnection == nullptr );
+	assert( v8::Isolate::GetCurrent( ) != nullptr );
 
-	CResultSet::Dispose( );
+#ifdef _DEBUG
+	gEnv->pQueryTracker->RemoveQuery( this );
+#endif
 
-	COdbcStatementHandle::FreeHandle( );
-}
-
-EQueryReturn CQuery::Process( )
-{
-	if( GetState( ) == EQueryState::eExecuteStatement )
-	{
-		if( !ExecuteStatement( ) )
-		{
-			SetError( );
-			return EQueryReturn::eNeedUv;
-		}
-	}
-
-
-	if( GetState( ) == EQueryState::eNeedData )
-	{
-		return EQueryReturn::eNeedUv;
-	}
-
-	if( GetState( ) == EQueryState::eFetchResult )
-	{
-		if( !CResultSet::FetchResults( ) )
-		{
-			SetError( );
-			return EQueryReturn::eNeedUv;
-		}
-
-		SetState( EQueryState::eEnd );
-	}
-
-	return EQueryReturn::eNeedUv;
+	Isolate::GetCurrent( )->AdjustAmountOfExternalAllocatedMemory( -static_cast< int64_t >( sizeof( CQuery ) ) );
 }
 
 void CQuery::ProcessBackground( )
 {
+	ProcessQuery( );
+
 	if( GetState( ) == EQueryState::eEnd )
 	{
+		GetStatement()->FreeHandle( );
 		m_pPool->PushConnection( m_pConnection );
 #ifdef _DEBUG
 		m_pConnection = nullptr;
@@ -91,26 +65,56 @@ void CQuery::ProcessBackground( )
 
 EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 {
-	if( HasError( ) )
+	if( GetState( ) == EQueryState::eEnd )
 	{
-		//-> we can delete UvWorker because we still have a ref to CQuery from v8
-		Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
+		if( HasError( ) )
+		{
+			//-> we can delete UvWorker because we still have a ref to CQuery from v8
+			GetResultSet( )->Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
+		}
+		else
+		{
+			GetResultSet( )->Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
+		}
+
+		//return EDiscard >> (target EConnection/EPrepQuery still has instance ref)
+		return EForegroundResult::eDiscard;
 	}
-	else
+
+	return EForegroundResult::eReschedule;
+}
+
+void CQuery::ProcessQuery( )
+{
+	if( GetState( ) == EQueryState::eExecuteStatement )
 	{
-		Resolve( isolate, ConstructResult( isolate ) );
+		if( !ExecuteStatement( ) )
+		{
+			SetError( );
+			return;
+		}
 	}
 
-// 	CResultSet::Dispose( );
-// 	COdbcStatementHandle::FreeHandle( );
+	if( GetState( ) == EQueryState::eNeedData )
+	{
+		return;
+	}
 
+	if( GetState( ) == EQueryState::eFetchResult )
+	{
+		if( !GetResultSet( )->FetchResults( ) )
+		{
+			SetError( );
+			return;
+		}
 
-	return EForegroundResult::eDiscard;
+		SetState( EQueryState::eEnd );
+	}
 }
 
 bool CQuery::ExecuteStatement( )
 {
-	if( !AllocHandle( m_pConnection->GetSqlHandle( ) ) )
+	if( !GetStatement( )->AllocHandle( m_pConnection->GetSqlHandle( ) ) )
 	{
 		return false;
 	}
@@ -122,13 +126,13 @@ bool CQuery::ExecuteStatement( )
 
 	if( m_nQueryTimeout > 0 )
 	{
-		if( !SetStmtAttr( SQL_ATTR_QUERY_TIMEOUT, ( SQLPOINTER )m_nQueryTimeout, SQL_IS_UINTEGER ) )
+		if( !GetStatement( )->SetStmtAttr( SQL_ATTR_QUERY_TIMEOUT, ( SQLPOINTER )m_nQueryTimeout, SQL_IS_UINTEGER ) )
 		{
 			return false;
 		}
 	}
 
-	SQLRETURN sqlRet = ExecDirect( m_szQuery );
+	SQLRETURN sqlRet = GetStatement( )->ExecDirect( m_szQuery );
 
 	if( sqlRet == SQL_NEED_DATA )
 	{
@@ -137,7 +141,7 @@ bool CQuery::ExecuteStatement( )
 	}
 	else if( sqlRet == SQL_NO_DATA )
 	{
-		CResultSet::m_bExecNoData = true;
+		GetResultSet( )->m_bExecNoData = true;
 	}
 	else if( !SQL_SUCCEEDED( sqlRet ) )
 	{
@@ -154,15 +158,15 @@ bool CQuery::BindOdbcParameters( )
 	SQLUSMALLINT nParam = 1;
 	if( m_bReturnValue )
 	{
-		if( !BindParameter( nParam++, SQL_PARAM_OUTPUT, SQL_C_SSHORT, SQL_INTEGER, 0, 0, &m_nReturnValue, 0, &m_nCbReturnValue ) )
+		if( !GetStatement( )->BindParameter( nParam++, SQL_PARAM_OUTPUT, SQL_C_SSHORT, SQL_INTEGER, 0, 0, &m_nReturnValue, 0, &m_nCbReturnValue ) )
 		{
 			return false;
 		}
 	}
 
-	for( const auto& i : m_vecParameter )
+	for( const auto& i : GetQueryParam( )->m_vecParameter )
 	{
-		if( !BindParameter(
+		if( !GetStatement( )->BindParameter(
 			nParam++,
 			SQL_PARAM_INPUT,
 			i.m_nValueType,
@@ -183,6 +187,7 @@ bool CQuery::BindOdbcParameters( )
 
 void CQuery::SetError( )
 {
-	m_pError = GetOdbcError( );
-	SetState( EQueryState::eEnd );	
+	m_pError = GetStatement( )->GetOdbcError( );
+	SetState( EQueryState::eEnd );
 }
+

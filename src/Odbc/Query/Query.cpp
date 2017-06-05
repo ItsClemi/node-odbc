@@ -41,6 +41,8 @@ CQuery::~CQuery( )
 	assert( m_pConnection == nullptr );
 	assert( v8::Isolate::GetCurrent( ) != nullptr );
 
+	m_pPool->FinalizeQuery( );
+
 #ifdef _DEBUG
 	gEnv->pQueryTracker->RemoveQuery( this );
 #endif

@@ -65,19 +65,19 @@ private:
 
 	bool TestConnectionFeatures( std::shared_ptr< COdbcConnectionHandle > pConnection );
 
+
+
 public:
 	std::shared_ptr< CQuery > CreateQuery( );
 
 	void PushConnection( std::shared_ptr< COdbcConnectionHandle > pConnection );
 
-	void ResolveDisconnect( );
-
 	void ExecuteQuery( std::shared_ptr< CQuery > pQuery );
 
-public:
-	//virtual void ProcessBackground( ) override;
-	
-	//virtual EForegroundResult ProcessForeground( v8::Isolate* isolate ) override;
+	void FinalizeQuery();
+
+private:
+	void ResolveDisconnect( );
 
 
 private:
@@ -163,7 +163,7 @@ public:
 		SetState( EPoolState::eReqShutdown );
 		m_fnDisconnect.Reset( isolate, fnDisconnect );
 
-		if( m_nPending.load( std::memory_order_relaxed ) == 0 )
+		if( m_nPendingQueries == 0 )
 		{
 			ResolveDisconnect( );
 		}
@@ -230,8 +230,9 @@ private:
 	std::vector< uint32_t >		m_vecResilienceErrorCodes;
 
 
-	std::atomic< size_t >	m_nPending;
 	std::atomic< bool >		m_bDead;
+
+	size_t					m_nPendingQueries = 0;
 
 		
 	std::atomic< EPoolState >					m_eState;

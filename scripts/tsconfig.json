@@ -1,0 +1,25 @@
+{
+  "compileOnSave": true,
+
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "module": "commonjs",
+
+    "noEmitOnError": true,
+    "removeComments": true,
+    "sourceMap": false,
+
+    "target": "es2015",
+    "strict": true
+  },
+
+  "exclude": [
+    "node_modules"
+  ],
+
+  "include": [
+    "../typings/*.ts",
+    "**/*.ts"
+  ]
+  
+}

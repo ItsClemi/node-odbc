@@ -1,3 +1,4 @@
+"use strict";
 // File: node-odbc.ts
 // 
 // node-odbc (odbc interface for NodeJS)
@@ -15,7 +16,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream = require("stream");
 const bluebird = require("bluebird");
@@ -41,16 +41,6 @@ var eFetchMode;
     eFetchMode[eFetchMode["eArray"] = 1] = "eArray";
 })(eFetchMode = exports.eFetchMode || (exports.eFetchMode = {}));
 ;
-class ConnectionPool {
-    constructor(props) {
-        if (props.poolSize != undefined) {
-        }
-    }
-    connect(connectionString, connectionTimeout) {
-        let timeout = connectionTimeout || 60000;
-    }
-}
-exports.ConnectionPool = ConnectionPool;
 //inject node-odbc types in this module scope
 exports = Object.assign(exports, require("../bin/node-odbc.node"));
 class SqlStreamReader extends stream.Readable {

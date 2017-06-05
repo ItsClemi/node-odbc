@@ -88,10 +88,6 @@ export interface ISqlQuery {
     toArray(): Promise<SqlResultArray>;
     toArray<T>(): Promise<SqlPartialResultArray<T>>;
 }
-export declare class ConnectionPool {
-    constructor(props?: ConnectionProps);
-    connect(connectionString: string, connectionTimeout?: number): void;
-}
 export interface ISqlQueryEx extends ISqlQuery {
     setPromiseInfo(resolve: any, reject: any): void;
 }

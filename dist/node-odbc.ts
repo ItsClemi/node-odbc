@@ -186,28 +186,6 @@ export interface ISqlQuery
 	toArray<T>(): Promise<SqlPartialResultArray<T>>;
 }
 
-
-export class ConnectionPool
-{
-	constructor( props?: ConnectionProps )
-	{
-
-		if( props.poolSize != undefined )
-		{
-
-		}
-
-	}
-
-	connect( connectionString: string, connectionTimeout?: number)
-	{
-		let timeout = connectionTimeout || 60000;
-
-	}
-
-
-}
-
 /*
 	c++/js bridge helper
 */
@@ -303,13 +281,3 @@ exports.setPromiseInitializer(( query: ISqlQueryEx ) =>
 		query.setPromiseInfo( resolve, reject );
 	} );
 } );
-
-
-
-declare class IConnectionPool
-{
-	enableMssqlMars(): void;
-
-
-
-}

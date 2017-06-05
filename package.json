@@ -14,13 +14,9 @@
   ],
   "homepage": "http://itsclemi.github.io/node-odbc/",
   "bugs": "https://github.com/ItsClemi/node-odbc/issues",
-  "licenses": [
-    {
-      "type": "Apache 2.0",
-      "url": "https://raw.githubusercontent.com/ItsClemi/node-odbc/master/LICENSE"
-    }
-  ],
-  "main": "./lib/node-odbc.js",
+  "license": "Apache-2.0",
+
+  "main": "./dist/node-odbc.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/ItsClemi/node-odbc.git"
@@ -50,7 +46,7 @@
     "ia32"
   ],
   "scripts": {
-    "install": "node lib/install.js",
+    "install": "node scripts/install.js",
     "test": "node test/test.js",
     "buildtsc": "tsc -p lib & tsc -p test"
   }

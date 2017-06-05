@@ -32,12 +32,20 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="lib\" />
+    <Folder Include="dist\" />
+    <Folder Include="scripts\" />
+    <Folder Include="scripts\helper\" />
     <Folder Include="test\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="lib\node-odbc.d.ts" />
-    <TypeScriptCompile Include="lib\node-odbc.ts">
+    <TypeScriptCompile Include="dist\node-odbc.d.ts" />
+    <TypeScriptCompile Include="dist\node-odbc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="scripts\helper\proxy.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="scripts\install.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\api.ts" />
@@ -61,10 +69,13 @@
     <TypeScriptCompile Include="test\test.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="lib\node-odbc.js" />
+    <Compile Include="dist\node-odbc.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\tsconfig.json">
+    <Content Include="dist\tsconfig.json">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="scripts\tsconfig.json">
       <SubType>Code</SubType>
     </Content>
     <Content Include="test\dbconf.json">

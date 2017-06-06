@@ -62,7 +62,7 @@ public:
 	}
 
 private:
-	bool AddParameter( v8::Isolate* isolate, const v8::Local< v8::Value > value, CBindParam* pParam );
+	bool AddParameter( v8::Isolate* isolate, v8::Local< v8::Value > value, CBindParam* pParam );
 
 private:
 	bool IsComplexType( v8::Isolate* isolate, v8::Local< v8::Value > value, uint32_t id )

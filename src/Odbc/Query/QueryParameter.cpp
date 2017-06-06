@@ -43,7 +43,7 @@ CQueryParameter::~CQueryParameter( )
 	m_vecParameter.clear( );
 }
 
-bool CQueryParameter::AddParameter( Isolate* isolate, const Local< Value > value, CBindParam* pParam )
+bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );

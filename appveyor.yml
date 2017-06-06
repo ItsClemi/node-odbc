@@ -63,8 +63,16 @@
                        ( ( $_, "node-odbc.pdb" ) -join '_' ) )
                ) } } | % { Push-AppveyorArtifact $_[0] -FileName $_[1] }
 
+  deploy:
+    - provider: GitHub
+      description: $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
+      artifact:
+      auth_token:
+        secure: 3nVOtEyNM2nI0/3mVltASP4rtBfLXWLYeqfjRfnIITF+AyT6gKf99JsaPiNERx4f
+      on:
+        appveyor_repo_tag: true       # deploy on tag push only
 
-  on_success:
-    - cmd: mkdir vendor
-    - cmd: cp 
-    - npm run test
+
+#  on_success:
+#    - cmd: mkdir vendor
+#    - npm run test

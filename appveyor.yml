@@ -34,5 +34,10 @@
     - npm install
     - cmd: SET PATH=%cd%\node_modules\.bin\;%PATH%
     - cmd: typings install
+  
+  build_script:
     - cmd: node-gyp configure
     - cmd: node-gyp build
+
+#  on_success:
+#    - npm run test

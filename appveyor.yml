@@ -20,6 +20,8 @@
   version: "{build}"
   build: off
 
+  skip_non_tags: true
+
   cache:
     - '%userprofile%\.node-gyp'
     - '%AppData%\npm-cache'
@@ -72,7 +74,7 @@
       auth_token:
         secure: 3nVOtEyNM2nI0/3mVltASP4rtBfLXWLYeqfjRfnIITF+AyT6gKf99JsaPiNERx4f
       on:
-        appveyor_repo_tag: false       # deploy on tag push only
+        appveyor_repo_tag: true       # deploy on tag push only
 
 
   on_success:

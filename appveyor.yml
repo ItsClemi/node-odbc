@@ -29,7 +29,7 @@
 
   cache:
     - '%userprofile%\.node-gyp'
-    - '%AppData%\npm-cache'
+  # - '%AppData%\npm-cache'
 
   environment:
     SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
@@ -60,6 +60,10 @@
     - cmd: tsc -p test
     - cmd: tsc -p scripts
     - npm run build
+
+
+  test_script:
+    - cmd: echo helloworld
 
   before_deploy:
     # Save artifacts with full qualified names of binding.node and binding.pdb

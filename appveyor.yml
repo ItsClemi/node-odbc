@@ -6,7 +6,6 @@
   os: Visual Studio 2017
 
   configuration: 
-    - debug
     - release
 
   services:
@@ -28,6 +27,7 @@
   environment:
     SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
     NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: true
+
     matrix:
       - nodejs_version: 6
         GYP_MSVS_VERSION: 2017
@@ -49,5 +49,22 @@
     - cmd: node-gyp configure
     - cmd: node-gyp build
 
+  before_deploy:
+    # Save artifacts with full qualified names of binding.node and binding.pdb
+    # (which we use in node-sass-binaries repo)
+    - ps: >-
+        Get-ChildItem .\vendor\**\*.node | % {
+           ( $BindingName = $_.FullName ).Split('\\') |
+             Select-Object -Last 2 | Select-Object -First 1 } |
+               .{ process { (
+                  @( $BindingName,
+                       ( ( $_, "node-odbc.node" ) -join '_' ) ),
+                  @( ".\build\Release\node-odbc.pdb",
+                       ( ( $_, "node-odbc.pdb" ) -join '_' ) )
+               ) } } | % { Push-AppveyorArtifact $_[0] -FileName $_[1] }
+
+
   on_success:
+    - cmd: mkdir vendor
+    - cmd: cp 
     - npm run test

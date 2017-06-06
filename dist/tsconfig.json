@@ -9,10 +9,10 @@
     "removeComments": false,
     "sourceMap": false,
     "preserveConstEnums": true,
+    "declaration": true,
 
     "target": "es2015",
-    "strict": true,
-    "declaration": true
+    "strict": true
   },
 
   "exclude": [

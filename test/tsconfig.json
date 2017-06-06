@@ -20,19 +20,11 @@
   ],
 
   "include": [
-    "../typings/*.ts"
+    "../typings/*.ts",
+    "**/*.ts"
   ],
 
-
-
   "files": [
-    "api.ts",
-    "module.ts",
-    "connection.ts",
-    "test.ts",
-    "crash.ts",
-    "insert.ts",
-    "pooltest.ts",
-    "bench.ts"
+    "test.ts"
   ]
 }

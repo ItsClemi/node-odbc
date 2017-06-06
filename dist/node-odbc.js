@@ -18,7 +18,9 @@
 // limitations under the License.
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream = require("stream");
+const fs = require("fs");
 const bluebird = require("bluebird");
+const path = require("path");
 //> type helpers
 const ID_INPUT_STREAM = 0;
 const ID_NUMERIC_VALUE = 1;
@@ -41,8 +43,6 @@ var eFetchMode;
     eFetchMode[eFetchMode["eArray"] = 1] = "eArray";
 })(eFetchMode = exports.eFetchMode || (exports.eFetchMode = {}));
 ;
-//inject node-odbc types in this module scope
-exports = Object.assign(exports, require("../bin/node-odbc.node"));
 class SqlStreamReader extends stream.Readable {
     constructor(_query, _column) {
         super();
@@ -66,6 +66,25 @@ class SqlStreamWriter extends stream.Writable {
         });
     }
 }
+function getBinaryName() {
+    let platform = process.platform;
+    let binaryName = [
+        platform, '-',
+        process.arch, '-',
+        process.versions.modules
+    ].join('');
+    return [binaryName, 'node-odbc.node'].join('_');
+}
+function getBinaryPath() {
+    const defaultBinaryPath = path.join(__dirname, '..', 'node-odbc');
+    let binaryPath = path.join(defaultBinaryPath, getBinaryName().replace(/_(?=binding\.node)/, '/'));
+    if (!fs.existsSync(binaryPath)) {
+        throw new Error("node-odbc binary not found!");
+    }
+    return require(binaryPath);
+}
+//> ../vendor/node-odbc.node
+exports = Object.assign(exports, getBinaryPath());
 exports.setWriteStreamInitializer((targetStream, query) => {
     targetStream.pipe(new SqlStreamWriter(query));
 });

@@ -17,6 +17,8 @@
   "license": "Apache-2.0",
 
   "main": "dist/node-odbc.js",
+  "typings": "dist/node-odbc.d.ts",
+
   "repository": {
     "type": "git",
     "url": "git://github.com/ItsClemi/node-odbc.git"
@@ -52,16 +54,17 @@
     "install": "node scripts/install.js",
     "test": "node test/test.js",
     "prepare": "typings install",
-    "buildtsc": "tsc -p lib & tsc -p test"
+    "buildtsc": "tsc -p lib & tsc -p test",
+    "ts:types": "tsc -",
+    "test:types": ""
   },
 
 
   "files": [
     "src",
-    "dist",
-    "scripts",
-    "test",
-    "vendor",
+    "dist/**/.js",
+    "scripts/**/.js",
+    "types/*.d.ts",
     "binding.gyp"
   ]
 }

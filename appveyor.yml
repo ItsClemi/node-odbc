@@ -32,6 +32,7 @@
     - node --version
     - npm --version
     - npm install
-    - cmd: typings Install
+    - cmd: SET PATH=%cd%\node_modules\.bin\;%PATH%
+    - cmd: typings install
     - cmd: node-gyp configure
     - cmd: node-gyp build

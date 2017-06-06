@@ -7,10 +7,10 @@
 
   configuration: release
 
-  services:
-    - mssql2016
-    - mysql
-    - postgresql
+#  services:
+#    - mssql2016
+#    - mysql
+#    - postgresql
 
   platform:
     - x64
@@ -61,9 +61,10 @@
     - cmd: tsc -p scripts
     - npm run build
 
+  test: off
 
-  test_script:
-    - cmd: echo helloworld
+#  test_script:
+#    - cmd: echo helloworld
 
   before_deploy:
     # Save artifacts with full qualified names of binding.node and binding.pdb
@@ -74,7 +75,8 @@
              Select-Object -Last 2 | Select-Object -First 1 } |
                .{ process { (
                   @( $BindingName,
-                       ( ( $_, "node-odbc.node" ) -join '_' ) )
+                       ( ( $_, "node-odbc.node" ) -join '_' ) ),
+                  @( ".\build\Release\node-odbc.pdb", ( ( $_, "node-odbc.pdb" ) -join '_' ) )
                ) } } | % { Push-AppveyorArtifact $_[0] -FileName $_[1] }
 
   deploy:

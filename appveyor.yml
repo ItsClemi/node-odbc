@@ -13,6 +13,11 @@
 
   version: "{build}"
 
+
+  cache:
+    - '%userprofile%\.node-gyp'
+    - '%AppData%\npm-cache'
+
   environment:
     SKIP_SASS_BINARY_DOWNLOAD_FOR_CI: true
     matrix:
@@ -24,7 +29,8 @@
 
   install:
     - ps: Install-Product node $env:nodejs_version $env:platform
+    - ps: Get-Location
     - node --version
     - npm --version
     - npm install
-    - typings install
+    - npm run prepare

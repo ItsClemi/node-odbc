@@ -17,9 +17,15 @@
     - x86
 
   version: "{build}"
+
   build: off
 
-  skip_non_tags: true
+  clone_folder: c:\projects\node_modules\node-odbc
+
+  init:
+    - cmd: >-
+        subst s: c:\projects
+    - ps: set-location -path s:\node_modules\node-odbc
 
   cache:
     - '%userprofile%\.node-gyp'
@@ -28,7 +34,6 @@
   environment:
     SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
     NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: true
-    APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED: test?
 
     matrix:
       - nodejs_version: 6
@@ -78,9 +83,3 @@
         secure: 3nVOtEyNM2nI0/3mVltASP4rtBfLXWLYeqfjRfnIITF+AyT6gKf99JsaPiNERx4f
       on:
         appveyor_repo_tag: true       # deploy on tag push only
-
-
-  on_success:
-    - cmd: echo hello!
-#    - cmd: mkdir vendor
-#    - npm run test

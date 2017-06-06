@@ -57,6 +57,11 @@ NAN_MODULE_INIT( EConnection::InitializeModule )
 
 NAN_METHOD( EConnection::New )
 {
+	auto isolate = info.GetIsolate( );
+	HandleScope scope( isolate );
+	
+	const auto context = isolate->GetCurrentContext( );
+
 	if( info.IsConstructCall( ) )
 	{
 		V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsObject( ), "^advancedProps: is not undefined or an object" );
@@ -83,7 +88,7 @@ NAN_METHOD( EConnection::New )
 		Local< Value > argv[ argc ] = { info[ 0 ] };
 
 		const auto cons = Nan::New( constructor );
-		info.GetReturnValue( ).Set( cons->NewInstance( argc, argv ) );
+		info.GetReturnValue( ).Set( cons->NewInstance( context, argc, argv ).ToLocalChecked( ) );
 	}
 }
 

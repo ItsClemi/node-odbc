@@ -34,6 +34,5 @@
     - npm --version
     - npm install
     - npm run prepare
-    - npm run buildtsc
     - ps: node-gyp configure
     - ps: node-gyp build

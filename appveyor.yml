@@ -29,7 +29,7 @@
 
   cache:
     - '%userprofile%\.node-gyp'
-  # - '%AppData%\npm-cache'
+    - '%AppData%\npm-cache'
 
   environment:
     SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
@@ -75,8 +75,7 @@
                .{ process { (
                   @( $BindingName,
                        ( ( $_, "node-odbc.node" ) -join '_' ) ),
-                  @( ".\build\Release\node-odbc.pdb",
-                       ( ( $_, "node-odbc.pdb" ) -join '_' ) )
+#                  @( ".\build\Release\node-odbc.pdb", ( ( $_, "node-odbc.pdb" ) -join '_' ) )
                ) } } | % { Push-AppveyorArtifact $_[0] -FileName $_[1] }
 
   deploy:

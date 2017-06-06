@@ -15,10 +15,8 @@
   "homepage": "http://itsclemi.github.io/node-odbc/",
   "bugs": "https://github.com/ItsClemi/node-odbc/issues",
   "license": "Apache-2.0",
-
   "main": "dist/node-odbc.js",
-  "typings": "dist/node-odbc.d.ts",
-
+  "typings": "lib/node-odbc.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/ItsClemi/node-odbc.git"
@@ -33,36 +31,35 @@
   "devDependencies": {
     "async": "^2.4.1",
     "benchmark": "^2.1.4",
+    "cross-spawn": "^5.1.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^3.3.0",
     "nan": "^2.6.2",
     "typescript": "^2.3.2",
     "typings": "^2.1.1"
   },
-
   "os": [
     "win32",
     "darwin",
     "linux"
   ],
-
   "cpu": [
     "x64",
     "ia32"
   ],
-
   "scripts": {
     "install": "node scripts/install.js",
     "test": "node test/test.js",
     "prepare": "typings install",
+    "build": "node scripts/build.js",
     "buildtsc": "tsc -p lib & tsc -p test",
     "ts:types": "tsc -",
     "test:types": ""
   },
-
-
   "files": [
     "src",
-    "dist/**/.js",
+    "lib/**/.js",
+    "lib/node-odbc.d.ts",
     "scripts/**/.js",
     "types/*.d.ts",
     "binding.gyp"

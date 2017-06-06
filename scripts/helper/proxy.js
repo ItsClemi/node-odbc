@@ -20,7 +20,7 @@ function getProxy() {
         headers: {
             'User-Agent': getUserAgent(),
         },
-        proxy: undefined,
+        proxy: '',
     };
     let proxyConfig = getProxyConfig();
     if (proxyConfig) {

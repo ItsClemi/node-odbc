@@ -48,8 +48,8 @@
   build_script:
     - cmd: tsc -p dist
     - cmd: tsc -p test
-    - cmd: node-gyp configure
-    - cmd: node-gyp build
+    - cmd: tsc -p scripts
+    - node run build
 
   before_deploy:
     # Save artifacts with full qualified names of binding.node and binding.pdb
@@ -77,6 +77,7 @@
         appveyor_repo_tag: true       # deploy on tag push only
 
 
-#  on_success:
+  on_success:
+    - cmd: echo hello!
 #    - cmd: mkdir vendor
 #    - npm run test

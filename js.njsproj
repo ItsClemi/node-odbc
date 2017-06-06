@@ -32,14 +32,20 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="dist\" />
+    <Folder Include="lib\" />
     <Folder Include="scripts\" />
     <Folder Include="scripts\helper\" />
     <Folder Include="test\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="dist\node-odbc.d.ts" />
-    <TypeScriptCompile Include="dist\node-odbc.ts">
+    <TypeScriptCompile Include="lib\node-odbc.d.ts" />
+    <TypeScriptCompile Include="lib\node-odbc.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="lib\binding.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="scripts\build.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="scripts\helper\proxy.ts">
@@ -69,7 +75,7 @@
     <TypeScriptCompile Include="test\test.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dist\tsconfig.json">
+    <Content Include="lib\tsconfig.json">
       <SubType>Code</SubType>
     </Content>
     <Content Include="scripts\tsconfig.json">
@@ -83,7 +89,7 @@
     <Content Include="typings.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="dist\node-odbc.js" />
+    <Compile Include="lib\node-odbc.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

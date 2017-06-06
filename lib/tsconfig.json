@@ -20,7 +20,8 @@
   ],
 
   "include": [
-    "../typings/*.ts"
+    "../typings/*.ts",
+    "util/*.ts"
   ],
 
   "files": [

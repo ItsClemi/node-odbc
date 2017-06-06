@@ -265,6 +265,7 @@ __pycache__/
 
 
 /build/*
+dist/util/*.d.ts
 
 
 /bin/*

@@ -20,7 +20,7 @@
 import * as stream from "stream";
 import * as fs from "fs";
 import * as bluebird from "bluebird";
-import * as path from "path"; 
+import * as binding from "./binding";
 
 export type SqlComplexType = {
 	readonly _typeId: number;
@@ -258,33 +258,9 @@ class SqlStreamWriter extends stream.Writable
 
 
 
-function getBinaryName() {
-    let platform = process.platform;
-
-    let binaryName = [
-      platform, '-',
-      process.arch, '-',
-      process.versions.modules
-    ].join('');
-  
-	return [binaryName, 'node-odbc.node'].join('_');
-}
-
-function getBinaryPath()
-{
-	const defaultBinaryPath = path.join(__dirname, '..', 'vendor');
-
-	let binaryPath = path.join(defaultBinaryPath, getBinaryName().replace(/_(?=node-odbc\.node)/, '/'));
-	if( !fs.existsSync(binaryPath) )
-	{
-		throw new Error( "node-odbc binary not found!" );
-	}
-
-	return require( binaryPath );
-}
 
 //> ../vendor/node-odbc.node
-exports = Object.assign( exports, getBinaryPath( ) );
+exports = Object.assign( exports, binding.requireBinding( ) );
 
 
 

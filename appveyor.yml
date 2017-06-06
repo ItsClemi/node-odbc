@@ -46,7 +46,7 @@
     - cmd: typings install
   
   build_script:
-    - cmd: tsc -p dist
+    - cmd: tsc -p lib
     - cmd: tsc -p test
     - cmd: tsc -p scripts
     - node run build

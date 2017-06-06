@@ -27,6 +27,7 @@
   environment:
     SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
     NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: true
+    APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED: test?
 
     matrix:
       - nodejs_version: 6

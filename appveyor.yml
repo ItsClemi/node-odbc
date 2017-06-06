@@ -9,11 +9,6 @@
     - debug
     - release
 
-  environment:
-    SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: 1
-    NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: 1
-
-
   services:
     - mssql2016
     - mysql
@@ -31,7 +26,8 @@
     - '%AppData%\npm-cache'
 
   environment:
-    SKIP_SASS_BINARY_DOWNLOAD_FOR_CI: true
+    SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: true
+    NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: true
     matrix:
       - nodejs_version: 6
         GYP_MSVS_VERSION: 2017

@@ -18,7 +18,7 @@
     - x86
 
   version: "{build}"
-
+  build: off
 
   cache:
     - '%userprofile%\.node-gyp'
@@ -67,14 +67,12 @@
 
   deploy:
     - provider: GitHub
-      release: product release of v$(appveyor_build_version)
       description: $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
       artifact:
       auth_token:
         secure: 3nVOtEyNM2nI0/3mVltASP4rtBfLXWLYeqfjRfnIITF+AyT6gKf99JsaPiNERx4f
       on:
-        branch: master
-        appveyor_repo_tag: true       # deploy on tag push only
+        appveyor_repo_tag: false       # deploy on tag push only
 
 
   on_success:

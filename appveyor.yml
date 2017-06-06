@@ -74,8 +74,7 @@
              Select-Object -Last 2 | Select-Object -First 1 } |
                .{ process { (
                   @( $BindingName,
-                       ( ( $_, "node-odbc.node" ) -join '_' ) ),
-#                  @( ".\build\Release\node-odbc.pdb", ( ( $_, "node-odbc.pdb" ) -join '_' ) )
+                       ( ( $_, "node-odbc.node" ) -join '_' ) )
                ) } } | % { Push-AppveyorArtifact $_[0] -FileName $_[1] }
 
   deploy:

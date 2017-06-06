@@ -1,0 +1,35 @@
+﻿{
+  "Connections": [
+    {
+      "name": "MSSQL Driver 13",
+      "connectionString": "DRIVER={ODBC Driver 13 for SQL Server};Server=SQL2016;Database=master;Uid=sa;Pwd=Password12!;",
+      "timeout": 5000
+    },
+    {
+      "name": "MSSQL NativeClient 11",
+      "connectionString": "Driver={SQL Server Native Client 11.0};Server=SQL2016;Database=master;Uid=sa;Pwd=Password12!;",
+      "timeout": 5000
+    },
+    {
+      "name": "MSSQL NativeClient 11 RDA",
+      "connectionString": "DRIVER={SQL Server Native Client RDA 11.0};Server=SQL2016;Database=master;Uid=sa;Pwd=Password12!;",
+      "timeout": 5000
+    },
+    {
+      "name": "MSSQL SQLServer",
+      "connectionString": "Driver={SQL Server};Server=SQL2016;Database=master;Uid=sa;Pwd=Password12!;",
+      "timeout": 15000
+    },
+    {
+      "name": "MySQL Unicode",
+      "connectionString": "Driver={MySQL ODBC 5.3 UNICODE Driver};Server=localhost;Database=master;User=root;Password=Password12!;Option=3;",
+      "timeout": 5000
+
+    },
+    {
+      "name": "MySQL Ansi",
+      "connectionString": "Driver={MySQL ODBC 5.3 ANSI Driver};Server=localhost;Database=master;User=root;Password=Password12!;Option=3;",
+      "timeout": 5000
+    }
+  ]
+}

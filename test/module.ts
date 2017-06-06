@@ -1,8 +1,17 @@
-﻿import * as odbc from "../lib/node-odbc";
+﻿import * as odbc from "../dist/node-odbc";
 import * as assert from "assert";
 import * as stream from "stream";
 
-const dbconf = require( "./dbconf.json" );
+var dbconf;
+if( process.env.NODE_ODBC_TEST_USE_APPVEYOR_CONFIG )
+{
+	dbconf = require( "./dbconf.appveyor.json" );
+}
+else
+{
+	dbconf = require( "./dbconf.json" );
+}
+
 
 export declare type ConnectionEntry = {
 	name: string;

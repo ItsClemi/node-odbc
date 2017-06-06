@@ -1,5 +1,5 @@
 ﻿import * as assert from "assert";
-import * as odbc from "../lib/node-odbc";
+import * as odbc from "../dist/node-odbc";
 import * as bluebird from "bluebird";
 import * as stream from "stream";
 

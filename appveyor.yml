@@ -5,7 +5,19 @@
 
   os: Visual Studio 2017
 
-  configuration: release
+  configuration: 
+    - debug
+    - release
+
+  environment:
+    SKIP_NODE_ODBC_BINARY_DOWNLOAD_ON_CI: 1
+    NODE_ODBC_TEST_USE_APPVEYOR_CONFIG: 1
+
+
+  services:
+    - mssql2016
+    - mysql
+    - postgresql
 
   platform:
     - x64
@@ -36,8 +48,10 @@
     - cmd: typings install
   
   build_script:
+    - cmd: tsc -p dist
+    - cmd: tsc -p test
     - cmd: node-gyp configure
     - cmd: node-gyp build
 
-#  on_success:
-#    - npm run test
+  on_success:
+    - npm run test

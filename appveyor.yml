@@ -32,7 +32,4 @@
     - ps: Get-Location
     - node --version
     - npm --version
-    - npm install
-    - npm run prepare
-    - ps: node-gyp configure
-    - ps: node-gyp build
+    - cmd: dir

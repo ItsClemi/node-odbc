@@ -49,7 +49,7 @@
     - cmd: tsc -p lib
     - cmd: tsc -p test
     - cmd: tsc -p scripts
-    - node run build
+    - npm run build
 
   before_deploy:
     # Save artifacts with full qualified names of binding.node and binding.pdb

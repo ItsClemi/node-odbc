@@ -29,7 +29,9 @@
 
   install:
     - ps: Install-Product node $env:nodejs_version $env:platform
-    - ps: Get-Location
     - node --version
     - npm --version
-    - cmd: dir
+    - npm install
+    - cmd: typings Install
+    - cmd: node-gyp configure
+    - cmd: node-gyp build

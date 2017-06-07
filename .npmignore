@@ -46,3 +46,5 @@ bld/
 
 typings.json
 appveyor.yml
+
+!/lib/node-odbc.d.ts

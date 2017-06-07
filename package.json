@@ -15,7 +15,7 @@
   "homepage": "http://itsclemi.github.io/node-odbc/",
   "bugs": "https://github.com/ItsClemi/node-odbc/issues",
   "license": "Apache-2.0",
-  "main": "dist/node-odbc.js",
+  "main": "lib/node-odbc.js",
   "typings": "lib/node-odbc.d.ts",
   "repository": {
     "type": "git",
@@ -50,18 +50,8 @@
   "scripts": {
     "install": "node scripts/install.js",
     "test": "node test/test.js",
-    "prepare": "typings install",
     "build": "node scripts/build.js",
-    "buildtsc": "tsc -p lib & tsc -p test & tsc -p scripts",
-    "ts:types": "tsc -",
-    "test:types": ""
-  },
-  "files": [
-    "src",
-    "lib/**/.js",
-    "lib/node-odbc.d.ts",
-    "scripts/**/.js",
-    "types/*.d.ts",
-    "binding.gyp"
-  ]
+    "buildtsc": "tsc -p lib & tsc -p test & tsc -p scripts"
+  }
+
 }

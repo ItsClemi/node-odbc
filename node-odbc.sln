@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "etc", "etc", "{B127BECC-392
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		.npmignore = .npmignore
 		appveyor.yml = appveyor.yml
 		binding.gyp = binding.gyp
 		LICENSE = LICENSE

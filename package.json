@@ -2,7 +2,7 @@
   "name": "node-odbc",
   "description": "ODBC interface for NodeJS",
   "author": "ItsClemi",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "keywords": [
     "sql",
     "database",

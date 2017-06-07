@@ -557,6 +557,10 @@ mod.connection.forEach((connection) => {
                 (cb) => {
                     con.executeQuery<{ a: odbc.SqlNumeric }>(
                         (res, err) => {
+                            if (res.a == undefined) {
+                                throw "failed";
+                            }
+
                             assert.ok(res.a.precision == num.precision, "invalid precision");
                             assert.ok(res.a.scale == num.scale, "invalid scale");
                             assert.ok(res.a.sign == num.sign, "invalid sign");
@@ -648,10 +652,10 @@ mod.connection.forEach((connection) => {
 
 
             interface INumberInsert {
-                a: number;
-                b: number;
-                c: number;
-                d: number;
+                a: number|null;
+                b: number | null;
+                c: number | null;
+                d: number | null;
             }
 
             let arr = new Array<INumberInsert>();

@@ -136,6 +136,11 @@ mod.connection.forEach((connection) => {
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: string }>();
 
                 for (var i = 0; i < 128; i++) {
+                    if (r.a == undefined) {
+                        throw "failed";
+                    }
+
+
                     let rc = r.a.charCodeAt(i);
                     let c;
                     if (i >= str.length) {
@@ -169,6 +174,10 @@ mod.connection.forEach((connection) => {
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: string }>();
 
                 for (var i = 0; i < 128; i++) {
+                    if (r.a == undefined) {
+                        throw "failed";
+                    }
+
                     let rc = r.a.charCodeAt(i);
                     let c;
                     if (i >= str.length) {
@@ -247,6 +256,10 @@ mod.connection.forEach((connection) => {
                 await con.prepareQuery(`INSERT INTO ${tblName}(a)VALUES(?)`, odbc.makeDateValue(date)).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: Date }>();
 
+                if (r.a == undefined) {
+                    throw "failed";
+                }
+
                 assert(r.a.getFullYear() == date.getFullYear());
                 assert(r.a.getMonth() == date.getMonth());
                 assert(r.a.getDate() == date.getDate());
@@ -271,6 +284,10 @@ mod.connection.forEach((connection) => {
                 await con.prepareQuery(`CREATE TABLE ${tblName}( a datetime )`).toSingle();
                 await con.prepareQuery(`INSERT INTO ${tblName}(a)VALUES(?)`, date).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: Date }>();
+
+                if (r.a == undefined) {
+                    throw "failed";
+                }
 
                 assert.ok(r.a.getFullYear() == date.getFullYear());
                 assert.ok(r.a.getMonth() == date.getMonth());
@@ -301,6 +318,9 @@ mod.connection.forEach((connection) => {
                 await con.prepareQuery(`INSERT INTO ${tblName}(a)VALUES(?)`, num).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: odbc.SqlNumeric }>();
 
+                if (r.a == undefined) {
+                    throw "failed";
+                }
                 assert.ok(r.a.precision == num.precision, "invalid precision");
                 assert.ok(r.a.scale == num.scale, "invalid scale");
                 assert.ok(r.a.sign == num.sign, "invalid sign");
@@ -359,7 +379,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val = new Array< number | null >();
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(null);
@@ -394,7 +414,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val = new Array< boolean >();
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(Math.random() >= 0.5 ? true : false);
@@ -429,7 +449,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val: number[] = [];
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push( mod.getRandomInt( 300, 500 ));
@@ -464,7 +484,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val: number[] = [];
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(mod.getRandomInt(4200000000, 2147483647));
@@ -499,7 +519,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val:number[] = [];
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(Math.random() * 250 );
@@ -534,7 +554,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val:string[] = [];
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(mod.getRandomString( 120));
@@ -569,7 +589,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let val = [];
+            let val:string[] = [];
 
             for (let i = 0; i < mod.getRandomInt(50, 15); i++) {
                 val.push(mod.getRandomString(120));

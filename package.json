@@ -2,7 +2,7 @@
   "name": "node-odbc",
   "description": "ODBC interface for NodeJS",
   "author": "ItsClemi",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "keywords": [
     "sql",
     "database",
@@ -53,5 +53,4 @@
     "build": "node scripts/build.js",
     "buildtsc": "tsc -p lib & tsc -p test & tsc -p scripts"
   }
-
 }

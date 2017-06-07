@@ -82,7 +82,7 @@ export type SqlTypes = null | string | boolean | number | Date | Buffer | SqlStr
 //> type helpers
 const ID_INPUT_STREAM: number = 0;
 const ID_NUMERIC_VALUE: number = 1;
-const ID_TIMESTAMP_VALUE: number = 2;
+const ID_DATE_VALUE: number = 2;
 
 
 export function makeInputStream( stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
@@ -95,9 +95,9 @@ export function makeNumericValue( precision: number, scale: number, sign: boolea
 	return { _typeId: ID_NUMERIC_VALUE, precision: precision, scale: scale, sign: sign, value: value };
 }
 
-export function makeTimestampValue( date: Date ): SqlTimestamp
+export function makeDateValue( date: Date ): SqlTimestamp
 {
-	return { _typeId: ID_TIMESTAMP_VALUE, date: date };
+	return { _typeId: ID_DATE_VALUE, date: date };
 }
 
 

@@ -99,7 +99,7 @@ bool CResultSet::FetchResults( )
 				break;
 			}
 
-			if( ( it + 1 ) >= m_vecData.size( ) )
+			if( ( it ) * m_nColumns >= m_vecData.size( ) )
 			{
 				m_vecData.resize( m_vecData.size( ) * 2 );
 			}
@@ -258,7 +258,7 @@ bool CResultSet::ReadColumn( size_t nColumn )
 				return false;
 			}
 
-			if( strLen_or_IndPtr == SQL_NO_DATA )
+			if( strLen_or_IndPtr == SQL_NULL_DATA )
 			{
 				pData->SetNull( );
 				delete[ ] pBuffer;
@@ -275,15 +275,15 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		case SQL_WCHAR:
 		case SQL_WVARCHAR:
 		{
-			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( wchar_t );
+			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( char );
 			auto pBuffer = new wchar_t[ nBufferSize ]; //static_cast< wchar_t* >( scalable_malloc( nBufferSize * sizeof( wchar_t ) ) );
 
-			if( !GetSqlData( nColumn, SQL_C_WCHAR, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
+			if( !GetSqlData( nColumn, SQL_C_WCHAR, pBuffer, nBufferSize * sizeof( wchar_t ), &strLen_or_IndPtr ) )
 			{
 				return false;
 			}
 
-			if( strLen_or_IndPtr == SQL_NO_DATA )
+			if( strLen_or_IndPtr == SQL_NULL_DATA )
 			{
 				pData->SetNull( );
 				delete[ ] pBuffer;
@@ -397,8 +397,9 @@ bool CResultSet::ReadColumn( size_t nColumn )
 
 			break;
 		}
-		case SQL_TIMESTAMP:
-		case SQL_TIME:
+		case SQL_TYPE_TIMESTAMP:
+		case SQL_TYPE_TIME:
+		case SQL_DATETIME:
 		{
 			SQL_TIMESTAMP_STRUCT timestamp;
 			if( !GetSqlData( nColumn, SQL_C_TIMESTAMP, &timestamp, sizeof( SQL_TIMESTAMP_STRUCT ), &strLen_or_IndPtr ) )
@@ -417,7 +418,7 @@ bool CResultSet::ReadColumn( size_t nColumn )
 
 			break;
 		}
-		case SQL_DATETIME:
+		case SQL_TYPE_DATE:
 		{
 			SQL_DATE_STRUCT date;
 			if( !GetSqlData( nColumn, SQL_C_DATE, &date, sizeof( SQL_DATE_STRUCT ), &strLen_or_IndPtr ) )
@@ -439,9 +440,10 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		case SQL_BINARY:
 		case SQL_VARBINARY:
 		{
-			const size_t nBufferSize = pMetaData->m_nColumnSize;
+			const size_t nBufferSize = pMetaData->m_nColumnSize + 1;
 
 			auto pBuffer = new uint8_t[ nBufferSize ];
+			memset( pBuffer, 0, nBufferSize );
 			//auto pBuffer = static_cast< uint8_t* >( scalable_malloc( nBufferSize ) );
 
 			if( !GetSqlData( nColumn, SQL_C_BINARY, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
@@ -467,6 +469,7 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		case SQL_WLONGVARCHAR:
 		case SQL_LONGVARCHAR:
 		{
+			return false;
 			break;
 		}
 

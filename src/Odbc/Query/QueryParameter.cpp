@@ -91,12 +91,12 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 	}
 	else if( value->IsDate( ) )
 	{
-		pParam->SetDate( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
+		pParam->SetTimestamp( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
 	}
-	else if( node::Buffer::HasInstance( value ) )
-	{
-		pParam->SetBuffer( value );
-	}
+	//else if( node::Buffer::HasInstance( value ) )
+	//{
+	//	pParam->SetBuffer( value );
+	//}
 	else if( IsComplexType( isolate, value, ID_INPUT_STREAM ) )
 	{
 		if( !pParam->SetStream( isolate, value.As< Object >() ) )
@@ -111,9 +111,9 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 			return false;
 		}
 	}
-	else if( IsComplexType( isolate, value, ID_TIMESTAMP_VALUE ) )
+	else if( IsComplexType( isolate, value, ID_DATE_VALUE ) )
 	{
-		if( !pParam->SetTimestamp( isolate, value.As< Object >( ) ) )
+		if( !pParam->SetDate( isolate, value.As< Object >( ) ) )
 		{
 			return false;
 		}

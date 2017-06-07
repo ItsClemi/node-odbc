@@ -36,7 +36,7 @@ void COdbcError::FetchError( SQLSMALLINT fHandleType, SQLHANDLE sqlHandle )
 
 	if( sqlRet != SQL_NO_DATA )
 	{
-		m_stream << L"[" << m_szSqlState << L"](" << m_nCode << L")" << szMessage;
+		m_stream << L"[" << m_szSqlState << L"](" << m_nCode << L") " << szMessage;
 	}
 	else
 	{
@@ -53,7 +53,7 @@ void COdbcError::FetchError( SQLSMALLINT fHandleType, SQLHANDLE sqlHandle )
 
 		sqlRet = GetDiagRec( fHandleType, sqlHandle, ++it, szSqlState, &nError, &szMessage );
 		{
-			m_stream << '\n' << L"(" << it << L")"  << L"[" << m_szSqlState << L"](" << m_nCode << L")" << szMessage;
+			m_stream << m_stream.widen( '\n' ) << L"(" << it << L")"  << L"[" << m_szSqlState << L"](" << m_nCode << L")" << szMessage;
 		}
 	}
 }

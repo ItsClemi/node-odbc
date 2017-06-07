@@ -76,6 +76,7 @@ public:
 			sqlTimestamp.minute = static_cast< SQLSMALLINT >( min );
 			sqlTimestamp.second = static_cast< SQLSMALLINT >( sec );
 			sqlTimestamp.fraction = static_cast< SQLUINTEGER >( fraction );
+			assert( sqlTimestamp.fraction >= 0 && sqlTimestamp.fraction <= 999900000 );
 		}
 	}
 
@@ -130,6 +131,7 @@ private:
 		*min = ( time_in_day_ms / ( 60 * 1000 ) ) % 60;
 		*sec = ( time_in_day_ms / 1000 ) % 60;
 		*ms = time_in_day_ms % 1000;
+
 		*fraction = static_cast< uint32_t >( ( ( time_in_day_ms ) % 1000 ) * NANOSECONDS_PER_MS );
 	}
 

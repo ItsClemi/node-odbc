@@ -24,7 +24,7 @@ class CQueryParameter
 {
 	static const uint32_t ID_INPUT_STREAM = 0;
 	static const uint32_t ID_NUMERIC_VALUE = 1;
-	static const uint32_t ID_TIMESTAMP_VALUE = 2;
+	static const uint32_t ID_DATE_VALUE = 2;
 
 public:
 	CQueryParameter( );

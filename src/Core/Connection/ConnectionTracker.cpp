@@ -42,7 +42,11 @@ void CConnectionTracker::DetachFromJs( )
 		auto pShared = i->GetSharedInstance( );
 
 		pShared._Decref( );
-		pShared._Decref( );
+
+		if( !pShared._Expired( ) )
+		{
+			pShared._Decref( );
+		}
 	}
 }
 #endif // _DEBUG

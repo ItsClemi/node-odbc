@@ -63,3 +63,26 @@ export class SqlStreamWriter extends stream.Writable
 	}
 }
 
+export function getRandomTableName( length?: number)
+{
+	let len = length || 7;
+
+    return "tbl" + getRandomString( len );
+}
+
+export function getRandomString(length: number) {
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    let text = "";
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+
+    return text;
+}
+
+
+export function getRandomInt( scale: number, min: number )
+{
+	return Math.floor( ( Math.random() * scale ) + min );
+}

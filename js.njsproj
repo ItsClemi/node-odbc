@@ -34,8 +34,8 @@
   <ItemGroup>
     <Folder Include="lib\" />
     <Folder Include="scripts\" />
-    <Folder Include="scripts\helper\" />
     <Folder Include="test\" />
+    <Folder Include="test\benchmark\" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="lib\node-odbc.d.ts" />
@@ -48,7 +48,7 @@
     <TypeScriptCompile Include="scripts\build.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="scripts\helper\proxy.ts">
+    <TypeScriptCompile Include="scripts\proxy.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="scripts\install.ts">
@@ -56,6 +56,12 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\api.ts" />
     <TypeScriptCompile Include="test\bench.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="test\benchmark\basic-insert.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="test\benchmark\query-choke.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\connection.ts" />
@@ -70,6 +76,12 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\module.ts" />
     <TypeScriptCompile Include="test\pooltest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="test\query-type-check-promise.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="test\query-type-check.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="test\test.ts" />

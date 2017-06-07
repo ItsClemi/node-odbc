@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const pkg = require("../../package.json");
+const pkg = require("../package.json");
 function getProxyConfig() {
     return process.env.npm_config_https_proxy ||
         process.env.npm_config_proxy ||
@@ -13,7 +13,7 @@ function getUserAgent() {
         'node-odbc-installer/', pkg.version
     ].join('');
 }
-function getProxy() {
+function getProxySettings() {
     let options = {
         rejectUnauthorized: false,
         timeout: 60000,
@@ -28,4 +28,4 @@ function getProxy() {
     }
     return options;
 }
-exports.getProxy = getProxy;
+exports.getProxySettings = getProxySettings;

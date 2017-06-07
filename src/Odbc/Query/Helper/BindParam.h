@@ -79,7 +79,8 @@ public:
 
 		SetPrimitve< int32_t >( SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 
-		//SetData( SQL_C_SLONG, SQL_INTEGER, sizeof( int32_t ), 0, &m_data.nValue, sizeof( int32_t ), sizeof( int32_t ) );
+
+		//SetData( SQL_C_SLONG, SQL_INTEGER, sizeof( int32_t ), 0, &m_data.nInt32, sizeof( int32_t ), sizeof( int32_t ) );
 	}
 
 	inline void SetUint32( uint32_t nValue )
@@ -127,11 +128,10 @@ public:
 		SetData( SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
 	}
 
-	inline void SetDate( int64_t ms )
+	inline void SetTimestamp( int64_t ms )
 	{
-		CJSDate::ToSqlDate( ms, m_data.sqlDate );
-
-		SetData( SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
+		CJSDate::ToSqlTimestamp( ms, m_data.sqlTimestamp );
+		SetData( SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 3, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
 	}
 
 	inline void SetBuffer( v8::Local< v8::Value > value )
@@ -145,7 +145,7 @@ public:
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 
-			SetData( SQL_C_BINARY, SQL_VARBINARY, 0, 0, &m_data.bufferDesc.m_pBuffer, nLength, nLength );
+			SetData( SQL_C_BINARY, SQL_BINARY, nLength, 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
 		}
 	}
 
@@ -218,19 +218,21 @@ public:
 		}
 
 
+		size_t nDigits = contents.ByteLength( );
 		{
+			memset( &m_data.sqlNumeric.val, 0, SQL_MAX_NUMERIC_LEN );
 			m_data.sqlNumeric.precision = static_cast< SQLCHAR >( nPrecision );
 			m_data.sqlNumeric.scale = static_cast< SQLSCHAR >( nScale );
 			m_data.sqlNumeric.sign = static_cast< SQLCHAR >( bSign ? 1 : 2 );
-			memcpy_s( m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN, contents.Data( ), contents.ByteLength( ) );
+			memcpy_s( m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN, contents.Data( ), nDigits );
 		}
 
-		SetData( SQL_C_NUMERIC, SQL_NUMERIC, 0, 0, &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
+		SetData( SQL_C_NUMERIC, SQL_NUMERIC, m_data.sqlNumeric.precision, static_cast< SQLSMALLINT >( nDigits ), &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
 
 		return true;
 	}
 
-	inline bool SetTimestamp( v8::Isolate* isolate, v8::Local< v8::Object > value )
+	inline bool SetDate( v8::Isolate* isolate, v8::Local< v8::Object > value )
 	{
 		v8::HandleScope scope( isolate );
 		const auto context = isolate->GetCurrentContext( );
@@ -249,14 +251,13 @@ public:
 		}
 		
 
-		auto nMs = date.As< v8::Date >( )->IntegerValue( context ).FromJust( );
+		auto ms = date.As< v8::Date >( )->IntegerValue( context ).FromJust( );
 
 		{
-			CJSDate::ToSqlTimestamp( nMs, m_data.sqlTimestamp );
+			CJSDate::ToSqlDate( ms, m_data.sqlDate );
 		}
 
-		SetData( SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 0, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
-
+		SetData( SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
 		return true;
 	}
 

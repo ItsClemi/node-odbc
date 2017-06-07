@@ -41,7 +41,7 @@ export declare type SqlPartialResultTypes<T> = SqlPartialResult<T> & SqlPartialR
 export declare type SqlTypes = null | string | boolean | number | Date | Buffer | SqlStream | SqlNumeric | SqlTimestamp;
 export declare function makeInputStream(stream: fs.ReadStream | stream.Readable, length: number): SqlStream;
 export declare function makeNumericValue(precision: number, scale: number, sign: boolean, value: Uint8Array): SqlNumeric;
-export declare function makeTimestampValue(date: Date): SqlTimestamp;
+export declare function makeDateValue(date: Date): SqlTimestamp;
 export interface IResilienceStrategy {
     retries: number;
     errorCodes: Array<number>;

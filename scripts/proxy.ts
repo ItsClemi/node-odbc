@@ -1,4 +1,4 @@
-﻿const pkg = require( "../../package.json" );
+﻿const pkg = require( "../package.json" );
 
 
 function getProxyConfig(): string
@@ -18,7 +18,7 @@ function getUserAgent(): string
 }
 
 
-export function getProxy()
+export function getProxySettings()
 {
 	let options = {
 		rejectUnauthorized: false,

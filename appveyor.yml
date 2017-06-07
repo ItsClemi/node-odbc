@@ -62,9 +62,9 @@
     - npm run build
 
   test: off
-
+  
 #  test_script:
-#    - cmd: echo helloworld
+#    - npm run test
 
   before_deploy:
     # Save artifacts with full qualified names of binding.node and binding.pdb

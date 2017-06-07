@@ -8,12 +8,6 @@ import * as mod from "./module";
 
 describe( "api tests - connection", () =>
 {
-	afterEach(() =>
-	{
-		global.gc();
-	} );
-
-
 	it( "constructor: non new cast", () =>
 	{
 		assert.doesNotThrow(() =>

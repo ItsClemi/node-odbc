@@ -59,7 +59,7 @@ struct SColumnData
 		}
 		else if( m_eType == EJSType::eBuffer )
 		{
-			__debugbreak( );
+			delete[ ] m_data.bufferDesc.m_pBuffer;
 			//scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
@@ -184,10 +184,10 @@ public:
 
 				memcpy_s( contents.Data( ), contents.ByteLength( ), m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN );
 
-				if( !numeric->Set( context, Nan::New( "precision" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.precision ) ).IsNothing( ) ||
-					!numeric->Set( context, Nan::New( "scale" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.scale ) ).IsNothing( ) ||
-					!numeric->Set( context, Nan::New( "sign" ).ToLocalChecked( ), v8::Boolean::New( isolate, m_data.sqlNumeric.sign ) ).IsNothing( ) ||
-					!numeric->Set( context, Nan::New( "val" ).ToLocalChecked( ), v8::Uint8Array::New( buffer, 0, SQL_MAX_NUMERIC_LEN ) ).IsNothing( )
+				if( numeric->Set( context, Nan::New( "precision" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.precision ) ).IsNothing( ) ||
+					numeric->Set( context, Nan::New( "scale" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.scale ) ).IsNothing( ) ||
+					numeric->Set( context, Nan::New( "sign" ).ToLocalChecked( ), v8::Boolean::New( isolate, m_data.sqlNumeric.sign ) ).IsNothing( ) ||
+					numeric->Set( context, Nan::New( "value" ).ToLocalChecked( ), v8::Uint8Array::New( buffer, 0, SQL_MAX_NUMERIC_LEN ) ).IsNothing( )
 					)
 				{
 					value = v8::Null( isolate );

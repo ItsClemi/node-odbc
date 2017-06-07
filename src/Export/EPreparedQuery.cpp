@@ -163,7 +163,7 @@ NAN_METHOD( EPreparedQuery::ToSingle )
 	V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsFunction( ), "not undefined or function");
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 	
 	auto pQuery = pThis->GetQuery( );
 
@@ -176,10 +176,15 @@ NAN_METHOD( EPreparedQuery::ToSingle )
 	}
 	else
 	{
-		pQuery->GetResultSet( )->SetPromise( );
+		//pQuery->GetResultSet( )->SetPromise( );
 	}
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
+
+
+	return info.GetReturnValue( ).Set( 
+		EModuleHelper::CreatePromise( isolate, info.This( ) )
+	);
 }
 
 NAN_METHOD( EPreparedQuery::ToArray )
@@ -190,7 +195,7 @@ NAN_METHOD( EPreparedQuery::ToArray )
 	V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsFunction( ), "not undefined or function" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 	auto pQuery = pThis->GetQuery( );
 
@@ -202,10 +207,14 @@ NAN_METHOD( EPreparedQuery::ToArray )
 	}
 	else
 	{
-		pQuery->GetResultSet( )->SetPromise( );
+		//pQuery->GetResultSet( )->SetPromise( );
 	}
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
+
+	return info.GetReturnValue( ).Set(
+		EModuleHelper::CreatePromise( isolate, info.This( ) )
+	);
 }
 
 

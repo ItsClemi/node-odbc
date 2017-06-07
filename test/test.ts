@@ -7,42 +7,34 @@ import * as bench from "./bench";
 
 
 
-function runMotcha()
-{
-	let tests = new mocha();
+let tests = new mocha();
 
-	tests.checkLeaks();
+tests.checkLeaks();
 
-	tests.addFile( "./test/api.js" );
-	tests.addFile( "./test/connection.js" );
-	//tests.addFile( "./test/pooltest.js" );
+tests.addFile( "./test/api.js" );
+tests.addFile( "./test/connection.js" );
 
-	//tests.addFile( "./test/insert.js" );
+tests.addFile( "./test/query-type-check.js" );
+tests.addFile( "./test/query-type-check-promise.js" );
 
 
-	tests.run();
-}
+tests.run();
+
+
 
 function runBenchmark()
 {
 	console.log( "running benchmark" );
 
-	const insert = require( "./insert" );
+	const insert = require( "./benchmark/basic-insert" );
 
 	bench.runBenchmark( insert );
 
-	
-
 }
 
-//runMotcha();
 
+//runBenchmark();
 
-runBenchmark();
-
-
-
-global.gc();
 
 
 //> don't close console window

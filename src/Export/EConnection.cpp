@@ -162,7 +162,7 @@ NAN_METHOD( EConnection::PrepareQuery )
 
 	const auto pQuery = pThis->GetPool( )->CreateQuery( );
 
-	pQuery->InitializeQuery( FromV8String( info[ 1 ].As< String >( ) ) );
+	pQuery->InitializeQuery( FromV8String( info[ 0 ].As< String >( ) ) );
 	{
 		if( !pQuery->GetQueryParam( )->BindParameters( isolate, info, 1 ) )
 		{

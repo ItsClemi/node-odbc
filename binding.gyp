@@ -1,6 +1,8 @@
 {
     "targets": [
         {
+            "win_delay_load_hook": "true",
+
             "target_name": "node-odbc",
 
             'dependencies': [

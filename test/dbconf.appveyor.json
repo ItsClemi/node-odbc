@@ -2,7 +2,7 @@
   "Connections": [
     {
       "name": "MSSQL Driver 13",
-      "connectionString": "DRIVER={ODBC Driver 13 for SQL Server};Server=(local)\\SQL2016;Database=master;User ID=sa;Password=Password12!;",
+      "connectionString": "DRIVER={ODBC Driver 13 for SQL Server};Server=(local)\\SQL2016;Database=master;Uid=sa;Pwd=Password12!",
       "timeout": 5000
     }
   ]

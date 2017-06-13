@@ -7,8 +7,8 @@
             "target_name": "node-odbc",
 
             'dependencies': [
-                "src/lib/tbb-2017_U5/tbb.gyp:tbb",
-                "src/lib/tbb-2017_U5/tbb.gyp:tbbmalloc",
+                "src/lib/tbb-2017_U5/binding.gyp:tbb",
+                "src/lib/tbb-2017_U5/binding.gyp:tbbmalloc",
             ],
 
             "sources": [

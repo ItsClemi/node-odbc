@@ -58,7 +58,12 @@ void InitializeModule( Local< Object > exports )
 	} );
 }
 
-
+#ifdef _WINDOWS
+BOOL WINAPI DllMain( _In_ HINSTANCE hinstDLL, _In_ DWORD fdwReason, _In_ LPVOID lpvReserved )
+{
+	return TRUE;
+}
+#endif
 
 //fix clang visual studio link bug
 #if defined __clang__ && defined( _MSC_VER )

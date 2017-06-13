@@ -63,8 +63,9 @@
 
   test: off
   
-  test_script:
-    - npm run test
+
+#  test_script:
+#    - npm run test
 
   before_deploy:
     - ps: >-

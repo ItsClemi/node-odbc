@@ -7,8 +7,8 @@
 
   configuration: release
 
-#  services:
-#    - mssql2016
+  services:
+    - mssql2016
 #    - mysql
 #    - postgresql
 
@@ -63,8 +63,8 @@
 
   test: off
   
-#  test_script:
-#    - npm run test
+  test_script:
+    - npm run test
 
   before_deploy:
     - ps: >-

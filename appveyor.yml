@@ -67,8 +67,6 @@
 #    - npm run test
 
   before_deploy:
-    # Save artifacts with full qualified names of binding.node and binding.pdb
-    # (which we use in node-sass-binaries repo)
     - ps: >-
         Get-ChildItem .\vendor\**\*.node | % {
            ( $BindingName = $_.FullName ).Split('\\') |

@@ -267,7 +267,8 @@ __pycache__/
 /build/*
 dist/util/*.d.ts
 
-vendor/
+vendor
+
 
 /bin/*
 

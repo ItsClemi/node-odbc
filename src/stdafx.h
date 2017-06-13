@@ -65,8 +65,12 @@
 
 #endif
 
-#include <cassert>
 
+#ifdef _DEBUG
+#include <cassert>
+#else
+#define assert(expression) ((void)0)
+#endif
 
 #include <uv.h>
 #include <nan.h>

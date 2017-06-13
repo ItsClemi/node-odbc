@@ -48,7 +48,7 @@ function afterBuild( options )
 
 function build( options )
 {
-	var args = [require.resolve( path.join( 'node-gyp', 'bin', 'node-gyp.js' ) ), 'rebuild', '--verbose'];
+	var args = [require.resolve( path.join( 'node-gyp', 'bin', 'node-gyp.js' ) ), 'rebuild'];
 
 	console.log( 'Building:', [process.execPath].concat( args ).join( ' ' ) );
 

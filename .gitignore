@@ -269,7 +269,6 @@ dist/util/*.d.ts
 
 vendor
 
-/lib/*.js
 
 /bin/*
 

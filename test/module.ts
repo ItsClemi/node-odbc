@@ -2,15 +2,19 @@
 import * as assert from "assert";
 import * as stream from "stream";
 
-var dbconf;
+let confPath;
 if( process.env.NODE_ODBC_TEST_USE_APPVEYOR_CONFIG )
 {
-	dbconf = require( "./dbconf.appveyor.json" );
+	confPath = "./dbconf.appveyor.json";
 }
 else
 {
-	dbconf = require( "./dbconf.json" );
+
+	confPath = "./dbconf.json";
 }
+
+console.log( `dbconf ${confPath}` );
+var dbconf = require( confPath );
 
 
 export declare type ConnectionEntry = {

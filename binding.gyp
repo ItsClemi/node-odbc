@@ -2,6 +2,7 @@
     "targets": [
         {
             "win_delay_load_hook": "true",
+            'default_configuration': 'Release',
 
             "target_name": "node-odbc",
 
@@ -50,6 +51,9 @@
             'conditions': [
                 ['OS=="win"', {
                     'defines': [
+                        'WIN32',
+                        '_WINDOWS',
+                        'NDEBUG',
                         'UNICODE=1',
                         '_UNICODE=1',
                         '_SQLNCLI_ODBC_',

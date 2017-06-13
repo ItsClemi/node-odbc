@@ -144,7 +144,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)vendor\</OutDir>
     <TargetExt>.node</TargetExt>
-    <IncludePath>.;H:\Workspaces\node\src;H:\Workspaces\node\deps\uv\include;H:\Workspaces\node\deps\v8\include;.\lib\tbb-2017_U5\include;..\node_modules\nan;$(IncludePath)</IncludePath>
+    <IncludePath>.;C:\Users\clemi\.node-gyp\7.10.0\include\node;.\lib\tbb-2017_U5\include;..\node_modules\nan;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -165,7 +165,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_USRDLL;V8_ENABLE_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_USRDLL;V8_ENABLE_CHECKS;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnablePREfast>false</EnablePREfast>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -202,13 +202,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_USRDLL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>H:\Workspaces\node\Release;.\lib\tbb-2017_U5\build\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\clemi\.node-gyp\7.10.0\Release;.\lib\tbb-2017_U5\build\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>node.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>

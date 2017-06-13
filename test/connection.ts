@@ -29,10 +29,6 @@ mod.connection.forEach(( con ) =>
 	{
 		this.timeout( con.timeout );
 
-		afterEach(() =>
-		{
-			global.gc();
-		} );
 
 
 		//it( "setResilienceStrategy - after connect", () =>

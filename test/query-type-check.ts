@@ -8,9 +8,6 @@ mod.connection.forEach((connection) => {
     describe(`query type checker insert / fetch (exec toSingle)`, function() {
         this.timeout(connection.timeout);
 
-        afterEach(() => {
-            global.gc();
-        });
 
         it("insert null -> fetch null", (done) => {
             let tblName = mod.getRandomTableName();
@@ -638,10 +635,6 @@ mod.connection.forEach((connection) => {
 
     describe(`query type checker insert / fetch (exec toArray) -> ${connection.name}`, function() {
         this.timeout(connection.timeout);
-
-		        afterEach(() => {
-            global.gc();
-        });
 
 
         it("insert null -> fetch", (done) => {

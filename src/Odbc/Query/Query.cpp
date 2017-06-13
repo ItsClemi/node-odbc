@@ -58,9 +58,9 @@ void CQuery::ProcessBackground( )
 	{
 		GetStatement()->FreeHandle( );
 		m_pPool->PushConnection( m_pConnection );
-#ifdef _DEBUG
+		
+		//TODO: further inspections of connection unlinking
 		m_pConnection = nullptr;
-#endif
 	}
 
 }

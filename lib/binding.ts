@@ -1,6 +1,8 @@
 ﻿import * as path from "path";
 import * as fs from "fs";
-const pkg = require( "../package.json" ); 
+import * as os from "os";
+
+const pkg = require( "../package.json" );
 
 export var outputName = "node-odbc.node";
 
@@ -24,7 +26,7 @@ export function getBinaryName()
 
 export function getBinaryPath()
 {
-	return path.join( getDefaultPath( ), getBinaryName().replace( /_(?=node-odbc\.node)/, '/' ) );
+	return path.join( getDefaultPath(), getBinaryName().replace( /_(?=node-odbc\.node)/, '/' ) );
 }
 
 export function requireBinding()
@@ -37,16 +39,24 @@ export function requireBinding()
 		}
 		catch( err )
 		{
-			throw new Error( "cannot find node-odbc.node binary!" );
+			try
+			{
+				return require( path.join( getDefaultPath(), "node-odbc.node" ) );
+			}
+			catch( errdev )
+			{
+				throw new Error( `cannot find node-odbc.node binary! ${os.EOL}${err.toString()}${os.EOL}${errdev.toString()}` );
+			}
 		}
 	}
 
 	return require( getBinaryPath() );
 }
- 
 
-export function getBinaryUrl() {
-    let site = "https://github.com/ItsClemi/node-odbc/releases/download";
 
-    return [site, pkg.version, getBinaryName()].join('/');
+export function getBinaryUrl()
+{
+	let site = "https://github.com/ItsClemi/node-odbc/releases/download";
+
+	return [site, pkg.version, getBinaryName()].join( '/' );
 }

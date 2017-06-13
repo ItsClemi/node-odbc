@@ -26,8 +26,6 @@
 #ifdef _DEBUG
 #define _WIN_DBG
 #endif
-
-#define _WINDOWS
 #endif
 
 #ifdef _MSC_VER

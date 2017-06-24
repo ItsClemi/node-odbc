@@ -239,7 +239,7 @@ export class Connection
 			}
 		}
 
-		let types = this.validateAndPrepareSqlParameters( ...args );
+		let types = this.prepareSqlParameters( ...args );
 
 		return this._connection.prepareQuery( query, types, ...args );
 	}
@@ -265,11 +265,11 @@ export class Connection
 
 			if( eFetchOperation < 0 || eFetchOperation > eFetchMode.eArray )
 			{
-				throw new Error( `Invalid value range: Expected {${eFetchMode.eSingle} - ${eFetchMode.eArray}} : got ${eFetchOperation}` );
+				throw new Error( `eFetchOperation: Invalid value range: Expected {${eFetchMode.eSingle} - ${eFetchMode.eArray}} : got ${eFetchOperation}` );
 			}
 		}
 
-		let types = this.validateAndPrepareSqlParameters( ...args );
+		let types = this.prepareSqlParameters( ...args );
 
 		this._connection.executeQuery<T>( eFetchOperation, cb, query, types, ...args );
 	}
@@ -279,13 +279,21 @@ export class Connection
 		return this._connection.getInfo();
 	}
 
-	private validateAndPrepareSqlParameters( ...args: ( SqlTypes )[] ): Array< eSqlType >
+	private prepareSqlParameters( ...args: ( SqlTypes )[] ): Array< eSqlType >
 	{
 		let types = new Array<eSqlType>( args.length );
 
-		for( var it = 0; it < args.length; it++ )
+		let i = 0;
+		try
 		{
-			types.push( transformParameter( it, args[it] ) );
+			for( ; i < args.length; i++ )
+			{
+				types[ i ] = transformParameter( args[i] );
+			}
+		}
+		catch( err )
+		{
+			throw new Error( `failed to prepare parameter at: ${i}, ${err.Message}` );
 		}
 
 		return types;
@@ -370,7 +378,6 @@ export const SqlOutput = {
 		return new SqlOutputParameter( reference, eSqlType.eReal );
 	},
 
-
 	asChar( reference: string, length: number ): SqlOutputParameter
 	{
 		return new SqlOutputParameter( reference, eSqlType.eChar, length );
@@ -391,7 +398,6 @@ export const SqlOutput = {
 		return new SqlOutputParameter( reference, eSqlType.eNVarChar, length );
 	},
 
-
 	asBinary( reference: Uint8Array, length: number ): SqlOutputParameter
 	{
 		return new SqlOutputParameter( reference, eSqlType.eBinary, length );
@@ -402,21 +408,19 @@ export const SqlOutput = {
 		return new SqlOutputParameter( reference, eSqlType.eVarBinary, length );
 	},
 
-
 	asDate( reference: Date, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eDate, null, null, scale );
+		return new SqlOutputParameter( reference, eSqlType.eDate, undefined, undefined, scale );
 	},
 
 	asTimestamp( reference: Date, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eTimestamp, null, null, scale );
+		return new SqlOutputParameter( reference, eSqlType.eTimestamp, undefined, undefined, scale );
 	},
-
 
 	asNumeric( reference: SqlNumeric, precision: number, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eNumeric, null, precision, scale );
+		return new SqlOutputParameter( reference, eSqlType.eNumeric, undefined, precision, scale );
 	},
 };
 
@@ -514,7 +518,7 @@ getJSBridge().setPromiseInitializer(( query: ISqlQueryEx ) =>
 } );
 
 
-function transformParameter( it: number, i: SqlTypes )
+function transformParameter( i: SqlTypes )
 {
 	if( i == null )
 	{
@@ -532,7 +536,7 @@ function transformParameter( it: number, i: SqlTypes )
 
 		if( isNaN( i ) || isFinite( i ) )
 		{
-			throw new Error( `number at ${it} isNan or isFinite ${i}` );
+			throw new Error( `number isNan or isFinite ${i}` );
 		}
 
 		let even = ( i | 0 ) === i;
@@ -570,7 +574,35 @@ function transformParameter( it: number, i: SqlTypes )
 	{
 		if( enableValidation )
 		{
+			if( i.reference == undefined )
+			{
+				throw new TypeError( `reference: Expected SqlType, got ${i.reference}(${typeof ( i.reference  )})` );
+			}
 
+			if( typeof ( i.paramType ) != "number" )
+			{
+				throw new TypeError( `paramType: Expected number, got ${typeof ( i.paramType )}` );
+			}
+
+			if( i.length != undefined && typeof ( i.length ) != "number" )
+			{
+				throw new TypeError( `length: Expected number, got ${typeof ( i.length )}` );
+			}
+
+			if( i.precision != undefined && typeof ( i.precision ) != "number" )
+			{
+				throw new TypeError( `precision: Expected number, got ${typeof ( i.precision )}` );
+			}
+
+			if( i.scale != undefined && typeof ( i.scale ) != "number" )
+			{
+				throw new TypeError( `scale: Expected number, got ${typeof ( i.scale )}` );
+			}
+
+			if( i.paramType < eSqlType.eNull || i.paramType > eSqlType.eSqlOutputVar )
+			{
+				throw new Error( `paramType: Invalid value range: Expected ${eSqlType.eNull}-${eSqlType.eSqlOutputVar} ${i.paramType}` );
+			}
 		}
 
 		return eSqlType.eSqlOutputVar;
@@ -581,12 +613,12 @@ function transformParameter( it: number, i: SqlTypes )
 		{
 			if( typeof ( i.stream ) != "object" )
 			{
-				throw new TypeError( `stream: Expected stream, got ${typeof ( stream )}` );
+				throw new TypeError( `stream: Expected stream, got ${typeof ( i.stream )}` );
 			}
 
 			if( typeof ( i.length ) != "number" )
 			{
-				throw new TypeError( `length: Expected number, got ${typeof ( length )}` );
+				throw new TypeError( `length: Expected number, got ${typeof ( i.length )}` );
 			}
 		}
 
@@ -629,5 +661,5 @@ function transformParameter( it: number, i: SqlTypes )
 		return eSqlType.eTimestamp;
 	}
 
-	throw new Error( `invalid param type ${it} got: ${i}(${typeof ( i )})` );
+	throw new Error( `invalid param type got: ${i}(${typeof ( i )})` );
 }

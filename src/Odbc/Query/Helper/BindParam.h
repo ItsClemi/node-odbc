@@ -47,6 +47,17 @@ enum eSqlOutputType : size_t
 	eMax,
 };
 
+enum class eSqlType : size_t
+{
+	eNull,
+	eBit, eTinyint, eSmallint, eInt32, eUint32, eBigInt, eReal, eChar, eNChar, eVarChar,
+	eNVarChar, eBinary, eVarBinary, eDate, eTimestamp, eNumeric,
+
+	eLongVarChar, eLongNVarChar, eLongVarBinary,
+
+	eSqlOutputVar,
+};
+
 
 class CBindParam
 {

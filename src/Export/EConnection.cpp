@@ -172,9 +172,6 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	V8_TYPE_VALIDATE( info[ 0 ]->IsFunction( ) || info[ 0 ]->IsUint32( ), "cb || eFetchMode: is not a callback or a number" );
-
-
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
@@ -183,8 +180,6 @@ NAN_METHOD( EConnection::ExecuteQuery )
 
 	if( info[ 0 ]->IsFunction( ) )
 	{
-		V8_TYPE_VALIDATE( info[ 1 ]->IsString( ), "query: is not a string" );
-
 		if( !pQuery->SetParameters(
 			isolate,
 			EFetchMode::eSingle,
@@ -200,11 +195,6 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	else
 	{
 		uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
-		V8_TYPE_VALIDATE( nFetchMode < ToUnderlyingType( EFetchMode::eMax ), "eMode: invalid number" );
-
-		V8_TYPE_VALIDATE( info[ 1 ]->IsFunction( ), "cb: is not a function" );
-		V8_TYPE_VALIDATE( info[ 2 ]->IsString( ), "query: is not a string" );
-
 
 		if( !pQuery->SetParameters(
 			isolate,

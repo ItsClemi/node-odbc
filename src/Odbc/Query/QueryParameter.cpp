@@ -96,10 +96,10 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 	{
 		pParam->SetTimestamp( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
 	}
-	//else if( node::Buffer::HasInstance( value ) )
-	//{
-	//	pParam->SetBuffer( value );
-	//}
+// 	else if( node::Buffer::HasInstance( value ) )
+// 	{
+// 		pParam->SetBuffer( value );
+// 	}
 
 	else if( IsComplexType( isolate, value, ID_OUTPUT_PARAMETER ) )
 	{
@@ -135,6 +135,7 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 	}
 
 
+	
 	return true;
 }
 

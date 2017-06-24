@@ -19,7 +19,6 @@ mod.connection.forEach(( con ) =>
 
 		it( "return value", ( done ) =>
 		{
-
 		} );
 
 		it( "output (short)", ( done ) =>

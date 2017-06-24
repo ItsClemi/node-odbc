@@ -33,7 +33,7 @@ Nan::Persistent< Function >		EConnection::constructor;
 
 NAN_MODULE_INIT( EConnection::InitializeModule )
 {
-	const auto strClassName = Nan::New( "Connection" ).ToLocalChecked( );
+	const auto strClassName = Nan::New( "IRawConnection" ).ToLocalChecked( );
 
 	const auto tpl = Nan::New< FunctionTemplate >( EConnection::New );
 	tpl->InstanceTemplate( )->SetInternalFieldCount( 1 );
@@ -95,9 +95,6 @@ NAN_METHOD( EConnection::Connect )
 {
 	HandleScope scope( info.GetIsolate( ) );
 
-	V8_TYPE_VALIDATE( info[ 0 ]->IsString( ), "^connectionString: is not a string" );
-	V8_TYPE_VALIDATE( info[ 1 ]->IsUndefined( ) || info[ 1 ]->Uint32Value( ), "^connectionTimeout: is not undefined or int32" );
-
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->GetState( ) == EPoolState::eNone, "invalid pool state" );
 
@@ -113,16 +110,12 @@ NAN_METHOD( EConnection::Connect )
 	{
 		return;
 	}
-
-	info.GetReturnValue( ).Set( info.This( ) );
 }
 
 NAN_METHOD( EConnection::Disconnect )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
-
-	V8_RUNTIME_VALIDATE( info[ 0 ]->IsFunction( ), "cb: not a function" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
@@ -152,8 +145,6 @@ NAN_METHOD( EConnection::PrepareQuery )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
-
-	V8_RUNTIME_VALIDATE( info[ 0 ]->IsString( ), "query: invalid parameter type" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );

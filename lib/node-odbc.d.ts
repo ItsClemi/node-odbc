@@ -1,28 +1,51 @@
 import * as stream from "stream";
 import * as fs from "fs";
-export declare type SqlComplexType = {
-    readonly _typeId: number;
-};
-export declare type SqlStream = SqlComplexType & {
+export declare const enum eSqlType {
+    eNull = 0,
+    eBit = 1,
+    eTinyint = 2,
+    eSmallint = 3,
+    eInt32 = 4,
+    eUint32 = 5,
+    eBigInt = 6,
+    eReal = 7,
+    eChar = 8,
+    eNChar = 9,
+    eVarChar = 10,
+    eNVarChar = 11,
+    eBinary = 12,
+    eVarBinary = 13,
+    eDate = 14,
+    eTimestamp = 15,
+    eNumeric = 16,
+    eLongVarChar = 17,
+    eLongNVarChar = 18,
+    eLongVarBinary = 19,
+    eSqlOutputVar = 20,
+}
+export declare class SqlStream {
     stream: stream.Readable | stream.Writable;
     length: number;
-};
-export declare type SqlNumeric = SqlComplexType & {
+    constructor(stream: stream.Readable | stream.Writable, length: number);
+}
+export declare class SqlNumeric {
     precision: number;
     scale: number;
     sign: boolean;
     value: Uint8Array;
-};
-export declare type SqlTimestamp = SqlComplexType & {
-    date: Date;
-};
-export declare type SqlOutputParameter = SqlComplexType & {
-    ref: any;
-    paramType: eSqlOutputType;
+    constructor(precision: number, scale: number, sign: boolean, value: Uint8Array);
+}
+export declare class SqlTimestamp extends Date {
+    nanosecondsDelta: number;
+}
+export declare class SqlOutputParameter {
+    reference: SqlTypes | Uint8Array;
+    paramType: eSqlType;
     length?: number;
     precision?: number;
     scale?: number;
-};
+    constructor(reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number);
+}
 export declare type SqlError = {
     readonly message: string;
     readonly sqlState: string;
@@ -68,53 +91,24 @@ export declare const enum eFetchMode {
     eSingle = 0,
     eArray = 1,
 }
-export declare const enum eSqlOutputType {
-    eBitOutput = 0,
-    eTinyintOutput = 1,
-    eSmallint = 2,
-    eInt = 3,
-    eUint32 = 4,
-    eBigInt = 5,
-    eFloat = 6,
-    eReal = 7,
-    eChar = 8,
-    eNChar = 9,
-    eVarChar = 10,
-    eNVarChar = 11,
-    eBinary = 12,
-    eVarBinary = 13,
-    eDate = 14,
-    eTimestamp = 15,
-    eNumeric = 16,
-}
+export declare var enableValidation: boolean;
 export declare class Connection {
+    private _connection;
     constructor(advancedProps?: ConnectionProps);
     connect(connectionString: string, connectionTimeout?: number): Connection;
     disconnect(cb: () => void): void;
     prepareQuery(query: string, ...args: (SqlTypes)[]): ISqlQuery;
-    executeQuery(cb: (result: SqlResult, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
-    executeQuery(eFetchMode: eFetchMode, cb: (result: SqlResultTypes, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
-    executeQuery<T>(cb: (result: SqlPartialResult<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
-    executeQuery<T>(eFetchMode: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
+    executeQuery<T>(eFetchOperation: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
     getInfo(): ConnectionInfo;
-}
-export declare const enableValidation: boolean;
-export declare class Connection2 {
-    private _connection;
-    constructor(advancedProps?: ConnectionProps);
-    connect(connectionString: string, connectionTimeout?: number): Connection2;
+    private validateAndPrepareSqlParameters(...args);
 }
 export interface ISqlQuery {
     enableReturnValue(): ISqlQuery;
     enableMetaData(): ISqlQuery;
     setQueryTimeout(timeout: number): ISqlQuery;
-    toSingle(cb: (result: SqlResult, error: SqlError) => void): void;
     toSingle<T>(cb: (result: SqlPartialResult<T>, error: SqlError) => void): void;
-    toSingle(): Promise<SqlResult>;
     toSingle<T>(): Promise<SqlPartialResult<T>>;
-    toArray(cb: (result: SqlResultArray, error: SqlError) => void): void;
     toArray<T>(cb: (result: SqlPartialResultArray<T>, error: SqlError) => void): void;
-    toArray(): Promise<SqlResultArray>;
     toArray<T>(): Promise<SqlPartialResultArray<T>>;
 }
 export interface ISqlQueryEx extends ISqlQuery {
@@ -124,22 +118,22 @@ export declare function makeInputStream(stream: fs.ReadStream | stream.Readable,
 export declare function makeNumeric(precision: number, scale: number, sign: boolean, value: Uint8Array): SqlNumeric;
 export declare function makeTimestamp(date: Date): SqlTimestamp;
 export declare const SqlOutput: {
-    asBitOutput(ref: boolean): SqlOutputParameter;
-    asTinyint(ref: number): SqlOutputParameter;
-    asSmallint(ref: number): SqlOutputParameter;
-    asInt(ref: number): SqlOutputParameter;
-    asBigInt(ref: number): SqlOutputParameter;
-    asFloat(ref: number): SqlOutputParameter;
-    asReal(ref: number): SqlOutputParameter;
-    asChar(ref: string, length: number): SqlOutputParameter;
-    asNChar(ref: string, length: number): SqlOutputParameter;
-    asVarChar(ref: string, length: number): SqlOutputParameter;
-    asNVarChar(ref: string, length: number): SqlOutputParameter;
-    asBinary(ref: Uint8Array, length: number): SqlOutputParameter;
-    asVarBinary(ref: Uint8Array, length: number): SqlOutputParameter;
-    asDate(ref: Date, scale: number): SqlOutputParameter;
-    asTimestamp(ref: Date, scale: number): SqlOutputParameter;
-    asNumeric(ref: SqlNumeric, precision: number, scale: number): SqlOutputParameter;
+    asBitOutput(reference: boolean): SqlOutputParameter;
+    asTinyint(reference: number): SqlOutputParameter;
+    asSmallint(reference: number): SqlOutputParameter;
+    asInt(reference: number): SqlOutputParameter;
+    asUInt(reference: number): SqlOutputParameter;
+    asBigInt(reference: number): SqlOutputParameter;
+    asReal(reference: number): SqlOutputParameter;
+    asChar(reference: string, length: number): SqlOutputParameter;
+    asNChar(reference: string, length: number): SqlOutputParameter;
+    asVarChar(reference: string, length: number): SqlOutputParameter;
+    asNVarChar(reference: string, length: number): SqlOutputParameter;
+    asBinary(reference: Uint8Array, length: number): SqlOutputParameter;
+    asVarBinary(reference: Uint8Array, length: number): SqlOutputParameter;
+    asDate(reference: Date, scale: number): SqlOutputParameter;
+    asTimestamp(reference: Date, scale: number): SqlOutputParameter;
+    asNumeric(reference: SqlNumeric, precision: number, scale: number): SqlOutputParameter;
 };
 export interface IJSBridge {
     setWriteStreamInitializer(cb: (targetStream: stream.Readable, query: ISqlQueryEx) => void): void;

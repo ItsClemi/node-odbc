@@ -35,7 +35,6 @@ NAN_MODULE_INIT( EConnection::InitializeModule )
 {
 	const auto strClassName = Nan::New( "Connection" ).ToLocalChecked( );
 
-
 	const auto tpl = Nan::New< FunctionTemplate >( EConnection::New );
 	tpl->InstanceTemplate( )->SetInternalFieldCount( 1 );
 

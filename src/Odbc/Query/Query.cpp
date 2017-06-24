@@ -71,7 +71,7 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 	{
 		if( HasError( ) )
 		{
-			//-> we can delete UvWorker because we still have a ref to CQuery from v8
+			//-> we can delete UvWorker because we still have a strong ref to CQuery from v8
 			GetResultSet( )->Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
 		}
 		else
@@ -166,7 +166,7 @@ bool CQuery::BindOdbcParameters( )
 		}
 	}
 
-	for( const auto& i : GetQueryParam( )->m_vecParameter )
+	for( auto& i : GetQueryParam( )->m_vecParameter )
 	{
 		if( !GetStatement( )->BindParameter(
 			nParam++,

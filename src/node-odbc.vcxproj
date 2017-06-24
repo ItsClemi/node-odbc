@@ -33,6 +33,7 @@
     <ClCompile Include="Odbc\Connection\Extension\PoolExtension.cpp" />
     <ClCompile Include="Odbc\Helper\OdbcError.cpp" />
     <ClCompile Include="Odbc\OdbcEnvironment.cpp" />
+    <ClCompile Include="Odbc\Query\Helper\BindParam.cpp" />
     <ClCompile Include="Odbc\Query\Query.cpp" />
     <ClCompile Include="Odbc\Query\QueryParameter.cpp" />
     <ClCompile Include="Odbc\Query\ResultSet.cpp" />

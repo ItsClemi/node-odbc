@@ -10,7 +10,8 @@
     "removeComments": false,
     "sourceMap": false,
     "target": "es2015",
-    "strict": true
+    "strict": true,
+    "allowSyntheticDefaultImports": true
   },
 
 

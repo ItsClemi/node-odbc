@@ -24,9 +24,8 @@
 #include "Odbc/Query/ResultSet.h"
 
 #include "Core/libuv/UvOperation.h"
-
-
 #include "Core/libuv/IUvOperation.h"
+
 
 enum class EQueryState : size_t
 {
@@ -160,7 +159,7 @@ public:
 public:
 	inline void EnableReturnValue( )
 	{
-
+		m_bReturnValue = true;
 	}
 
 	inline void EnableSlowQuery( )

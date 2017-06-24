@@ -558,8 +558,6 @@ void CResultSet::Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value )
 	else
 	{
 		assert( m_result.IsEmpty( ) );
-
-		//-> store pending result
 		m_result.Reset( isolate, value );
 	}
 }

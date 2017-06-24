@@ -97,6 +97,9 @@
     <ClCompile Include="Core\Connection\ConnectionTracker.cpp">
       <Filter>Core\Connection</Filter>
     </ClCompile>
+    <ClCompile Include="Odbc\Query\Helper\BindParam.cpp">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

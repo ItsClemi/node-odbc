@@ -20,11 +20,13 @@
 
 #include "Helper/BindParam.h"
 
+
 class CQueryParameter
 {
 	static const uint32_t ID_INPUT_STREAM = 0;
 	static const uint32_t ID_NUMERIC_VALUE = 1;
 	static const uint32_t ID_DATE_VALUE = 2;
+	static const uint32_t ID_OUTPUT_PARAMETER = 3;
 
 public:
 	CQueryParameter( );
@@ -64,6 +66,7 @@ public:
 private:
 	bool AddParameter( v8::Isolate* isolate, v8::Local< v8::Value > value, CBindParam* pParam );
 
+
 private:
 	bool IsComplexType( v8::Isolate* isolate, v8::Local< v8::Value > value, uint32_t id )
 	{
@@ -93,5 +96,5 @@ private:
 	}
 
 public:
-	std::vector< CBindParam/*, tbb::scalable_allocator< CBindParam >*/ >	m_vecParameter;
+	std::vector< CBindParam, tbb::scalable_allocator< CBindParam > >	m_vecParameter;
 };

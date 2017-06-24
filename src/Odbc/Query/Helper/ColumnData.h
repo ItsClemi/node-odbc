@@ -21,12 +21,13 @@
 #include "ParamData.h"
 #include "JSDate.h"
 
-enum class EJSType
+enum class EJSType : size_t
 {
 	eNull,
 	eString,
 	eBoolean,
 	eInt32,
+	eUint32,
 	eInt64,
 	eDouble,
 
@@ -34,7 +35,9 @@ enum class EJSType
 	eDate,
 	eTimestamp,
 	eBuffer,
-	eReadStream
+	eReadStream,
+
+
 };
 
 
@@ -153,65 +156,81 @@ public:
 			case EJSType::eDouble:		value = v8::Number::New( isolate, m_data.dNumber );								break;
 			case EJSType::eDate:		value = CJSDate::ToMilliseconds( isolate, m_data.sqlDate );						break;
 			case EJSType::eTimestamp:	value = CJSDate::ToMilliseconds( isolate, m_data.sqlTimestamp );				break;
+			case EJSType::eString:		value = ToString( isolate );													break;
+			case EJSType::eNumeric:		value = ToNumeric( isolate );													break;
 
-			case EJSType::eString:
-			{
-				v8::MaybeLocal< v8::String > string;
+// 			case EJSType::eBuffer:
+// 				value = node::Buffer::New( isolate, reinterpret_cast< char* >( m_data.bufferDesc.m_pBuffer ), m_data.bufferDesc.m_nLength ).ToLocalChecked( );
+// 				break;
 
-				if( m_data.stringDesc.IsAnsiString( ) )
-				{
-					string = v8::String::NewFromUtf8( isolate, m_data.stringDesc.m_stringData.pString );
-				}
-				else
-				{
-					string = v8::String::NewFromTwoByte( 
-						isolate,
-						reinterpret_cast< const uint16_t* >( m_data.stringDesc.m_stringData.pWString ),
-						v8::NewStringType::kNormal
-					);
-				}
-
-				value = string.ToLocalChecked( );
-				break;
-			}
-
-			case EJSType::eNumeric:
-			{
-				v8::Local< v8::Object > numeric = v8::Object::New( isolate );
-
-				auto buffer = v8::ArrayBuffer::New( isolate, SQL_MAX_NUMERIC_LEN );
-				auto contents = buffer->GetContents( );
-
-				memcpy_s( contents.Data( ), contents.ByteLength( ), m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN );
-
-				if( numeric->Set( context, Nan::New( "precision" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.precision ) ).IsNothing( ) ||
-					numeric->Set( context, Nan::New( "scale" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.scale ) ).IsNothing( ) ||
-					numeric->Set( context, Nan::New( "sign" ).ToLocalChecked( ), v8::Boolean::New( isolate, m_data.sqlNumeric.sign ) ).IsNothing( ) ||
-					numeric->Set( context, Nan::New( "value" ).ToLocalChecked( ), v8::Uint8Array::New( buffer, 0, SQL_MAX_NUMERIC_LEN ) ).IsNothing( )
-					)
-				{
-					value = v8::Null( isolate );
-				}
-				else
-				{
-					value = numeric;
-				}
-
-				break;
-			}
-
-			case EJSType::eBuffer:
-				value = node::Buffer::New( isolate, reinterpret_cast< char* >( m_data.bufferDesc.m_pBuffer ), m_data.bufferDesc.m_nLength ).ToLocalChecked( );
-				break;
-
-			case EJSType::eReadStream:
-				assert( false );
-				break;
+// 			case EJSType::eReadStream:
+// 				assert( false );
+// 				break;
 			default:
 				assert( false );
 		}
 
 		return scope.Escape( value );
+	}
+
+private:
+	v8::Local< v8::Value >	ToString( v8::Isolate* isolate )
+	{
+		v8::EscapableHandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
+
+		v8::MaybeLocal< v8::String > string;
+
+		if( m_data.stringDesc.IsAnsiString( ) )
+		{
+			string = v8::String::NewFromUtf8( isolate, m_data.stringDesc.m_stringData.pString );
+		}
+		else
+		{
+			string = v8::String::NewFromTwoByte(
+				isolate,
+				reinterpret_cast< const uint16_t* >( m_data.stringDesc.m_stringData.pWString ),
+				v8::NewStringType::kNormal
+			);
+		}
+
+		if( string.IsEmpty( ) )
+		{
+			return scope.Escape(
+				v8::Null( isolate )
+			);
+		}
+
+		return scope.Escape(
+			string.ToLocalChecked( ) 
+		);
+	}
+
+	v8::Local< v8::Value > ToNumeric( v8::Isolate* isolate )
+	{
+		v8::EscapableHandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
+
+
+		auto numeric = v8::Object::New( isolate );
+
+		auto buffer = v8::ArrayBuffer::New( isolate, SQL_MAX_NUMERIC_LEN );
+		auto contents = buffer->GetContents( );
+
+		memcpy_s( contents.Data( ), contents.ByteLength( ), m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN );
+
+		if( numeric->Set( context, Nan::New( "precision" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.precision ) ).IsNothing( ) ||
+			numeric->Set( context, Nan::New( "scale" ).ToLocalChecked( ), v8::Int32::New( isolate, m_data.sqlNumeric.scale ) ).IsNothing( ) ||
+			numeric->Set( context, Nan::New( "sign" ).ToLocalChecked( ), v8::Boolean::New( isolate, m_data.sqlNumeric.sign ) ).IsNothing( ) ||
+			numeric->Set( context, Nan::New( "value" ).ToLocalChecked( ), v8::Uint8Array::New( buffer, 0, SQL_MAX_NUMERIC_LEN ) ).IsNothing( )
+			)
+		{
+			return scope.Escape( 
+				v8::Null( isolate ) 
+			);
+		}
+
+		return scope.Escape( numeric );
 	}
 
 

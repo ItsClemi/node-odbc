@@ -42,6 +42,15 @@ export type SqlTimestamp = SqlComplexType & {
 	date: Date;
 }
 
+export type SqlOutputParameter = SqlComplexType & {
+	ref: any;
+	paramType: eSqlOutputType;
+
+	length?: number;
+	precision?: number;
+	scale?: number;
+}
+
 export type SqlError = {
 	readonly message: string;
 	readonly sqlState: string;
@@ -76,31 +85,8 @@ export type SqlResultTypes = SqlResult | SqlResultArray;
 
 export type SqlPartialResultTypes<T> = SqlPartialResult<T> & SqlPartialResultArray<T>;
 
-export type SqlTypes = null | string | boolean | number | Date | Buffer | SqlStream | SqlNumeric | SqlTimestamp;
 
-
-//> type helpers
-const ID_INPUT_STREAM: number = 0;
-const ID_NUMERIC_VALUE: number = 1;
-const ID_DATE_VALUE: number = 2;
-
-
-export function makeInputStream( stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
-{
-	return { _typeId: ID_INPUT_STREAM, stream: stream, length: length };
-}
-
-export function makeNumericValue( precision: number, scale: number, sign: boolean, value: Uint8Array ): SqlNumeric
-{
-	return { _typeId: ID_NUMERIC_VALUE, precision: precision, scale: scale, sign: sign, value: value };
-}
-
-export function makeDateValue( date: Date ): SqlTimestamp
-{
-	return { _typeId: ID_DATE_VALUE, date: date };
-}
-
-
+export type SqlTypes = null | string | boolean | number | Date | Buffer | SqlStream | SqlNumeric | SqlTimestamp | SqlOutputParameter;
 
 
 export interface IResilienceStrategy
@@ -131,18 +117,43 @@ export const enum eFetchMode
 	eArray,
 };
 
+export const enum eSqlOutputType
+{
+	eBitOutput,
+	eTinyintOutput,
+	eSmallint,
+	eInt,
+	eUint32,
+	eBigInt,
+	eFloat,
+	eReal,
+
+	eChar,
+	eNChar,
+	eVarChar,
+	eNVarChar,
+
+	eBinary,
+	eVarBinary,
+
+	eDate,
+	eTimestamp,
+
+	eNumeric,
+}
+
+
 export declare class Connection 
 {
 	constructor( advancedProps?: ConnectionProps );
 
 	connect( connectionString: string, connectionTimeout?: number ): Connection;
 
-	disconnect( cb: ( ) => void ): void;
+	disconnect( cb: () => void ): void;
 
 	prepareQuery( query: string, ...args: ( SqlTypes )[] ): ISqlQuery;
 
 
-	//> defaults odbc.eFetchMode.eSingle 
 	executeQuery( cb: ( result: SqlResult, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
 
 	executeQuery( eFetchMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
@@ -152,9 +163,80 @@ export declare class Connection
 	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
 
 
+	getInfo(): ConnectionInfo;
+}
+
+export const enableValidation = true;
+
+
+
+declare interface IRawConnection
+{
+	connect( connectionString: string, connectionTimeout?: number ): Connection;
+
+	disconnect( cb: () => void ): void;
+
+	prepareQuery( query: string, ...args: ( SqlTypes )[] ): ISqlQuery;
+
+
+	executeQuery( cb: ( result: SqlResult, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery( eFetchMode: eFetchMode, cb: ( result: SqlResultTypes, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery<T>( cb: ( result: SqlPartialResult<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
+	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
+
 
 	getInfo(): ConnectionInfo;
 }
+
+export class Connection2
+{
+	private _connection: IRawConnection;
+
+	constructor( advancedProps?: ConnectionProps )
+	{
+		if( enableValidation )
+		{
+			if( advancedProps )
+			{
+				if( ( advancedProps.enableMssqlMars != undefined && typeof ( advancedProps.enableMssqlMars ) != "boolean" ) ||
+					( advancedProps.poolSize != undefined && typeof ( advancedProps.poolSize ) != "number" )
+				)
+				{
+					throw new TypeError( "advancedProps contains invalid type" );
+				}
+			}
+		}
+
+		this._connection = new exports.Connection( advancedProps ) as IRawConnection;
+	}
+
+	public connect( connectionString: string, connectionTimeout?: number ): Connection2
+	{
+		if( enableValidation )
+		{
+			if( typeof ( connectionString ) != "string" )
+			{
+				throw new TypeError( `connectionString: invalid type ${connectionString}` );
+			}
+
+			if( connectionTimeout != undefined && typeof ( connectionTimeout ) != "number" )
+			{
+				throw new TypeError( "" );
+			}
+		}
+
+		this._connection.connect( connectionString, connectionTimeout );
+
+
+		return this;
+	}
+
+}
+
+
 
 export interface ISqlQuery 
 {
@@ -186,13 +268,124 @@ export interface ISqlQuery
 	toArray<T>(): Promise<SqlPartialResultArray<T>>;
 }
 
-/*
-	c++/js bridge helper
-*/
 export interface ISqlQueryEx extends ISqlQuery
 {
 	setPromiseInfo( resolve, reject ): void;
 }
+
+
+
+
+//> type helpers
+const ID_INPUT_STREAM: number = 0;
+const ID_NUMERIC_VALUE: number = 1;
+const ID_DATE_VALUE: number = 2;
+const ID_OUTPUT_PARAMETER: number = 3;
+
+
+export function makeInputStream( stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
+{
+	return { _typeId: ID_INPUT_STREAM, stream, length };
+}
+
+export function makeNumeric( precision: number, scale: number, sign: boolean, value: Uint8Array ): SqlNumeric
+{
+	return { _typeId: ID_NUMERIC_VALUE, precision, scale, sign, value };
+}
+
+export function makeTimestamp( date: Date ): SqlTimestamp
+{
+	return { _typeId: ID_DATE_VALUE, date };
+}
+
+
+export const SqlOutput = {
+
+	asBitOutput( ref: boolean ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eBitOutput, ref };
+	},
+
+	asTinyint( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eTinyintOutput, ref };
+	},
+
+	asSmallint( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eSmallint, ref };
+	},
+
+	asInt( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eInt, ref };
+	},
+
+	asBigInt( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eBigInt, ref };
+	},
+
+	asFloat( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eFloat, ref };
+	},
+
+	asReal( ref: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eReal, ref };
+	},
+
+
+	asChar( ref: string, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eChar, ref, length };
+	},
+
+	asNChar( ref: string, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eNChar, ref, length };
+	},
+
+	asVarChar( ref: string, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eVarChar, ref, length };
+	},
+
+	asNVarChar( ref: string, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eNVarChar, ref, length };
+	},
+
+
+	asBinary( ref: Uint8Array, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eBinary, ref, length };
+	},
+
+	asVarBinary( ref: Uint8Array, length: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eVarBinary, ref, length };
+	},
+
+
+	asDate( ref: Date, scale: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eDate, ref, scale };
+	},
+
+	asTimestamp( ref: Date, scale: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eTimestamp, ref, scale };
+	},
+
+
+	asNumeric( ref: SqlNumeric, precision: number, scale: number ): SqlOutputParameter
+	{
+		return { _typeId: ID_OUTPUT_PARAMETER, paramType: eSqlOutputType.eTimestamp, ref, precision, scale };
+	},
+};
+
 
 
 /*
@@ -203,16 +396,22 @@ export interface ISqlQueryEx extends ISqlQuery
 	WARNING: you may cause undefined behaviour by changing these
 */
 
-export declare function setWriteStreamInitializer( cb: ( targetStream: stream.Readable, query: ISqlQueryEx ) => void ): void;
+export interface IJSBridge
+{
+	setWriteStreamInitializer( cb: ( targetStream: stream.Readable, query: ISqlQueryEx ) => void ): void;
 
-export declare function setPromiseInitializer<T>( cb: ( query: ISqlQueryEx ) => T ): void;
+	setPromiseInitializer<T>( cb: ( query: ISqlQueryEx ) => T ): void;
 
+	setReadStreamInitializer( cb: ( query: ISqlQueryEx, column: number ) => stream.Readable ): void;
 
-export declare function setReadStreamInitializer( cb: ( query: ISqlQueryEx, column: number ) => stream.Readable ): void;
+	processNextChunk( query: ISqlQueryEx, chunk: Int8Array, cb: ( error ) => void ): void;
+	requestNextChunk( query: ISqlQueryEx, column: number, cb: ( chunk: Int8Array ) => void ): Int8Array;
+}
 
-export declare function processNextChunk( query: ISqlQueryEx, chunk: Int8Array, cb: ( error ) => void ): void;
-export declare function requestNextChunk( query: ISqlQueryEx, column: number, cb: ( chunk: Int8Array ) => void ): Int8Array;
-
+export function getJSBridge(): IJSBridge
+{
+	return exports as IJSBridge;
+}
 
 class SqlStreamReader extends stream.Readable
 {
@@ -229,7 +428,7 @@ class SqlStreamReader extends stream.Readable
 
 	public _read()
 	{
-		exports.requestNextChunk( this.query, this.column, ( chunk ) =>
+		getJSBridge().requestNextChunk( this.query, this.column, ( chunk ) =>
 		{
 			this.push( chunk );
 		} );
@@ -249,7 +448,7 @@ class SqlStreamWriter extends stream.Writable
 
 	public _write( chunk, encoding: string, next: Function )
 	{
-		exports.processNextChunk( this._query, chunk, ( error ) =>
+		getJSBridge().processNextChunk( this._query, chunk, ( error ) =>
 		{
 			next( error );
 		} );
@@ -257,24 +456,22 @@ class SqlStreamWriter extends stream.Writable
 }
 
 
-
-
 //> ../vendor/node-odbc.node
-exports = Object.assign( exports, binding.requireBinding( ) );
+exports = Object.assign( exports, binding.requireBinding() );
 
 
 
-exports.setWriteStreamInitializer(( targetStream: stream.Readable, query: ISqlQueryEx ) =>
+getJSBridge().setWriteStreamInitializer(( targetStream: stream.Readable, query: ISqlQueryEx ) =>
 {
 	targetStream.pipe( new SqlStreamWriter( query ) );
 } );
 
-exports.setReadStreamInitializer(( query: ISqlQueryEx, column: number ) =>
+getJSBridge().setReadStreamInitializer(( query: ISqlQueryEx, column: number ) =>
 {
 	return new SqlStreamReader( query, column );
 } );
 
-exports.setPromiseInitializer(( query: ISqlQueryEx ) => 
+getJSBridge().setPromiseInitializer(( query: ISqlQueryEx ) => 
 {
 	return new bluebird(( resolve, reject ) =>
 	{

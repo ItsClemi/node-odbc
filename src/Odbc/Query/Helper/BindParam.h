@@ -23,20 +23,36 @@
 #include "JSDate.h"
 
 
+//shared with node-odbc.ts
+enum eSqlOutputType : size_t
+{
+	eBitOutput,
+	eTinyintOutput,
+	eSmallint,
+	eInt,
+	eUint32,
+	eBigInt,
+	eFloat,
+	eReal,
+	eChar,
+	eNChar,
+	eVarChar,
+	eNVarChar,
+	eBinary,
+	eVarBinary,
+	eDate,
+	eTimestamp,
+	eNumeric,
+
+	eMax,
+};
+
 
 class CBindParam
 {
 public:
-	CBindParam( )
-	{
-
-	}
-
-	~CBindParam( )
-	{
-		assert( v8::Isolate::GetCurrent( ) != nullptr );
-		assert( m_stream.IsEmpty( ) );
-	}
+	CBindParam( );
+	~CBindParam( );
 
 public:
 	void Dispose( )
@@ -49,12 +65,13 @@ public:
 
 		if( m_nParameterType == SQL_WVARCHAR )
 		{
-			delete[ ]m_data.stringDesc.m_stringData.pWString;
+			delete[ ] m_data.stringDesc.m_stringData.pWString;
 			//scalable_free( m_data.stringDesc.m_stringData.pWString );
 		}
 		else if( m_nParameterType == SQL_VARBINARY )
 		{
-			delete[ ]m_data.bufferDesc.m_pBuffer; //scalable_free( m_data.bufferDesc.m_pBuffer );
+			delete[ ] m_data.bufferDesc.m_pBuffer; 
+			//scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
 
@@ -69,8 +86,6 @@ public:
 		m_data.bValue = bValue;
 
 		SetPrimitve< SQLCHAR >( SQL_C_BIT, SQL_BIT, &m_data.bValue );
-
-		//SetData( SQL_C_BIT, SQL_BIT, sizeof( SQLCHAR ), 0, &m_data.bValue, sizeof( uint16_t ), sizeof( uint16_t ) );
 	}
 
 	inline void SetInt32( int32_t nValue )
@@ -78,9 +93,6 @@ public:
 		m_data.nInt32 = nValue;
 
 		SetPrimitve< int32_t >( SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
-
-
-		//SetData( SQL_C_SLONG, SQL_INTEGER, sizeof( int32_t ), 0, &m_data.nInt32, sizeof( int32_t ), sizeof( int32_t ) );
 	}
 
 	inline void SetUint32( uint32_t nValue )
@@ -88,8 +100,6 @@ public:
 		m_data.nUint32 = nValue;
 
 		SetPrimitve< uint32_t >( SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
-
-		//SetData( SQL_C_ULONG, SQL_BIGINT, sizeof( uint32_t ), 0, &m_data.unValue, sizeof( uint32_t ), sizeof( uint32_t ) );
 	}
 
 	inline void SetInt64( int64_t nValue )
@@ -97,8 +107,6 @@ public:
 		m_data.nInt64 = nValue;
 
 		SetPrimitve< int64_t >( SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
-
-		//SetData( SQL_C_SBIGINT, SQL_BIGINT, sizeof( int64_t ), 0, &m_data.llValue, sizeof( int64_t ), sizeof( int64_t ) );
 	}
 
 	inline void SetDouble( double dValue )
@@ -106,8 +114,6 @@ public:
 		m_data.dNumber = dValue;
 
 		SetPrimitve< double >( SQL_C_DOUBLE, SQL_DOUBLE, &m_data.dNumber );
-
-		//SetData( SQL_C_DOUBLE, SQL_DOUBLE, sizeof( double ), 0, &m_data.dValue, sizeof( double ), sizeof( double ) );
 	}
 
 	inline void SetString( v8::Local< v8::String > value )
@@ -150,125 +156,22 @@ public:
 	}
 
 public:
-	inline bool SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value )
-	{
-		v8::HandleScope scope( isolate );
-		const auto context = isolate->GetCurrentContext( );
+	bool SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-		auto _stream = value->Get( context, Nan::New( "stream" ).ToLocalChecked( ) );
-		auto _length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) );
+	bool SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-		if( _stream.IsEmpty( ) || _length.IsEmpty( ) )
-		{
-			return false;
-		}
+	bool SetDate( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-		auto stream = _stream.ToLocalChecked( );
-		auto length = _length.ToLocalChecked( );
-
-		if( !stream->IsObject( ) || !length->IsUint32( ) )
-		{
-			return false;
-		}
-
-		uint32_t nLength = length->Uint32Value( context ).FromJust( );
-
-		m_nDataWritten = 0;
-		//m_stream.Reset( isolate, stream.As< v8::Value >( ) );
-		
-		SetData( SQL_C_BINARY, SQL_LONGVARBINARY, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
-
-		return true;
-	}
-
-
-	inline bool SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value )
-	{
-		v8::HandleScope scope( isolate );
-		const auto context = isolate->GetCurrentContext( );
-
-		auto _precision = value->Get( context, Nan::New( "precision" ).ToLocalChecked( ) );
-		auto _scale = value->Get( context, Nan::New( "scale" ).ToLocalChecked( ) );
-		auto _sign = value->Get( context, Nan::New( "sign" ).ToLocalChecked( ) );
-		auto _buffer = value->Get( context, Nan::New( "value" ).ToLocalChecked( ) );
-
-		if( _precision.IsEmpty( ) || _scale.IsEmpty( ) || _sign.IsEmpty( ) || _buffer.IsEmpty( ) )
-		{
-			return false;
-		}
-
-		auto precision = _precision.ToLocalChecked( );
-		auto scale = _scale.ToLocalChecked( );
-		auto sign = _sign.ToLocalChecked( );
-		auto buffer = _buffer.ToLocalChecked( );
-
-		if( !precision->IsUint32( ) || !scale->IsUint32( ) || !sign->IsBoolean( ) || !buffer->IsUint8Array( ) )
-		{
-			return false;
-		}
-
-		auto nPrecision = precision.As< v8::Uint32 >( )->Uint32Value( context ).FromJust( );
-		auto nScale = scale.As< v8::Uint32 >( )->Uint32Value( context ).FromJust( );
-		auto bSign = sign.As< v8::Boolean >( )->BooleanValue( context ).FromJust( );
-		auto contents = buffer.As< v8::Uint8Array >( )->Buffer( )->GetContents( );
-
-		if( nPrecision > 255 || nScale > 127 || contents.ByteLength( ) > SQL_MAX_NUMERIC_LEN )
-		{
-			return false;
-		}
-
-
-		size_t nDigits = contents.ByteLength( );
-		{
-			memset( &m_data.sqlNumeric.val, 0, SQL_MAX_NUMERIC_LEN );
-			m_data.sqlNumeric.precision = static_cast< SQLCHAR >( nPrecision );
-			m_data.sqlNumeric.scale = static_cast< SQLSCHAR >( nScale );
-			m_data.sqlNumeric.sign = static_cast< SQLCHAR >( bSign ? 1 : 2 );
-			memcpy_s( m_data.sqlNumeric.val, SQL_MAX_NUMERIC_LEN, contents.Data( ), nDigits );
-		}
-
-		SetData( SQL_C_NUMERIC, SQL_NUMERIC, m_data.sqlNumeric.precision, static_cast< SQLSMALLINT >( nDigits ), &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
-
-		return true;
-	}
-
-	inline bool SetDate( v8::Isolate* isolate, v8::Local< v8::Object > value )
-	{
-		v8::HandleScope scope( isolate );
-		const auto context = isolate->GetCurrentContext( );
-
-		auto _date = value->Get( context, Nan::New( "date" ).ToLocalChecked( ) );
-		if( _date.IsEmpty( ) )
-		{
-			return false;
-		}
-
-		auto date = _date.ToLocalChecked( );
-
-		if( !date->IsDate( ) )
-		{
-			return false;
-		}
-		
-
-		auto ms = date.As< v8::Date >( )->IntegerValue( context ).FromJust( );
-
-		{
-			CJSDate::ToSqlDate( ms, m_data.sqlDate );
-		}
-
-		SetData( SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
-		return true;
-	}
+	bool SetOutputParameter( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 private:
 	template< typename T >
-	inline void SetPrimitve( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLPOINTER pBuffer ) const
+	inline void SetPrimitve( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLPOINTER pBuffer )
 	{
 		SetData( nValueType, nParameterType, sizeof( T ), 0, pBuffer, sizeof( T ), sizeof( T ) );
 	}
 
-	inline void SetData( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLUINTEGER nColumnSize, SQLSMALLINT nDigits, SQLPOINTER pBuffer, SQLLEN nBufferLen, SQLLEN strLen_or_IndPtr ) const
+	inline void SetData( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLUINTEGER nColumnSize, SQLSMALLINT nDigits, SQLPOINTER pBuffer, SQLLEN nBufferLen, SQLLEN strLen_or_IndPtr )
 	{
 		m_nValueType = nValueType;
 		m_nParameterType = nParameterType;
@@ -280,19 +183,20 @@ private:
 	}
 
 public:
-	mutable SQLSMALLINT				m_nValueType;
-	mutable SQLSMALLINT				m_nParameterType;
-	mutable SQLUINTEGER				m_nColumnSize;
-	mutable SQLSMALLINT				m_nDigits;
-	mutable SQLPOINTER				m_pBuffer;
-	mutable SQLLEN					m_nBufferLen;
-	mutable SQLLEN					m_strLen_or_IndPtr;
+	SQLSMALLINT				m_nInputOutputType;
+	SQLSMALLINT				m_nValueType;
+	SQLSMALLINT				m_nParameterType;
+	SQLUINTEGER				m_nColumnSize;
+	SQLSMALLINT				m_nDigits;
+	SQLPOINTER				m_pBuffer;
+	SQLLEN					m_nBufferLen;
+	SQLLEN					m_strLen_or_IndPtr;
 
 private:
-	SParamData							m_data;
+	SParamData				m_data;
+	SQLUINTEGER				m_nDataWritten;
 
-	SQLUINTEGER							m_nDataWritten;
 
+	v8::Persistent< v8::Value, v8::CopyablePersistentTraits< v8::Value > >			m_paramRef;
 	v8::Persistent< v8::Object, v8::CopyablePersistentTraits< v8::Object > >		m_stream;
-
 };

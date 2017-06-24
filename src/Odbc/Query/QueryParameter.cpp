@@ -19,7 +19,9 @@
 #include "stdafx.h"
 #include "QueryParameter.h"
 
+
 using namespace v8;
+
 
 #ifdef _WINDOWS
 #pragma push_macro("min")
@@ -29,9 +31,11 @@ using namespace v8;
 #undef max
 #endif
 
+
+
+
 CQueryParameter::CQueryParameter( )
 {
-
 }
 
 CQueryParameter::~CQueryParameter( )
@@ -47,7 +51,6 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
-
 
 	if( value->IsNull( ) )
 	{
@@ -74,9 +77,9 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 			return false;
 		}
 		else if( d == floor( d ) &&
-			d >= std::numeric_limits< int64_t >::min( ) &&
-			d <= std::numeric_limits< int64_t >::max( )
-			)
+				 d >= std::numeric_limits< int64_t >::min( ) &&
+				 d <= std::numeric_limits< int64_t >::max( )
+				 )
 		{
 			pParam->SetInt64( value->IntegerValue( context ).FromJust( ) );
 		}
@@ -97,9 +100,17 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 	//{
 	//	pParam->SetBuffer( value );
 	//}
+
+	else if( IsComplexType( isolate, value, ID_OUTPUT_PARAMETER ) )
+	{
+		if( !pParam->SetOutputParameter( isolate, value.As< Object >( ) ) )
+		{
+			return false;
+		}
+	}
 	else if( IsComplexType( isolate, value, ID_INPUT_STREAM ) )
 	{
-		if( !pParam->SetStream( isolate, value.As< Object >() ) )
+		if( !pParam->SetStream( isolate, value.As< Object >( ) ) )
 		{
 			return false;
 		}
@@ -122,6 +133,7 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 	{
 		return false;
 	}
+
 
 	return true;
 }

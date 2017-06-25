@@ -23,7 +23,7 @@ mod.connection.forEach(( con ) =>
 
 		it( "output (short)", ( done ) =>
 		{
-			let id: number;
+			let id = 0;
 			let userName: string;
 			connection.prepareQuery( "{call uspBasicOutput( ? )}", SqlOutput.asInt( id ) )
 				.toSingle()

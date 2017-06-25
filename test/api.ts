@@ -10,7 +10,7 @@ describe( "api tests - connection", () =>
 {
 	it( "constructor: non new cast", () =>
 	{
-		assert.doesNotThrow(() =>
+		assert.throws(() =>
 		{
 			( <any>odbc ).Connection();
 		} );
@@ -297,7 +297,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.doesNotThrow(() =>
 		{
-			odbc.setWriteStreamInitializer(( targetStream: stream.Readable, query: odbc.ISqlQueryEx ) =>
+			odbc.getJSBridge().setWriteStreamInitializer(( targetStream: stream.Readable, query: odbc.ISqlQueryEx ) =>
 			{
 				let writer = new mod.SqlStreamWriter( query );
 
@@ -308,7 +308,7 @@ describe( "api tests - internal", () =>
 
 		assert.doesNotThrow(() =>
 		{
-			odbc.setReadStreamInitializer(( query: odbc.ISqlQueryEx, column: number ) =>
+			odbc.getJSBridge().setReadStreamInitializer(( query: odbc.ISqlQueryEx, column: number ) =>
 			{
 				return new mod.SqlStreamReader( query, column );
 			} )
@@ -316,7 +316,7 @@ describe( "api tests - internal", () =>
 
 		assert.doesNotThrow(() =>
 		{
-			odbc.setPromiseInitializer(( query ) => 
+			odbc.getJSBridge().setPromiseInitializer(( query ) => 
 			{
 				return new bluebird(( resolve, reject ) =>
 				{
@@ -331,7 +331,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.throws(() =>
 		{
-			odbc.setWriteStreamInitializer(( <any>undefined ) );
+			odbc.getJSBridge().setWriteStreamInitializer(( <any>undefined ) );
 		} );
 	} );
 
@@ -339,7 +339,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.doesNotThrow(() =>
 		{
-			odbc.setWriteStreamInitializer(() =>
+			odbc.getJSBridge().setWriteStreamInitializer(() =>
 			{
 				console.log( "Hello World!" );
 			} );
@@ -351,7 +351,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.throws(() =>
 		{
-			odbc.setReadStreamInitializer(( <any>false ) );
+			odbc.getJSBridge().setReadStreamInitializer(( <any>false ) );
 		} );
 	} );
 
@@ -359,7 +359,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.doesNotThrow(() =>
 		{
-			odbc.setReadStreamInitializer(() =>
+			odbc.getJSBridge().setReadStreamInitializer(() =>
 			{
 				console.log( "Awww yeah!" );
 				return (<any>null);
@@ -372,7 +372,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.throws(() =>
 		{
-			odbc.setPromiseInitializer(( <any>null ) );
+			odbc.getJSBridge().setPromiseInitializer(( <any>null ) );
 		} );
 	} );
 
@@ -380,7 +380,7 @@ describe( "api tests - internal", () =>
 	{
 		assert.doesNotThrow(() =>
 		{
-			odbc.setPromiseInitializer(() =>
+			odbc.getJSBridge().setPromiseInitializer(() =>
 			{
 				console.log( "yay" );
 			} );

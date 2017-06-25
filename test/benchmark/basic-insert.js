@@ -22,7 +22,7 @@ exports.default = {
     },
     exec: function (done) {
         async.times(10000, (n, next) => {
-            _con.executeQuery((res, err) => {
+            _con.executeQuery(0 /* eSingle */, (res, err) => {
                 if (err) {
                     console.log(err);
                 }
@@ -31,7 +31,7 @@ exports.default = {
         }, done);
     },
     teardown: () => {
-        _con.executeQuery((res, err) => {
+        _con.executeQuery(0 /* eSingle */, (res, err) => {
             if (err != null) {
                 throw err;
             }

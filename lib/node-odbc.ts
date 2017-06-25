@@ -193,7 +193,7 @@ export class Connection
 			}
 		}
 
-		this._connection = new exports.Connection( advancedProps ) as IRawConnection;
+		this._connection = new exports.IRawConnection( advancedProps ) as IRawConnection;
 	}
 
 	public connect( connectionString: string, connectionTimeout?: number ): Connection

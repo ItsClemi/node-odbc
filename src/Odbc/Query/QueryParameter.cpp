@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "QueryParameter.h"
+#include "BindParam.h"
 
 
 using namespace v8;
@@ -51,6 +52,60 @@ bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBin
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
+
+
+	const eSqlType type;
+
+	switch( type )
+	{
+		case eSqlType::eNull:
+			break;
+		case eSqlType::eBit:
+			break;
+		case eSqlType::eTinyint:
+			break;
+		case eSqlType::eSmallint:
+			break;
+		case eSqlType::eInt32:
+			break;
+		case eSqlType::eUint32:
+			break;
+		case eSqlType::eBigInt:
+			break;
+		case eSqlType::eReal:
+			break;
+		case eSqlType::eChar:
+			break;
+		case eSqlType::eNChar:
+			break;
+		case eSqlType::eVarChar:
+			break;
+		case eSqlType::eNVarChar:
+			break;
+		case eSqlType::eBinary:
+			break;
+		case eSqlType::eVarBinary:
+			break;
+		case eSqlType::eDate:
+			break;
+		case eSqlType::eTimestamp:
+			break;
+		case eSqlType::eNumeric:
+			break;
+		case eSqlType::eLongVarChar:
+			break;
+		case eSqlType::eLongNVarChar:
+			break;
+		case eSqlType::eLongVarBinary:
+			break;
+		case eSqlType::eSqlOutputVar:
+			break;
+		default:
+			break;
+	}
+
+
+
 
 	if( value->IsNull( ) )
 	{

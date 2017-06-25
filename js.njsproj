@@ -71,9 +71,6 @@
     <TypeScriptCompile Include="test\date.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="test\insert.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="test\module.ts" />
     <TypeScriptCompile Include="test\mssql-procedure-check.ts" />
     <TypeScriptCompile Include="test\pooltest.ts">

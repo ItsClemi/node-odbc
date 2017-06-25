@@ -43,6 +43,7 @@ export default {
 		async.times( 10000, ( n, next ) =>
 		{
 			_con.executeQuery(
+				odbc.eFetchMode.eSingle,
 				( res, err ) =>
 				{
 					if( err ) 
@@ -68,6 +69,7 @@ export default {
 	teardown: () =>
 	{
 		_con.executeQuery(
+			odbc.eFetchMode.eSingle,
 			( res, err ) =>
 			{
 				if( err != null )

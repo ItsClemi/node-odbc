@@ -58,7 +58,7 @@ NAN_METHOD( EConnection::New )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
-	
+
 	const auto context = isolate->GetCurrentContext( );
 
 	if( info.IsConstructCall( ) )
@@ -175,30 +175,11 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
-
 	const auto pQuery = pThis->GetPool( )->CreateQuery( );
-
-	if( info[ 0 ]->IsFunction( ) )
 	{
 		if( !pQuery->SetParameters(
 			isolate,
-			EFetchMode::eSingle,
-			info[ 0 ].As< Function >( ),
-			FromV8String( info[ 1 ].As< String >( ) ),
-			info,
-			2
-		) )
-		{
-			return;
-		}
-	}
-	else
-	{
-		uint32_t nFetchMode = info[ 0 ]->Uint32Value( context ).FromJust( );
-
-		if( !pQuery->SetParameters(
-			isolate,
-			static_cast< EFetchMode >( nFetchMode ),
+			static_cast< EFetchMode >( info[ 0 ]->Uint32Value( context ).FromJust( ) ),
 			info[ 1 ].As< Function >( ),
 			FromV8String( info[ 2 ].As< String >( ) ),
 			info,
@@ -208,7 +189,6 @@ NAN_METHOD( EConnection::ExecuteQuery )
 			return;
 		}
 	}
-		
 
 	pThis->GetPool( )->ExecuteQuery( pQuery );
 

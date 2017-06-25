@@ -243,7 +243,7 @@ mod.connection.forEach((connection) => {
             });
         });
 	
-        it("insert date -> fetch date", (done) => {
+        it("insert timestamp -> fetch date", (done) => {
             let tblName = mod.getRandomTableName();
 
             let con = new odbc.Connection()
@@ -252,8 +252,8 @@ mod.connection.forEach((connection) => {
             let date = new Date(Date.now());
 
             let r = async () => {
-                await con.prepareQuery(`CREATE TABLE ${tblName}( a datetime )`).toSingle();
-                await con.prepareQuery(`INSERT INTO ${tblName}(a)VALUES(?)`, odbc.makeDateValue(date)).toSingle();
+				await con.prepareQuery( `CREATE TABLE ${tblName}( a datetime )` ).toSingle();
+				await con.prepareQuery( `INSERT INTO ${tblName}(a)VALUES(?)`, odbc.makeTimestamp( date ) ).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: Date }>();
 
                 if (r.a == undefined) {
@@ -311,7 +311,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let num = odbc.makeNumericValue(18, 0, true, new Uint8Array([25, 20, 30, 40]));
+			let num = odbc.makeNumeric( 18, 0, true, new Uint8Array( [25, 20, 30, 40] ) );
 
             let r = async () => {
                 await con.prepareQuery(`CREATE TABLE ${tblName}( a numeric(18, 0) )`).toSingle();

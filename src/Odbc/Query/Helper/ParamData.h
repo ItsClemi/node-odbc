@@ -52,6 +52,33 @@ struct SStringDesc
 		return m_eType == EStringType::eAnsi;
 	}
 
+	void Alloc( EStringType eType, size_t nLength )
+	{
+		m_eType = eType;
+		m_nLength = nLength;
+
+		if( IsAnsiString( ) )
+		{
+			m_stringData.pString = new char[ nLength ];
+		}
+		else
+		{
+			m_stringData.pWString = new wchar_t[ nLength ];
+		}
+	}
+
+	void Dispose( )
+	{
+		if( IsAnsiString( ) )
+		{
+			SafeDeleteArray( m_stringData.pString );
+		}
+		else
+		{
+			SafeDeleteArray( m_stringData.pWString );
+		}
+	}
+
 
 	EStringType		m_eType;
 	size_t			m_nLength;

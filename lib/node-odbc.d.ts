@@ -41,9 +41,9 @@ export declare class SqlTimestamp extends Date {
 export declare class SqlOutputParameter {
     reference: SqlTypes | Uint8Array;
     paramType: eSqlType;
-    length?: number;
-    precision?: number;
-    scale?: number;
+    length: number;
+    precision: number;
+    scale: number;
     constructor(reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number);
 }
 export declare type SqlError = {
@@ -101,6 +101,7 @@ export declare class Connection {
     executeQuery<T>(eFetchOperation: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
     getInfo(): ConnectionInfo;
     private prepareSqlParameters(...args);
+    private transformParameters(...args);
 }
 export interface ISqlQuery {
     enableReturnValue(): ISqlQuery;

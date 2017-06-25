@@ -73,17 +73,17 @@ export class SqlOutputParameter
 {
 	reference: SqlTypes | Uint8Array;
 	paramType: eSqlType;
-	length?: number;
-	precision?: number;
-	scale?: number;
+	length: number;
+	precision: number;
+	scale: number;
 
 	constructor( reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number )
 	{
 		this.reference = reference;
 		this.paramType = paramType;
-		this.length = length;
-		this.precision = precision;
-		this.scale = scale;
+		this.length = length || 0;
+		this.precision = precision || 0;
+		this.scale = scale || 0;
 	}
 }
 
@@ -288,7 +288,7 @@ export class Connection
 		{
 			for( ; i < args.length; i++ )
 			{
-				types[ i ] = transformParameter( args[i] );
+				types[ i ] = getParameterType( args[i] );
 			}
 		}
 		catch( err )
@@ -297,6 +297,18 @@ export class Connection
 		}
 
 		return types;
+	}
+
+	private transformParameters( ...args: ( SqlTypes )[] )
+	{
+		const params = new Array( args.length * 2 );
+
+		for( let i = 0; i < args.length; i++ )
+		{
+			params[i] = getParameterType( args[i] );
+			params[i + 1] = args[i];
+		}
+		return params;
 	}
 }
 
@@ -518,7 +530,7 @@ getJSBridge().setPromiseInitializer(( query: ISqlQueryEx ) =>
 } );
 
 
-function transformParameter( i: SqlTypes )
+function getParameterType( i: SqlTypes ): eSqlType
 {
 	if( i == null )
 	{

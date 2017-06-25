@@ -18,8 +18,6 @@
 
 #include "stdafx.h"
 #include "QueryParameter.h"
-#include "BindParam.h"
-
 
 using namespace v8;
 
@@ -48,148 +46,79 @@ CQueryParameter::~CQueryParameter( )
 	m_vecParameter.clear( );
 }
 
-bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBindParam* pParam )
+bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Value > value, CBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-
-	const eSqlType type;
-
-	switch( type )
+	switch( eType )
 	{
-		case eSqlType::eNull:
-			break;
-		case eSqlType::eBit:
-			break;
-		case eSqlType::eTinyint:
-			break;
-		case eSqlType::eSmallint:
-			break;
-		case eSqlType::eInt32:
-			break;
-		case eSqlType::eUint32:
-			break;
-		case eSqlType::eBigInt:
-			break;
-		case eSqlType::eReal:
-			break;
-		case eSqlType::eChar:
-			break;
-		case eSqlType::eNChar:
-			break;
-		case eSqlType::eVarChar:
-			break;
-		case eSqlType::eNVarChar:
-			break;
-		case eSqlType::eBinary:
-			break;
-		case eSqlType::eVarBinary:
-			break;
-		case eSqlType::eDate:
-			break;
-		case eSqlType::eTimestamp:
-			break;
-		case eSqlType::eNumeric:
-			break;
-		case eSqlType::eLongVarChar:
-			break;
-		case eSqlType::eLongNVarChar:
-			break;
-		case eSqlType::eLongVarBinary:
-			break;
-		case eSqlType::eSqlOutputVar:
-			break;
-		default:
-			break;
-	}
-
-
-
-
-	if( value->IsNull( ) )
-	{
-		pParam->SetNull( );
-	}
-	else if( value->IsBoolean( ) )
-	{
-		pParam->SetBool( value->BooleanValue( context ).FromJust( ) );
-	}
-	else if( value->IsInt32( ) )
-	{
-		pParam->SetInt32( value->Int32Value( context ).FromJust( ) );
-	}
-	else if( value->IsUint32( ) )
-	{
-		pParam->SetUint32( value->Uint32Value( context ).FromJust( ) );
-	}
-	else if( value->IsNumber( ) )
-	{
-		double d = value->NumberValue( context ).FromJust( );
-
-		if( std::isnan( d ) || !std::isfinite( d ) )
+		case ESqlType::eNull:
 		{
-			return false;
+			pParam->SetNull( );
+			break;
 		}
-		else if( d == floor( d ) &&
-				 d >= std::numeric_limits< int64_t >::min( ) &&
-				 d <= std::numeric_limits< int64_t >::max( )
-				 )
+		case ESqlType::eBit:
+		{
+			pParam->SetBool( value->BooleanValue( context ).FromJust( ) );
+			break;
+		}
+		case ESqlType::eInt32:
+		{
+			pParam->SetInt32( value->Int32Value( context ).FromJust( ) );
+			break;
+		}
+		case ESqlType::eUint32:
+		{
+			pParam->SetUint32( value->Uint32Value( context ).FromJust( ) );
+			break;
+		}
+		case ESqlType::eBigInt:
 		{
 			pParam->SetInt64( value->IntegerValue( context ).FromJust( ) );
+			break;
 		}
-		else
+		case ESqlType::eReal:
 		{
 			pParam->SetDouble( value->NumberValue( context ).FromJust( ) );
+			break;
 		}
-	}
-	else if( value->IsString( ) )
-	{
-		pParam->SetString( value.As< String >( ) );
-	}
-	else if( value->IsDate( ) )
-	{
-		pParam->SetTimestamp( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
-	}
-// 	else if( node::Buffer::HasInstance( value ) )
-// 	{
-// 		pParam->SetBuffer( value );
-// 	}
+		case ESqlType::eNVarChar: 
+		{
+			pParam->SetString( value.As< String >( ) );
+			break;
+		}
+		case ESqlType::eDate:
+		{
+			pParam->SetDate( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
+			break;
+		}
+		case ESqlType::eTimestamp: 
+		{
+			pParam->SetTimestamp( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
+			break;
+		}
+		case ESqlType::eNumeric: 
+		{
+			pParam->SetNumeric( isolate, value.As< Object >( ) );
+			break;
+		}
+		case ESqlType::eSqlOutputVar:
+		{
 
-	else if( IsComplexType( isolate, value, ID_OUTPUT_PARAMETER ) )
-	{
-		if( !pParam->SetOutputParameter( isolate, value.As< Object >( ) ) )
-		{
-			return false;
+			break;
 		}
-	}
-	else if( IsComplexType( isolate, value, ID_INPUT_STREAM ) )
-	{
-		if( !pParam->SetStream( isolate, value.As< Object >( ) ) )
-		{
-			return false;
-		}
-	}
-	else if( IsComplexType( isolate, value, ID_NUMERIC_VALUE ) )
-	{
-		if( !pParam->SetNumeric( isolate, value.As< Object >( ) ) )
-		{
-			return false;
-		}
-	}
-	else if( IsComplexType( isolate, value, ID_DATE_VALUE ) )
-	{
-		if( !pParam->SetDate( isolate, value.As< Object >( ) ) )
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
 
-
+		case ESqlType::eBinary:
+		case ESqlType::eVarBinary:
+		case ESqlType::eLongVarChar:
+		case ESqlType::eLongNVarChar:
+		case ESqlType::eLongVarBinary:
+		default: 
+		{
+			return false;
+		}
+	}
 	
 	return true;
 }

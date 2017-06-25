@@ -36,7 +36,10 @@ public:
 public:
 	bool BindParameters( v8::Isolate* isolate, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos )
 	{
+		assert( ( nPos - 1 ) > 0 );
+
 		v8::HandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
 
 		if( args.Length( ) <= nPos )
 		{
@@ -44,12 +47,18 @@ public:
 		}
 
 		const size_t nLength = static_cast< size_t >( args.Length( ) - nPos );
-
 		m_vecParameter.resize( nLength );
+
+		v8::Local< v8::Array > types = args[ nPos - 1 ];
 
 		for( int i = 0; i < static_cast< int >( nLength ); i++ )
 		{
-			if( !AddParameter( isolate, args[ nPos + i ], &m_vecParameter[ i ] ) )
+			if( !AddParameter( 
+				isolate, 
+				static_cast< ESqlType >( types->Get( context, i ).ToLocalChecked( )->Uint32Value( context ).FromJust( ) ),
+				args[ nPos + i ], 
+				&m_vecParameter[ i ] 
+			) )
 			{
 				std::stringstream stream;
 				{
@@ -64,36 +73,7 @@ public:
 	}
 
 private:
-	bool AddParameter( v8::Isolate* isolate, v8::Local< v8::Value > value, CBindParam* pParam );
-
-
-private:
-	bool IsComplexType( v8::Isolate* isolate, v8::Local< v8::Value > value, uint32_t id )
-	{
-		if( !value->IsObject( ) )
-		{
-			return false;
-		}
-
-		v8::HandleScope scope( isolate );
-		const auto context = isolate->GetCurrentContext( );
-
-
-		auto _typeId = value.As< v8::Object >( )->Get( context, Nan::New( "_typeId" ).ToLocalChecked( ) );
-		if( _typeId.IsEmpty( ) )
-		{
-			return false;
-		}
-
-		auto typeId = _typeId.ToLocalChecked( );
-
-		if( !typeId->IsUint32( ) )
-		{
-			return false;
-		}
-
-		return ( typeId.As< v8::Uint32 >( ) )->Uint32Value( context ).FromJust( ) == id;
-	}
+	bool AddParameter( v8::Isolate* isolate, ESqlType eType, v8::Local< v8::Value > value, CBindParam* pParam );
 
 public:
 	std::vector< CBindParam, tbb::scalable_allocator< CBindParam > >	m_vecParameter;

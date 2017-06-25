@@ -154,7 +154,7 @@ NAN_METHOD( EConnection::PrepareQuery )
 
 	pQuery->InitializeQuery( FromV8String( info[ 0 ].As< String >( ) ) );
 	{
-		if( !pQuery->GetQueryParam( )->BindParameters( isolate, info, 1 ) )
+		if( !pQuery->GetQueryParam( )->BindParameters( isolate, info, 2 ) )
 		{
 			return;
 		}

@@ -23,31 +23,7 @@
 #include "JSDate.h"
 
 
-//shared with node-odbc.ts
-enum eSqlOutputType : size_t
-{
-	eBitOutput,
-	eTinyintOutput,
-	eSmallint,
-	eInt,
-	eUint32,
-	eBigInt,
-	eFloat,
-	eReal,
-	eChar,
-	eNChar,
-	eVarChar,
-	eNVarChar,
-	eBinary,
-	eVarBinary,
-	eDate,
-	eTimestamp,
-	eNumeric,
-
-	eMax,
-};
-
-enum class eSqlType : size_t
+enum class ESqlType : size_t
 {
 	eNull,
 	eBit, eTinyint, eSmallint, eInt32, eUint32, eBigInt, eReal, eChar, eNChar, eVarChar,
@@ -74,57 +50,61 @@ public:
 			m_stream.Reset( );
 		}
 
+		if( !m_paramRef.IsEmpty( ) )
+		{
+			assert( v8::Isolate::GetCurrent( ) != nullptr );
+			m_paramRef.Reset( );
+		}
+
 		if( m_nParameterType == SQL_WVARCHAR )
 		{
-			delete[ ] m_data.stringDesc.m_stringData.pWString;
-			//scalable_free( m_data.stringDesc.m_stringData.pWString );
+			m_data.stringDesc.Dispose( );
 		}
 		else if( m_nParameterType == SQL_VARBINARY )
 		{
-			delete[ ] m_data.bufferDesc.m_pBuffer; 
-			//scalable_free( m_data.bufferDesc.m_pBuffer );
+			delete[ ] m_data.bufferDesc.m_pBuffer; 						//scalable_free( m_data.bufferDesc.m_pBuffer );
 		}
 	}
 
 public:
 	inline void SetNull( )
 	{
-		SetData( SQL_C_CHAR, SQL_CHAR, sizeof( char ), 0, nullptr, 0, SQL_NULL_DATA );
+		SetData( SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, sizeof( char ), 0, nullptr, 0, SQL_NULL_DATA );
 	}
 
 	inline void SetBool( bool bValue )
 	{
 		m_data.bValue = bValue;
 
-		SetPrimitve< SQLCHAR >( SQL_C_BIT, SQL_BIT, &m_data.bValue );
+		SetPrimitve< SQLCHAR >( SQL_PARAM_INPUT, SQL_C_BIT, SQL_BIT, &m_data.bValue );
 	}
 
 	inline void SetInt32( int32_t nValue )
 	{
 		m_data.nInt32 = nValue;
 
-		SetPrimitve< int32_t >( SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
+		SetPrimitve< int32_t >( SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 	}
 
 	inline void SetUint32( uint32_t nValue )
 	{
 		m_data.nUint32 = nValue;
 
-		SetPrimitve< uint32_t >( SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
+		SetPrimitve< uint32_t >( SQL_PARAM_INPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
 	}
 
 	inline void SetInt64( int64_t nValue )
 	{
 		m_data.nInt64 = nValue;
 
-		SetPrimitve< int64_t >( SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
+		SetPrimitve< int64_t >( SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
 	}
 
 	inline void SetDouble( double dValue )
 	{
 		m_data.dNumber = dValue;
 
-		SetPrimitve< double >( SQL_C_DOUBLE, SQL_DOUBLE, &m_data.dNumber );
+		SetPrimitve< double >( SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE, &m_data.dNumber );
 	}
 
 	inline void SetString( v8::Local< v8::String > value )
@@ -134,7 +114,6 @@ public:
 		m_data.stringDesc.m_eType = EStringType::eUnicode;
 		m_data.stringDesc.m_nLength = nLength;
 		m_data.stringDesc.m_stringData.pWString = new wchar_t[ ( nLength + 1 ) ];
-		//m_data.stringDesc.m_stringData.pWString = static_cast< wchar_t* >( scalable_malloc( ( nLength + 1 ) * sizeof( wchar_t ) ) );
 		{
 			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.m_stringData.pWString ) );
 		}
@@ -142,13 +121,19 @@ public:
 
 		nLength *= sizeof( wchar_t );
 
-		SetData( SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+		SetData( SQL_PARAM_INPUT,  SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+	}
+
+	inline void SetDate( int64_t ms )
+	{
+		CJSDate::ToSqlDate( ms, m_data.sqlDate );
+		SetData( SQL_PARAM_INPUT, SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
 	}
 
 	inline void SetTimestamp( int64_t ms )
 	{
 		CJSDate::ToSqlTimestamp( ms, m_data.sqlTimestamp );
-		SetData( SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 3, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
+		SetData( SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 3, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
 	}
 
 	inline void SetBuffer( v8::Local< v8::Value > value )
@@ -162,7 +147,7 @@ public:
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 
-			SetData( SQL_C_BINARY, SQL_BINARY, nLength, 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
+			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_BINARY, nLength, 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
 		}
 	}
 
@@ -171,19 +156,20 @@ public:
 
 	bool SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-	bool SetDate( v8::Isolate* isolate, v8::Local< v8::Object > value );
-
 	bool SetOutputParameter( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+
 
 private:
 	template< typename T >
-	inline void SetPrimitve( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLPOINTER pBuffer )
+	inline void SetPrimitve( SQLSMALLINT nInputOutputType, SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLPOINTER pBuffer )
 	{
-		SetData( nValueType, nParameterType, sizeof( T ), 0, pBuffer, sizeof( T ), sizeof( T ) );
+		SetData( nInputOutputType, nValueType, nParameterType, sizeof( T ), 0, pBuffer, sizeof( T ), sizeof( T ) );
 	}
 
-	inline void SetData( SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLUINTEGER nColumnSize, SQLSMALLINT nDigits, SQLPOINTER pBuffer, SQLLEN nBufferLen, SQLLEN strLen_or_IndPtr )
+	inline void SetData( SQLSMALLINT nInputOutputType, SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLUINTEGER nColumnSize, SQLSMALLINT nDigits, SQLPOINTER pBuffer, SQLLEN nBufferLen, SQLLEN strLen_or_IndPtr )
 	{
+		m_nInputOutputType = nInputOutputType;
 		m_nValueType = nValueType;
 		m_nParameterType = nParameterType;
 		m_nColumnSize = nColumnSize;

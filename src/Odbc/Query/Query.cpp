@@ -86,7 +86,7 @@ void CQuery::ProcessQuery( )
 
 	if( GetState( ) == EQueryState::eFetchResult )
 	{
-		if( !FetchResults( ) )
+		if( !GetResultSet( )->FetchResults( ) )
 		{
 			SetError( );
 			return;
@@ -108,11 +108,11 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 	{
 		if( HasError( ) )
 		{
-			Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
+			GetResultSet( )->Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
 		}
 		else
 		{
-			Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
+			GetResultSet( )->Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
 		}
 
 		return EForegroundResult::eDiscard;
@@ -216,57 +216,7 @@ bool CQuery::GetParamData( )
 	return true;
 }
 
-bool CQuery::FetchResults( )
-{
-	size_t count = 1;
-
-	SQLRETURN sqlRet = 0;
-	do
-	{
-		SQLSMALLINT nColumns = 0;
-		sqlRet = GetStatement( )->NumResultCols( &nColumns );
-
-		if( nColumns > 0 )
-		{
-			auto pResultSet = std::make_unique< CResultSet >( this );
-
-			if( !pResultSet->PrepareColumns( ) )
-			{
-				return false;
-			}
-
-
-
-
-			if( !GetResultSet( )->PrepareColumns( ) )
-			{
-				return false;
-			}
-
-			while( GetStatement( )->FetchScroll( SQL_FETCH_NEXT, 1 ) != SQL_NO_DATA )
-			{
-				//> read row
-			}
-		}
-
-		count++;
-	} while( ( sqlRet = GetStatement()->MoreResults( ) ) == SQL_SUCCESS );
-
-
-	//while( GetStatement( )->MoreResults( ) )
-	//{
-	//	;;
-	//}
-
-	return true;
-}
-
 void CQuery::InvokeReadData( v8::Isolate* isolate )
-{
-
-}
-
-void CQuery::Resolve( Isolate* isolate, Local< Value > value )
 {
 
 }

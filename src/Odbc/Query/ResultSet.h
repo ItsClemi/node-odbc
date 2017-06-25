@@ -37,8 +37,6 @@ enum class EFetchMode : size_t
 {
 	eSingle,
 	eArray,
-
-	eMax,
 	eNone,
 };
 
@@ -59,14 +57,6 @@ enum class EFecthResult : size_t
 	eDone,
 	eHasMoreData
 };
-
-enum class EFoundResultSet
-{
-	eError,
-	eEmpty,
-	eSuccess,
-};
-
 
 class CQuery;
 class CResultSet
@@ -113,8 +103,6 @@ private:
 	void AddReturnValueExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 	void AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
-
-	void UpdateOutputParameters( v8::Isolate* isolate );
 
 public:
 	void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector );
@@ -183,8 +171,6 @@ public:
 		m_eResolveType = EResolveType::ePromise;
 	}
 
-
-
 public:
 	inline void EnableMetaData( )
 	{
@@ -224,6 +210,6 @@ private:
 
 	std::atomic< EResultState >				m_eState;
 
-	std::vector< SMetaData, tbb::scalable_allocator< SMetaData > >			m_vecMetaData;
-	std::vector< SColumnData, tbb::scalable_allocator< SColumnData > >		m_vecData;
+	std::vector< SMetaData/*, tbb::scalable_allocator< SMetaData >*/ >			m_vecMetaData;
+	std::vector< SColumnData/*, tbb::scalable_allocator< SColumnData >*/ >		m_vecData;
 };

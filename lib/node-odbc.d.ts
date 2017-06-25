@@ -22,30 +22,30 @@ export declare const enum eSqlType {
     eLongVarBinary = 18,
     eSqlOutputVar = 19,
 }
-export declare class SqlStream {
+export declare type SqlComplexType = {
+    readonly _typeId: number;
+};
+export declare type SqlStream = SqlComplexType & {
     type: eSqlType;
     stream: stream.Readable | stream.Writable;
     length: number;
-    constructor(type: eSqlType, stream: stream.Readable | stream.Writable, length: number);
-}
-export declare class SqlNumeric {
+};
+export declare type SqlNumeric = SqlComplexType & {
     precision: number;
     scale: number;
     sign: boolean;
     value: Uint8Array;
-    constructor(precision: number, scale: number, sign: boolean, value: Uint8Array);
-}
-export declare class SqlTimestamp extends Date {
-    nanosecondsDelta: number;
-}
-export declare class SqlOutputParameter {
+};
+export declare type SqlTimestamp = SqlComplexType & {
+    date: Date;
+};
+export declare type SqlOutputParameter = SqlComplexType & {
     reference: SqlTypes | Uint8Array;
     paramType: eSqlType;
     length: number;
     precision: number;
     scale: number;
-    constructor(reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number);
-}
+};
 export declare type SqlError = {
     readonly message: string;
     readonly sqlState: string;
@@ -100,7 +100,6 @@ export declare class Connection {
     prepareQuery(query: string, ...args: (SqlTypes)[]): ISqlQuery;
     executeQuery<T>(eFetchOperation: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
     getInfo(): ConnectionInfo;
-    private transformParameters(...args);
 }
 export interface ISqlQuery {
     enableReturnValue(): ISqlQuery;

@@ -37,9 +37,10 @@ class CBindParam
 public:
 	CBindParam( );
 	~CBindParam( );
+	void Dispose( );
 
 public:
-	void Dispose( );
+	void UpdateOutputParam( v8::Isolate* isolate );
 
 public:
 	inline void SetNull( )
@@ -94,12 +95,6 @@ public:
 		SetData( SQL_PARAM_INPUT, SQL_C_TYPE_DATE, SQL_TYPE_DATE, 0, 0, &m_data.sqlDate, sizeof( SQL_DATE_STRUCT ), sizeof( SQL_DATE_STRUCT ) );
 	}
 
-	inline void SetTimestamp( int64_t ms )
-	{
-		CJSDate::ToSqlTimestamp( ms, m_data.sqlTimestamp );
-		SetData( SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 3, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
-	}
-
 	inline void SetBuffer( v8::Local< v8::Value > value )
 	{
 		size_t nLength = node::Buffer::Length( value );
@@ -110,19 +105,29 @@ public:
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 
-			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_BINARY, nLength, 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
+			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_BINARY, static_cast< SQLUINTEGER >( nLength ), 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
 		}
 	}
 
 public:
-	void SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value )
+	bool SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value )
 	{
 		v8::HandleScope scope( isolate );
 		const auto context = isolate->GetCurrentContext( );
 
-		auto type = value->Get( context, Nan::New( "type" ).ToLocalChecked( ) ).ToLocalChecked( );
-		auto stream = value->Get( context, Nan::New( "stream" ).ToLocalChecked( ) ).ToLocalChecked( );
-		auto length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) ).ToLocalChecked( );
+		auto _type = value->Get( context, Nan::New( "type" ).ToLocalChecked( ) );
+		auto _stream = value->Get( context, Nan::New( "stream" ).ToLocalChecked( ) );
+		auto _length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) );
+
+		if( _type.IsEmpty() || _stream.IsEmpty( ) || _length.IsEmpty( ) )
+		{
+			return false;
+		}
+
+		auto type = _type.ToLocalChecked( );
+		auto stream = _stream.ToLocalChecked( );
+		auto length = _length.ToLocalChecked( );
+
 
 		ESqlType eType = static_cast< ESqlType >( type->Uint32Value( context ).FromJust( ) );
 		uint32_t nLength = length->Uint32Value( context ).FromJust( );
@@ -138,19 +143,36 @@ public:
 		{
 			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_LONGVARBINARY, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
 		}		
+
+		return true;
 	}
 
-	void SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
+	bool SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 	bool SetOutputParameter( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-
-public:
-	void SetStringData( bool bInput, size_t nLength )
+	bool SetTimestamp( v8::Isolate* isolate, v8::Local< v8::Object > value )
 	{
-		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.data.pWString, nLength, nLength );
-	}
+		v8::HandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
 
+		auto _date = value->Get( context, Nan::New( "date" ).ToLocalChecked( ) );
+		if( _date.IsEmpty( ) )
+		{
+			return false;
+		}
+
+		auto date = _date.ToLocalChecked( );
+		if( !date->IsDate( ) )
+		{
+			return false;
+		}
+
+		CJSDate::ToSqlTimestamp( date.As< v8::Date >()->IntegerValue( context ).FromJust( ), m_data.sqlTimestamp );
+		SetData( SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, 3, &m_data.sqlTimestamp, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
+		
+		return true;
+	}
 
 
 private:
@@ -172,13 +194,12 @@ private:
 		m_strLen_or_IndPtr = strLen_or_IndPtr;
 	}
 
+
 public:
-	inline bool IsOutputParam( )
+	inline bool IsOutputParam( ) const
 	{
 		return m_nInputOutputType == SQL_PARAM_OUTPUT;
 	}
-
-
 
 public:
 	SQLSMALLINT				m_nInputOutputType;
@@ -193,7 +214,7 @@ public:
 private:
 	SParamData				m_data;
 	SQLUINTEGER				m_nDataWritten;
+	ESqlType				m_eOutputType;
 
-public:
 	v8::Persistent< v8::Value, v8::CopyablePersistentTraits< v8::Value > >			m_paramRef;
 };

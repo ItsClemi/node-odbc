@@ -52,20 +52,50 @@ void CBindParam::Dispose( )
 	}
 }
 
-void CBindParam::SetNumeric( Isolate* isolate, Local< Object > value )
+void CBindParam::UpdateOutputParam( Isolate* isolate )
+{
+	HandleScope scope( isolate );
+
+	auto valueRef = node::PersistentToLocal< Value, CopyablePersistentTraits< Value > >( isolate, m_paramRef );
+	{
+		valueRef = JSValue::ToValue( isolate, m_eOutputType, m_data );
+	}
+}
+
+bool CBindParam::SetNumeric( Isolate* isolate, Local< Object > value )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	auto precision = value->Get( context, Nan::New( "precision" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto scale = value->Get( context, Nan::New( "scale" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto sign = value->Get( context, Nan::New( "sign" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto buffer = value->Get( context, Nan::New( "value" ).ToLocalChecked( ) ).ToLocalChecked( );
+	auto _precision = value->Get( context, Nan::New( "precision" ).ToLocalChecked( ) );
+	auto _scale = value->Get( context, Nan::New( "scale" ).ToLocalChecked( ) );
+	auto _sign = value->Get( context, Nan::New( "sign" ).ToLocalChecked( ) );
+	auto _buffer = value->Get( context, Nan::New( "value" ).ToLocalChecked( ) );
 
-	auto nPrecision = precision->Uint32Value( context ).FromJust( );
-	auto nScale = scale->Uint32Value( context ).FromJust( );
-	auto bSign = sign->BooleanValue( context ).FromJust( );
-	auto contents = buffer.As< Uint8Array >( )->Buffer( )->GetContents( );
+	if( _precision.IsEmpty( ) || _scale.IsEmpty( ) || _sign.IsEmpty( ) || _buffer.IsEmpty( ) )
+	{
+		return false;
+	}
+
+	auto precision = _precision.ToLocalChecked( );
+	auto scale = _scale.ToLocalChecked( );
+	auto sign = _sign.ToLocalChecked( );
+	auto buffer = _buffer.ToLocalChecked( );
+
+	if( !precision->IsUint32( ) || !scale->IsUint32( ) || !sign->IsBoolean( ) || !buffer->IsUint8Array( ) )
+	{
+		return false;
+	}
+
+	auto nPrecision = precision.As< v8::Uint32 >( )->Uint32Value( context ).FromJust( );
+	auto nScale = scale.As< v8::Uint32 >( )->Uint32Value( context ).FromJust( );
+	auto bSign = sign.As< v8::Boolean >( )->BooleanValue( context ).FromJust( );
+	auto contents = buffer.As< v8::Uint8Array >( )->Buffer( )->GetContents( );
+
+	if( nPrecision > 255 || nScale > 127 || contents.ByteLength( ) > SQL_MAX_NUMERIC_LEN )
+	{
+		return false;
+	}
 
 	size_t nDigits = contents.ByteLength( );
 	{
@@ -78,6 +108,8 @@ void CBindParam::SetNumeric( Isolate* isolate, Local< Object > value )
 	}
 
 	SetData( SQL_PARAM_INPUT, SQL_C_NUMERIC, SQL_NUMERIC, m_data.sqlNumeric.precision, static_cast< SQLSMALLINT >( nDigits ), &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
+
+	return true;
 }
 
 bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
@@ -85,14 +117,30 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	auto paramType = value->Get( context, Nan::New( "paramType" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto ref = value->Get( context, Nan::New( "reference" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto precision = value->Get( context, Nan::New( "precision" ).ToLocalChecked( ) ).ToLocalChecked( );
-	auto scale = value->Get( context, Nan::New( "scale" ).ToLocalChecked( ) ).ToLocalChecked( );
+	auto _paramType = value->Get( context, Nan::New( "paramType" ).ToLocalChecked( ) );
+	auto _ref = value->Get( context, Nan::New( "reference" ).ToLocalChecked( ) );
+	auto _length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) );
+	auto _precision = value->Get( context, Nan::New( "precision" ).ToLocalChecked( ) );
+	auto _scale = value->Get( context, Nan::New( "scale" ).ToLocalChecked( ) );
+
+	if( _paramType.IsEmpty( ) || _ref.IsEmpty( ) || _length.IsEmpty( ) || _precision.IsEmpty( ) || _scale.IsEmpty( ) )
+	{
+		return false;
+	}
+
+	auto paramType = _paramType.ToLocalChecked( );
+	auto ref = _ref.ToLocalChecked( );
+	auto length = _length.ToLocalChecked( );
+	auto precision = _precision.ToLocalChecked( );
+	auto scale = _scale.ToLocalChecked( );
+	
+	if( !paramType->IsUint32( ) || ref->IsUndefined( ) || !length->IsUint32( ) || !precision->IsUint32( ) || !scale->IsUint32( ) )
+	{
+		return false;
+	}
 
 
-	ESqlType eType = static_cast< ESqlType >(  paramType->Uint32Value( context ).FromJust( ) );
+	ESqlType eType = static_cast< ESqlType >( paramType->Uint32Value( context ).FromJust( ) );
 	size_t nLength = static_cast< size_t >( length->IntegerValue( context ).FromJust( ) );
 	uint32_t nPrecision = static_cast< uint32_t >( precision->Uint32Value( context ).FromJust( ) );
 	uint32_t nScale = static_cast< uint32_t >( scale->Uint32Value( context ).FromJust( ) );
@@ -120,11 +168,6 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 			SetPrimitve< int32_t >( SQL_PARAM_OUTPUT, SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 			break;
 		}
-// 		case ESqlType::eUint32: 
-// 		{
-// 			SetPrimitve< uint32_t >( SQL_PARAM_OUTPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
-// 			break;
-// 		}
 		case ESqlType::eBigInt:
 		{
 			SetPrimitve< int64_t >( SQL_PARAM_OUTPUT, SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
@@ -139,7 +182,6 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 		{
 			m_data.stringDesc.Alloc( EStringType::eAnsi, nLength );
 			SetData( SQL_PARAM_OUTPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, m_data.stringDesc.data.pString, nLength, nLength );
-
 			break;
 		}
 		case ESqlType::eNChar:
@@ -147,7 +189,6 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 			m_data.stringDesc.Alloc( EStringType::eUnicode, nLength );
 			nLength *= sizeof( wchar_t );
 			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WCHAR, 0, 0, m_data.stringDesc.data.pWString, nLength, nLength );
-
 			break;
 		}
 		case ESqlType::eVarChar:
@@ -161,41 +202,40 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 			m_data.stringDesc.Alloc( EStringType::eUnicode, nLength );
 			nLength *= sizeof( wchar_t );
 			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WVARCHAR, 0, 0, m_data.stringDesc.data.pWString, nLength, nLength );
-
 			break;
 		}
 		case ESqlType::eBinary:
 		{
-
+			__debugbreak( );
 			break;
 		}
 		case ESqlType::eVarBinary:
 		{
+			__debugbreak( );
 			break;
 		}
 		case ESqlType::eDate:
 		{
+			SetPrimitve< SQL_DATE_STRUCT >( SQL_PARAM_OUTPUT, SQL_C_TYPE_DATE, SQL_TYPE_DATE, &m_data.sqlDate );
 			break;
 		}
 		case ESqlType::eTimestamp: 
 		{
+			SetData( SQL_PARAM_OUTPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, static_cast< SQLSMALLINT >( nScale ), &m_data.sqlDate, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
 			break;
 		}
-
 		case ESqlType::eNumeric:
 		{
+			SetData( SQL_PARAM_OUTPUT, SQL_C_NUMERIC, SQL_NUMERIC, static_cast< SQLUINTEGER  >( nPrecision ), static_cast< SQLSMALLINT >( nScale ), &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
 			break;
 		}
-
-		case ESqlType::eLongVarChar:
-		case ESqlType::eLongNVarChar:
-		case ESqlType::eLongVarBinary:
 		default:
 		{
 			return false;
 		}
 	}
 
+	m_eOutputType = eType;
 	m_paramRef.Reset( isolate, ref );
 
 	return true;

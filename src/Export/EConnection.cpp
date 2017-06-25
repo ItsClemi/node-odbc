@@ -160,7 +160,7 @@ NAN_METHOD( EConnection::PrepareQuery )
 	{
 		pQuery->InitializeQuery( EFetchMode::eNone, FromV8String( info[ 0 ].As< String >( ) ) );
 		{
-			if( !pQuery->GetQueryParam( )->AddParameters( isolate, info[ 1 ].As< Array >( ) ) )
+			if( !pQuery->GetQueryParam( )->AddParameters( isolate, info, 1  ) )
 			{
 				return;
 			}
@@ -192,7 +192,7 @@ NAN_METHOD( EConnection::ExecuteQuery )
 			FromV8String( info[ 2 ].As< String >( ) ) 
 		);
 
-		if( !pQuery->GetQueryParam( )->AddParameters( isolate, info[ 3 ].As< Array >( ) ) )
+		if( !pQuery->GetQueryParam( )->AddParameters( isolate, info, 3 ) )
 		{
 			return;
 		}

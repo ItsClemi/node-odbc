@@ -36,71 +36,40 @@ export const enum eSqlType
 }
 
 
-export class SqlStream 
-{
+const ID_INPUT_STREAM: number = 0;
+const ID_NUMERIC_VALUE: number = 1;
+const ID_TIMESTAMP_VALUE: number = 2;
+const ID_OUTPUT_PARAMETER: number = 3;
+
+export type SqlComplexType = {
+	readonly _typeId: number;
+};
+
+export type SqlStream = SqlComplexType & {
 	type: eSqlType;
 	stream: stream.Readable | stream.Writable;
 	length: number;
-
-	constructor( type: eSqlType, stream: stream.Readable | stream.Writable, length: number )
-	{
-		if( enableValidation )
-		{
-			if( type != eSqlType.eLongNVarChar && type != eSqlType.eLongVarBinary )
-			{
-				throw new TypeError( `type: out of range ${type}` );
-			}
-
-			if( length > 0xFFFFFFFF )
-			{
-				throw new Error( `length: odbc only supports 32 bit length ${length}` );
-			}
-		}
-
-		this.type = type;
-		this.stream = stream;
-		this.length = length;
-	}
 };
 
-export class SqlNumeric 
-{
+export type SqlNumeric = SqlComplexType & {
 	precision: number;
 	scale: number;
 	sign: boolean;
 	value: Uint8Array;
-
-	constructor( precision: number, scale: number, sign: boolean, value: Uint8Array )
-	{
-		this.precision = precision;
-		this.scale = scale;
-		this.sign = sign;
-		this.value = value;
-	}
 };
 
-export class SqlTimestamp extends Date
-{
-	nanosecondsDelta: number;
+export type SqlTimestamp = SqlComplexType & {
+	date: Date;
 }
 
-export class SqlOutputParameter 
-{
+export type SqlOutputParameter = SqlComplexType & {
 	reference: SqlTypes | Uint8Array;
 	paramType: eSqlType;
 	length: number;
 	precision: number;
 	scale: number;
-
-	constructor( reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number )
-	{
-		this.reference = reference;
-		this.paramType = paramType;
-		this.length = length || 0;
-		this.precision = precision || 0;
-		this.scale = scale || 0;
-	}
 }
+
 
 export type SqlError = {
 	readonly message: string;
@@ -179,9 +148,9 @@ declare interface IRawConnection
 
 	disconnect( cb: () => void ): void;
 
-	prepareQuery( query: string, args: ( any )[] ): ISqlQuery;
+	prepareQuery( query: string, ...args: ( SqlTypes )[] ): ISqlQuery;
 
-	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, args: ( any )[] ): void;
+	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void;
 
 	getInfo(): ConnectionInfo;
 }
@@ -196,6 +165,11 @@ export class Connection
 		{
 			if( advancedProps )
 			{
+				if( typeof ( advancedProps ) != "object" )
+				{
+					throw new TypeError( `advancedProps: Expected object, got ${typeof ( advancedProps )}` );
+				}
+
 				if( advancedProps.enableMssqlMars != undefined && typeof ( advancedProps.enableMssqlMars ) != "boolean" )
 				{
 					throw new TypeError( `enableMssqlMars: Expected boolean, got ${typeof ( advancedProps.enableMssqlMars )}` );
@@ -254,7 +228,7 @@ export class Connection
 			}
 		}
 
-		return this._connection.prepareQuery( query, this.transformParameters( ...args ) );
+		return this._connection.prepareQuery( query, ...args );
 	}
 
 	public executeQuery<T>( eFetchOperation: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void
@@ -282,33 +256,12 @@ export class Connection
 			}
 		}
 
-		this._connection.executeQuery<T>( eFetchOperation, cb, query, this.transformParameters( ...args ) );
+		this._connection.executeQuery<T>( eFetchOperation, cb, query, ...args );
 	}
 
 	public getInfo(): ConnectionInfo
 	{
 		return this._connection.getInfo();
-	}
-
-	private transformParameters( ...args: ( SqlTypes )[] )
-	{
-		const params = new Array( args.length * 2 );
-
-		let i = 0;
-		try
-		{
-			for( ; i < args.length; i++ )
-			{
-				params[i] = getParameterType( args[i] );
-				params[i + 1] = args[i];
-			}
-		}
-		catch( err )
-		{
-			throw new Error( `failed to prepare parameter at: ${i}, ${err.Message}` );
-		}
-
-		return params;
 	}
 }
 
@@ -339,95 +292,99 @@ export interface ISqlQueryEx extends ISqlQuery
 
 export function makeInputStream( type: eSqlType.eLongNVarChar | eSqlType.eLongVarBinary, stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
 {
-	return new SqlStream( type, stream, length );
+	return { _typeId: ID_INPUT_STREAM, type, stream, length };
 }
 
 export function makeNumeric( precision: number, scale: number, sign: boolean, value: Uint8Array ): SqlNumeric
 {
-	return new SqlNumeric( precision, scale, sign, value );
+	return { _typeId: ID_NUMERIC_VALUE, precision, scale, sign, value };
 }
 
 export function makeTimestamp( date: Date ): SqlTimestamp
 {
-	return new SqlTimestamp( date );
+	return { _typeId: ID_TIMESTAMP_VALUE, date };
 }
 
+function makeOutputParameter( reference: SqlTypes | Uint8Array, paramType: eSqlType, length?: number, precision?: number, scale?: number ): SqlOutputParameter
+{
+	return { _typeId: ID_OUTPUT_PARAMETER, reference, paramType, length: length || 0, precision: precision || 0, scale: scale || 0 };
+}
 
 export const SqlOutput = {
 
 	asBitOutput( reference: boolean ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eBit );
+		return makeOutputParameter( reference, eSqlType.eBit );
 	},
 
 	asTinyint( reference: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eTinyint );
+		return makeOutputParameter( reference, eSqlType.eTinyint );
 	},
 
 	asSmallint( reference: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eSmallint );
+		return makeOutputParameter( reference, eSqlType.eSmallint );
 	},
 
 	asInt( reference: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eInt32 );
+		return makeOutputParameter( reference, eSqlType.eInt32 );
 	},
 
 	asBigInt( reference: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eBigInt );
+		return makeOutputParameter( reference, eSqlType.eBigInt );
 	},
 
 	asReal( reference: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eReal );
+		return makeOutputParameter( reference, eSqlType.eReal );
 	},
 
 	asChar( reference: string, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eChar, length );
+		return makeOutputParameter( reference, eSqlType.eChar, length );
 	},
 
 	asNChar( reference: string, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eNChar, length );
+		return makeOutputParameter( reference, eSqlType.eNChar, length );
 	},
 
 	asVarChar( reference: string, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eVarChar, length );
+		return makeOutputParameter( reference, eSqlType.eVarChar, length );
 	},
 
 	asNVarChar( reference: string, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eNVarChar, length );
+		return makeOutputParameter( reference, eSqlType.eNVarChar, length );
 	},
 
 	asBinary( reference: Uint8Array, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eBinary, length );
+		return makeOutputParameter( reference, eSqlType.eBinary, length );
 	},
 
 	asVarBinary( reference: Uint8Array, length: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eVarBinary, length );
+		return makeOutputParameter( reference, eSqlType.eVarBinary, length );
 	},
 
 	asDate( reference: Date, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eDate, undefined, undefined, scale );
+		return makeOutputParameter( reference, eSqlType.eDate, undefined, undefined, scale );
 	},
 
 	asTimestamp( reference: Date, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eTimestamp, undefined, undefined, scale );
+		return makeOutputParameter( reference, eSqlType.eTimestamp, undefined, undefined, scale );
 	},
 
 	asNumeric( reference: SqlNumeric, precision: number, scale: number ): SqlOutputParameter
 	{
-		return new SqlOutputParameter( reference, eSqlType.eNumeric, undefined, precision, scale );
+		return makeOutputParameter( reference, eSqlType.eNumeric, undefined, precision, scale );
 	},
 };
 
@@ -524,146 +481,3 @@ getJSBridge().setPromiseInitializer(( query: ISqlQueryEx ) =>
 	} );
 } );
 
-
-function getParameterType( i: SqlTypes ): eSqlType
-{
-	if( i == null )
-	{
-		return eSqlType.eNull;
-	}
-	else if( typeof ( i ) == "boolean" )
-	{
-		return eSqlType.eBit;
-	}
-	else if( typeof ( i ) == "number" )
-	{
-		const kMaxInt = 0x7FFFFFFF;
-		const kMinInt = -kMaxInt - 1;
-
-		if( isNaN( i ) || isFinite( i ) )
-		{
-			throw new Error( `number isNan or isFinite ${i}` );
-		}
-
-		let even = ( i | 0 ) === i;
-
-		if( even && i !== -0.0 && i >= kMinInt && i <= kMaxInt )
-		{
-			return eSqlType.eInt32;
-		}
-		else if( even && i !== -0.0 )
-		{
-			return eSqlType.eBigInt;
-		}
-		else 
-		{
-			return eSqlType.eReal;
-		}
-	}
-	else if( typeof ( i ) == "string" )
-	{
-		return eSqlType.eNVarChar;
-	}
-	else if( i instanceof Date )
-	{
-		return eSqlType.eDate;
-	}
-	else if( i instanceof Buffer )
-	{
-		return eSqlType.eVarBinary;
-	}
-	else if( i instanceof SqlOutputParameter )
-	{
-		if( enableValidation )
-		{
-			if( i.reference == undefined )
-			{
-				throw new TypeError( `reference: Expected SqlType, got ${i.reference}(${typeof ( i.reference  )})` );
-			}
-
-			if( typeof ( i.paramType ) != "number" )
-			{
-				throw new TypeError( `paramType: Expected number, got ${typeof ( i.paramType )}` );
-			}
-
-			if( i.length != undefined && typeof ( i.length ) != "number" )
-			{
-				throw new TypeError( `length: Expected number, got ${typeof ( i.length )}` );
-			}
-
-			if( i.precision != undefined && typeof ( i.precision ) != "number" )
-			{
-				throw new TypeError( `precision: Expected number, got ${typeof ( i.precision )}` );
-			}
-
-			if( i.scale != undefined && typeof ( i.scale ) != "number" )
-			{
-				throw new TypeError( `scale: Expected number, got ${typeof ( i.scale )}` );
-			}
-
-			if( i.paramType < eSqlType.eNull || i.paramType > eSqlType.eSqlOutputVar )
-			{
-				throw new Error( `paramType: Invalid value range: Expected ${eSqlType.eNull}-${eSqlType.eSqlOutputVar} ${i.paramType}` );
-			}
-		}
-
-		return eSqlType.eSqlOutputVar;
-	}
-	else if( i instanceof SqlStream )
-	{
-		if( enableValidation )
-		{
-			if( typeof ( i.stream ) != "object" )
-			{
-				throw new TypeError( `stream: Expected stream, got ${typeof ( i.stream )}` );
-			}
-
-			if( typeof ( i.length ) != "number" )
-			{
-				throw new TypeError( `length: Expected number, got ${typeof ( i.length )}` );
-			}
-		}
-
-		throw new Error("streams are not supported yet");
-
-		//return eSqlType.eLongVarBinary;
-	}
-	else if( i instanceof SqlNumeric )
-	{
-		if( enableValidation )
-		{
-			if( typeof ( i.precision ) != "number" )
-			{
-				throw new TypeError( `precision: Expected number, got ${typeof ( i.precision )}` );
-			}
-
-			if( typeof ( i.scale ) != "number" )
-			{
-				throw new TypeError( `scale: Expected number, got ${typeof ( i.scale )}` );
-			}
-
-			if( typeof ( i.sign ) != "boolean" )
-			{
-				throw new TypeError( `sign: Expected boolean, got ${typeof ( i.sign )}` );
-			}
-
-			if( typeof ( i.value ) != "object" && !( i.value instanceof Uint8Array ) )
-			{
-				throw new TypeError( `value: Expected Uint8Array, got ${typeof ( i.value )}` );
-			}
-
-			if( i.precision < 0 || i.precision > 255 || i.scale < 0 || i.scale > 127 || i.value.length > 16 )
-			{
-				throw new Error( `invalid parameter range ${i}` );
-			}
-		}
-
-		return eSqlType.eNumeric;
-	}
-	else if( i instanceof SqlTimestamp )
-	{
-		return eSqlType.eTimestamp;
-	}
-
-	throw new Error( `invalid param type got: ${i}(${typeof ( i )})` );
-}

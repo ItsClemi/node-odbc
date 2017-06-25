@@ -66,18 +66,11 @@ private:
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
 
-
 private:
 	bool GetParamData( );
 
-	bool FetchResults( );
-
 private:
 	void InvokeReadData( v8::Isolate* isolate );
-
-
-private:
-	void Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value );
 
 
 public:
@@ -217,7 +210,6 @@ private:
 	bool			m_bReturnValue = false;
 	bool			m_bTransactionEnabled = false;
 
-
 	SQLUINTEGER		m_nQueryTimeout = 0;
 	SQLSMALLINT		m_nReturnValue = 0;
 	SQLLEN			m_nCbReturnValue = 0;
@@ -228,5 +220,4 @@ private:
 private:
 	bool			m_bExecNoData = false;
 
-	std::vector< std::unique_ptr< CResultSet > >		m_vecResultSets;
 };

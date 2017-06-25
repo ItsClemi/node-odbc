@@ -43,6 +43,9 @@
     <Filter Include="Core\Connection">
       <UniqueIdentifier>{97369b95-b0f9-4c41-807d-dabd24a8ef36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Odbc\Query\Async">
+      <UniqueIdentifier>{9706c1ac-7d59-4886-a18d-1f88cfa01c15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

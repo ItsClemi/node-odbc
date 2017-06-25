@@ -59,11 +59,11 @@ struct SStringDesc
 
 		if( IsAnsiString( ) )
 		{
-			data.pString = new char[ nLength ];
+			data.pString = new char[ nLength + 1 ];
 		}
 		else
 		{
-			data.pWString = new wchar_t[ nLength ];
+			data.pWString = new wchar_t[ nLength + 1 ];
 		}
 	}
 
@@ -71,11 +71,11 @@ struct SStringDesc
 	{
 		if( IsAnsiString( ) )
 		{
-			SafeDeleteArray( data.pString );
+			delete []( data.pString );
 		}
 		else
 		{
-			SafeDeleteArray( data.pWString );
+			delete []( data.pWString );
 		}
 	}
 

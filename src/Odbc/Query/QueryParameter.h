@@ -23,6 +23,12 @@
 
 class CQueryParameter
 {
+	static const uint32_t ID_INPUT_STREAM = 0;
+	static const uint32_t ID_NUMERIC_VALUE = 1;
+	static const uint32_t ID_TIMESTAMP_VALUE = 2;
+	static const uint32_t ID_OUTPUT_PARAMETER = 3;
+
+
 	friend class CQuery;
 	friend class CResultSet;
 
@@ -31,32 +37,35 @@ public:
 	virtual ~CQueryParameter( );
 
 public:
-	bool AddParameters( v8::Isolate* isolate, const v8::Local< v8::Array > args )
+	void UpdateOutputParameters( v8::Isolate* isolate );
+
+
+public:
+	bool AddParameters( v8::Isolate* isolate, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nOffset )
 	{
 		v8::HandleScope scope( isolate );
 		const auto context = isolate->GetCurrentContext( );
 
-		if( args->Length( ) <= 0 )
+		if( args.Length( ) <= nOffset )
 		{
 			return true;
 		}
 
-		const size_t nParams = static_cast< size_t >( args->Length( ) / 2 );
 
-		m_vecParameter.resize( nParams );
+		const int nParams = static_cast< size_t >( args.Length( ) - nOffset );
+
+		m_vecParameter.resize( static_cast< size_t >( nParams ) );
 
 
-		for( size_t i = 0; i < nParams; i++ )
+		for( int i = 0; i < nParams; i++ )
 		{
-			const ESqlType eType = static_cast< ESqlType >(
-				args->Get( context, static_cast< int >( i * 2 ) ).ToLocalChecked( )->Uint32Value( context ).FromJust( ) 
-				);
+			auto value = args[ nOffset + i ];
 
-			const auto value = args->Get( context, static_cast< int >( ( i * 2 ) + 1  ) ).ToLocalChecked( );
-
-
-			if( !AddParameter( isolate, eType, value, &m_vecParameter[ i ] ) )
+			if( !AddParameter( isolate, value, &m_vecParameter[ i ] ) )
 			{
+				auto _t = value->ToString( context ).ToLocalChecked( );
+				auto ___t = FromV8String( _t );
+
 				std::stringstream stream;
 				{
 					stream << "failed to bind query parameter at pos: " << i;
@@ -69,17 +78,41 @@ public:
 		return true;
 	}
 
-private:
-	bool AddParameter( v8::Isolate* isolate, ESqlType eType, v8::Local< v8::Value > value, CBindParam* pParam );
 
-public:
-	bool HasOutputParams( )
+private:
+	bool AddParameter( v8::Isolate* isolate, v8::Local< v8::Value > value, CBindParam* pParam );
+
+
+private:
+	bool IsComplexType( v8::Isolate* isolate, v8::Local< v8::Value > value, uint32_t id )
 	{
-		return m_bOutputParameters;
+		if( !value->IsObject( ) )
+		{
+			return false;
+		}
+
+		v8::HandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
+
+		auto _typeId = value.As< v8::Object >( )->Get( context, Nan::New( "_typeId" ).ToLocalChecked( ) );
+		if( _typeId.IsEmpty( ) )
+		{
+			return false;
+		}
+
+		auto typeId = _typeId.ToLocalChecked( );
+
+		if( !typeId->IsUint32( ) )
+		{
+			return false;
+		}
+
+		return typeId->Uint32Value( context ).FromJust( ) == id;
 	}
+
 
 private:
 	bool	m_bOutputParameters = false;
 
-	std::vector< CBindParam, tbb::scalable_allocator< CBindParam > >	m_vecParameter;
+	std::vector< CBindParam/*, tbb::scalable_allocator< CBindParam >*/ >	m_vecParameter;
 };

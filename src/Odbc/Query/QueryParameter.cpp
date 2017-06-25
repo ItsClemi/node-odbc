@@ -18,8 +18,17 @@
 
 #include "stdafx.h"
 #include "QueryParameter.h"
+#include "Helper/JSValue.h"
 
 using namespace v8;
+
+#ifdef _WINDOWS
+#pragma push_macro("min")
+#pragma push_macro( "max" )
+
+#undef min
+#undef max
+#endif
 
 
 CQueryParameter::CQueryParameter( )
@@ -35,87 +44,113 @@ CQueryParameter::~CQueryParameter( )
 	m_vecParameter.clear( );
 }
 
-bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Value > value, CBindParam* pParam )
+void CQueryParameter::UpdateOutputParameters( v8::Isolate* isolate )
+{
+	if( !m_bOutputParameters )
+	{
+		return;
+	}
+
+	HandleScope scope( isolate );
+
+	for( auto& i : m_vecParameter )
+	{
+		if( i.IsOutputParam( ) )
+		{
+			i.UpdateOutputParam( isolate );
+		}
+	}
+}
+
+bool CQueryParameter::AddParameter( Isolate* isolate, Local< Value > value, CBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
 
-	switch( eType )
+	if( value->IsNull( ) )
 	{
-		case ESqlType::eNull:
+		pParam->SetNull( );
+	}
+	else if( value->IsBoolean( ) )
+	{
+		pParam->SetBool( value->BooleanValue( context ).FromJust( ) );
+	}
+	else if( value->IsInt32( ) )
+	{
+		pParam->SetInt32( value->Int32Value( context ).FromJust( ) );
+	}
+	else if( value->IsNumber( ) )
+	{
+		double d = value->NumberValue( context ).FromJust( );
+
+		if( std::isnan( d ) || !std::isfinite( d ) )
 		{
-			pParam->SetNull( );
-			break;
+			return false;
 		}
-		case ESqlType::eBit:
-		{
-			pParam->SetBool( value->BooleanValue( context ).FromJust( ) );
-			break;
-		}
-		case ESqlType::eInt32:
-		{
-			pParam->SetInt32( value->Int32Value( context ).FromJust( ) );
-			break;
-		}
-		case ESqlType::eBigInt:
+		else if( d == floor( d ) &&
+				 d >= std::numeric_limits< int64_t >::min( ) &&
+				 d <= std::numeric_limits< int64_t >::max( )
+				 )
 		{
 			pParam->SetInt64( value->IntegerValue( context ).FromJust( ) );
-			break;
 		}
-		case ESqlType::eReal:
+		else
 		{
 			pParam->SetDouble( value->NumberValue( context ).FromJust( ) );
-			break;
 		}
-		case ESqlType::eNVarChar: 
-		{
-			pParam->SetString( value.As< String >( ) );
-			break;
-		}
-		case ESqlType::eDate:
-		{
-			pParam->SetDate( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
-			break;
-		}
-		case ESqlType::eTimestamp: 
-		{
-			pParam->SetTimestamp( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
-			break;
-		}
-		case ESqlType::eNumeric: 
-		{
-			pParam->SetNumeric( isolate, value.As< Object >( ) );
-			break;
-		}
-		case ESqlType::eSqlOutputVar:
-		{
-			m_bOutputParameters = true;
-
-			pParam->SetOutputParameter( isolate, value.As< Object >( ) );
-			break;
-		}
-		case ESqlType::eVarBinary:
-		{
-			pParam->SetBuffer( value );
-			break;
-		}
-
-		case ESqlType::eLongNVarChar:
-		{
-
-			break;
-		}
-		case ESqlType::eLongVarBinary:
-		{
-
-			break;
-		}
-
-		default: 
+	}
+	else if( value->IsString( ) )
+	{
+		pParam->SetString( value.As< String >( ) );
+	}
+	else if( value->IsDate( ) )
+	{
+		pParam->SetDate( static_cast< int64_t >( value->NumberValue( context ).FromJust( ) ) );
+	}
+	else if( node::Buffer::HasInstance( value ) )
+	{
+		pParam->SetBuffer( value );
+	}
+	else if( IsComplexType( isolate, value, ID_INPUT_STREAM ) )
+	{
+		if( !pParam->SetStream( isolate, value.As< Object >( ) ) )
 		{
 			return false;
 		}
 	}
-	
+	else if( IsComplexType( isolate, value, ID_NUMERIC_VALUE ) )
+	{
+		if( !pParam->SetNumeric( isolate, value.As< Object >( ) ) )
+		{
+			return false;
+		}
+	}
+	else if( IsComplexType( isolate, value, ID_TIMESTAMP_VALUE ) )
+	{
+		if( !pParam->SetTimestamp( isolate, value.As< Object >( ) ) )
+		{
+			return false;
+		}
+	}
+	else if( IsComplexType( isolate, value, ID_OUTPUT_PARAMETER ) )
+	{
+		if( !pParam->SetOutputParameter( isolate, value.As< Object >() ) )
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+
 	return true;
 }
+
+
+#ifdef _WINDOWS
+
+#pragma pop_macro( "min" )
+#pragma pop_macro( "max" )
+
+#endif

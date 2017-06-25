@@ -114,8 +114,6 @@ private:
 
 	void AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
-	void UpdateOutputParameters( v8::Isolate* isolate );
-
 public:
 	void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector );
 

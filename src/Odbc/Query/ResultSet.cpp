@@ -599,10 +599,7 @@ Local< Value > CResultSet::ConstructResult( Isolate* isolate )
 
 	AddResultExtensions( isolate, value.As< Object >( ) );
 
-	if( GetQuery( )->GetQueryParam( )->HasOutputParams( ) )
-	{
-		UpdateOutputParameters( isolate );
-	}
+	GetQuery( )->GetQueryParam( )->UpdateOutputParameters( isolate );
 
 	return scope.Escape( value );
 }
@@ -730,26 +727,6 @@ void CResultSet::AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8:
 	if( value->Set( context, key, instance ).IsNothing( ) )
 	{
 		return;
-	}
-}
-
-void CResultSet::UpdateOutputParameters( v8::Isolate* isolate )
-{
-	HandleScope scope( isolate );
-
-	for( const auto& i : GetQuery( )->GetQueryParam( )->m_vecParameter )
-	{
-		if( i.m_nInputOutputType == SQL_PARAM_OUTPUT )
-		{
-			auto value = node::PersistentToLocal< Value, CopyablePersistentTraits< Value > >( isolate, i.m_paramRef );
-
-			SColumnData data;
-			{
-				//> set data with type info from parameter
-			}
-
-			value = data.ToValue( isolate );
-		}
 	}
 }
 

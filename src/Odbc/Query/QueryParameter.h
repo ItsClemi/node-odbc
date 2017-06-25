@@ -31,6 +31,9 @@ public:
 	virtual ~CQueryParameter( );
 
 public:
+	void UpdateOutputParameters( v8::Isolate* isolate );
+
+public:
 	bool AddParameters( v8::Isolate* isolate, const v8::Local< v8::Array > args )
 	{
 		v8::HandleScope scope( isolate );

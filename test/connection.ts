@@ -178,7 +178,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 1, noprecision: true } );
+					}, "****select****", ( <any>odbc ).makeNumeric( undefined ) );
 			} );
 		} );
 
@@ -190,7 +190,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 1, precision: true } );
+					}, "****select****", odbc.makeNumeric( true as any, 5, false, <any>undefined ) );
 			} );
 		} );
 
@@ -202,7 +202,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 1, precision: 12, scale: false } );
+					}, "****select****", odbc.makeNumeric( 12, <any>false, false, <any>undefined ) );
 			} );
 		} );
 
@@ -214,7 +214,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 1, precision: 12, scale: 5, sign: "asdf" } );
+					}, "****select****", odbc.makeNumeric( 12, 5, <any>"asdasds", <any>undefined ) );
 			} );
 		} );
 
@@ -226,7 +226,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 1, precision: 12, scale: 5, sign: false, value: undefined } );
+					}, "****select****", odbc.makeNumeric( 12, 5, false, <any>undefined ) );
 			} );
 		} );
 
@@ -239,7 +239,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 2, notdate: 25 } );
+					}, "****select****", odbc.makeTimestamp( <any>( { notdate: 25 } ) ) );
 			} );
 		} );
 
@@ -251,7 +251,7 @@ mod.connection.forEach(( con ) =>
 					.connect( con.connectionString )
 					.executeQuery( odbc.eFetchMode.eSingle, ( res, err ) =>
 					{
-					}, "****select****", <any>{ _typeId: 2, date: false } );
+					}, "****select****", odbc.makeTimestamp( <any>( undefined ) ) );
 			} );
 		} );
 

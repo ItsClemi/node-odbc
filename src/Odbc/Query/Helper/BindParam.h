@@ -40,6 +40,8 @@ public:
 
 public:
 	void Dispose( );
+	void UpdateOutputParam( v8::Isolate* isolate );
+		
 
 public:
 	inline void SetNull( )
@@ -110,7 +112,7 @@ public:
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
 
-			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_BINARY, nLength, 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
+			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_BINARY, static_cast< SQLUINTEGER >( nLength ), 0, m_data.bufferDesc.m_pBuffer, static_cast< SQLLEN >( nLength ), static_cast< SQLLEN >( nLength ) );
 		}
 	}
 
@@ -173,7 +175,7 @@ private:
 	}
 
 public:
-	inline bool IsOutputParam( )
+	inline bool IsOutputParam( ) const
 	{
 		return m_nInputOutputType == SQL_PARAM_OUTPUT;
 	}
@@ -193,6 +195,8 @@ public:
 private:
 	SParamData				m_data;
 	SQLUINTEGER				m_nDataWritten;
+	ESqlType				m_eOutputType;
+
 
 public:
 	v8::Persistent< v8::Value, v8::CopyablePersistentTraits< v8::Value > >			m_paramRef;

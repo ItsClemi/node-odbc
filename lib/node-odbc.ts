@@ -299,8 +299,8 @@ export class Connection
 		{
 			for( ; i < args.length; i++ )
 			{
-				params[i] = getParameterType( args[i] );
-				params[i + 1] = args[i];
+				params[( i * 2 )] = getParameterType( args[i] );
+				params[( i * 2 ) + 1] = args[i];
 			}
 		}
 		catch( err )
@@ -540,12 +540,12 @@ function getParameterType( i: SqlTypes ): eSqlType
 		const kMaxInt = 0x7FFFFFFF;
 		const kMinInt = -kMaxInt - 1;
 
-		if( isNaN( i ) || isFinite( i ) )
+		if( isNaN( i ) || !isFinite( i ) )
 		{
-			throw new Error( `number isNan or isFinite ${i}` );
+			throw new Error( `number isNan or not isFinite ${i}` );
 		}
 
-		let even = ( i | 0 ) === i;
+		let even = Math.floor( i ) === i;
 
 		if( even && i !== -0.0 && i >= kMinInt && i <= kMaxInt )
 		{
@@ -566,6 +566,11 @@ function getParameterType( i: SqlTypes ): eSqlType
 	}
 	else if( i instanceof Date )
 	{
+		if( isNaN( i.getMilliseconds() ) )
+		{
+			throw new TypeError( `date: value is NaN ${i.getMilliseconds()}` );
+		}
+
 		return eSqlType.eDate;
 	}
 	else if( i instanceof Buffer )
@@ -578,7 +583,7 @@ function getParameterType( i: SqlTypes ): eSqlType
 		{
 			if( i.reference == undefined )
 			{
-				throw new TypeError( `reference: Expected SqlType, got ${i.reference}(${typeof ( i.reference  )})` );
+				throw new TypeError( `reference: Expected SqlType, got ${i.reference}(${typeof ( i.reference )})` );
 			}
 
 			if( typeof ( i.paramType ) != "number" )
@@ -624,9 +629,7 @@ function getParameterType( i: SqlTypes ): eSqlType
 			}
 		}
 
-		throw new Error("streams are not supported yet");
-
-		//return eSqlType.eLongVarBinary;
+		return eSqlType.eLongVarBinary;
 	}
 	else if( i instanceof SqlNumeric )
 	{

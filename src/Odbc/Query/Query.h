@@ -65,12 +65,8 @@ private:
 
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
-
-
-private:
 	bool GetParamData( );
-
-	bool FetchResults( );
+	
 
 private:
 	void InvokeReadData( v8::Isolate* isolate );
@@ -227,6 +223,4 @@ private:
 
 private:
 	bool			m_bExecNoData = false;
-
-	std::vector< std::unique_ptr< CResultSet > >		m_vecResultSets;
 };

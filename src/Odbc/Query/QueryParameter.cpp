@@ -35,6 +35,26 @@ CQueryParameter::~CQueryParameter( )
 	m_vecParameter.clear( );
 }
 
+
+void CQueryParameter::UpdateOutputParameters( Isolate* isolate )
+{
+	if( !m_bOutputParameters )
+	{
+		return;
+	}
+
+	HandleScope scope( isolate );
+
+	for( auto& i : m_vecParameter )
+	{
+		if( i.IsOutputParam( ) )
+		{
+			i.UpdateOutputParam( isolate );
+		}
+	}
+}
+
+
 bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Value > value, CBindParam* pParam )
 {
 	HandleScope scope( isolate );

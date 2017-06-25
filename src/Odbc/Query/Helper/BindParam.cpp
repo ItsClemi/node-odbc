@@ -52,6 +52,16 @@ void CBindParam::Dispose( )
 	}
 }
 
+void CBindParam::UpdateOutputParam( Isolate* isolate )
+{
+	HandleScope scope( isolate );
+
+	auto valueRef = node::PersistentToLocal< Value, CopyablePersistentTraits< Value > >( isolate, m_paramRef );
+	{
+		valueRef = JSValue::ToValue( isolate, m_eOutputType, m_data );
+	}
+}
+
 void CBindParam::SetNumeric( Isolate* isolate, Local< Object > value )
 {
 	HandleScope scope( isolate );
@@ -120,11 +130,6 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 			SetPrimitve< int32_t >( SQL_PARAM_OUTPUT, SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 			break;
 		}
-// 		case ESqlType::eUint32: 
-// 		{
-// 			SetPrimitve< uint32_t >( SQL_PARAM_OUTPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
-// 			break;
-// 		}
 		case ESqlType::eBigInt:
 		{
 			SetPrimitve< int64_t >( SQL_PARAM_OUTPUT, SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
@@ -166,36 +171,36 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 		}
 		case ESqlType::eBinary:
 		{
-
+			__debugbreak( );
 			break;
 		}
 		case ESqlType::eVarBinary:
 		{
+			__debugbreak( );
 			break;
 		}
 		case ESqlType::eDate:
 		{
+			SetPrimitve< SQL_DATE_STRUCT >( SQL_PARAM_OUTPUT, SQL_C_TYPE_DATE, SQL_TYPE_DATE, &m_data.sqlDate );
 			break;
 		}
-		case ESqlType::eTimestamp: 
+		case ESqlType::eTimestamp:
 		{
+			SetData( SQL_PARAM_OUTPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP, 0, static_cast< SQLSMALLINT >( nScale ), &m_data.sqlDate, sizeof( SQL_TIMESTAMP_STRUCT ), sizeof( SQL_TIMESTAMP_STRUCT ) );
 			break;
 		}
-
 		case ESqlType::eNumeric:
 		{
+			SetData( SQL_PARAM_OUTPUT, SQL_C_NUMERIC, SQL_NUMERIC, static_cast< SQLUINTEGER >( nPrecision ), static_cast< SQLSMALLINT >( nScale ), &m_data.sqlNumeric, sizeof( SQL_NUMERIC_STRUCT ), sizeof( SQL_NUMERIC_STRUCT ) );
 			break;
 		}
-
-		case ESqlType::eLongVarChar:
-		case ESqlType::eLongNVarChar:
-		case ESqlType::eLongVarBinary:
 		default:
 		{
 			return false;
 		}
 	}
 
+	m_eOutputType = eType;
 	m_paramRef.Reset( isolate, ref );
 
 	return true;

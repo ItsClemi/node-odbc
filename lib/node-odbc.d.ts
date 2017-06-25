@@ -6,27 +6,27 @@ export declare const enum eSqlType {
     eTinyint = 2,
     eSmallint = 3,
     eInt32 = 4,
-    eUint32 = 5,
-    eBigInt = 6,
-    eReal = 7,
-    eChar = 8,
-    eNChar = 9,
-    eVarChar = 10,
-    eNVarChar = 11,
-    eBinary = 12,
-    eVarBinary = 13,
-    eDate = 14,
-    eTimestamp = 15,
-    eNumeric = 16,
-    eLongVarChar = 17,
-    eLongNVarChar = 18,
-    eLongVarBinary = 19,
-    eSqlOutputVar = 20,
+    eBigInt = 5,
+    eReal = 6,
+    eChar = 7,
+    eNChar = 8,
+    eVarChar = 9,
+    eNVarChar = 10,
+    eBinary = 11,
+    eVarBinary = 12,
+    eDate = 13,
+    eTimestamp = 14,
+    eNumeric = 15,
+    eLongVarChar = 16,
+    eLongNVarChar = 17,
+    eLongVarBinary = 18,
+    eSqlOutputVar = 19,
 }
 export declare class SqlStream {
+    type: eSqlType;
     stream: stream.Readable | stream.Writable;
     length: number;
-    constructor(stream: stream.Readable | stream.Writable, length: number);
+    constructor(type: eSqlType, stream: stream.Readable | stream.Writable, length: number);
 }
 export declare class SqlNumeric {
     precision: number;
@@ -114,7 +114,7 @@ export interface ISqlQuery {
 export interface ISqlQueryEx extends ISqlQuery {
     setPromiseInfo(resolve: any, reject: any): void;
 }
-export declare function makeInputStream(stream: fs.ReadStream | stream.Readable, length: number): SqlStream;
+export declare function makeInputStream(type: eSqlType.eLongNVarChar | eSqlType.eLongVarBinary, stream: fs.ReadStream | stream.Readable, length: number): SqlStream;
 export declare function makeNumeric(precision: number, scale: number, sign: boolean, value: Uint8Array): SqlNumeric;
 export declare function makeTimestamp(date: Date): SqlTimestamp;
 export declare const SqlOutput: {
@@ -122,7 +122,6 @@ export declare const SqlOutput: {
     asTinyint(reference: number): SqlOutputParameter;
     asSmallint(reference: number): SqlOutputParameter;
     asInt(reference: number): SqlOutputParameter;
-    asUInt(reference: number): SqlOutputParameter;
     asBigInt(reference: number): SqlOutputParameter;
     asReal(reference: number): SqlOutputParameter;
     asChar(reference: string, length: number): SqlOutputParameter;

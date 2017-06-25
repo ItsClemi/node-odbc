@@ -57,11 +57,6 @@ bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Val
 			pParam->SetInt32( value->Int32Value( context ).FromJust( ) );
 			break;
 		}
-		case ESqlType::eUint32:
-		{
-			pParam->SetUint32( value->Uint32Value( context ).FromJust( ) );
-			break;
-		}
 		case ESqlType::eBigInt:
 		{
 			pParam->SetInt64( value->IntegerValue( context ).FromJust( ) );
@@ -94,15 +89,28 @@ bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Val
 		}
 		case ESqlType::eSqlOutputVar:
 		{
+			m_bOutputParameters = true;
+
 			pParam->SetOutputParameter( isolate, value.As< Object >( ) );
 			break;
 		}
-
-		case ESqlType::eBinary:
 		case ESqlType::eVarBinary:
-		case ESqlType::eLongVarChar:
+		{
+			pParam->SetBuffer( value );
+			break;
+		}
+
 		case ESqlType::eLongNVarChar:
+		{
+
+			break;
+		}
 		case ESqlType::eLongVarBinary:
+		{
+
+			break;
+		}
+
 		default: 
 		{
 			return false;

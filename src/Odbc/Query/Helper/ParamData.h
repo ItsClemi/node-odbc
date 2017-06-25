@@ -37,14 +37,14 @@ struct SStringDesc
 	{
 		m_eType = EStringType::eAnsi;
 		m_nLength = nLen;
-		m_stringData.pString = szString;
+		data.pString = szString;
 	}
 
 	void SetString( wchar_t* szString, size_t nLen )
 	{
 		m_eType = EStringType::eUnicode;
 		m_nLength = nLen;
-		m_stringData.pWString = szString;
+		data.pWString = szString;
 	}
 
 	bool IsAnsiString( )
@@ -59,11 +59,11 @@ struct SStringDesc
 
 		if( IsAnsiString( ) )
 		{
-			m_stringData.pString = new char[ nLength ];
+			data.pString = new char[ nLength ];
 		}
 		else
 		{
-			m_stringData.pWString = new wchar_t[ nLength ];
+			data.pWString = new wchar_t[ nLength ];
 		}
 	}
 
@@ -71,18 +71,18 @@ struct SStringDesc
 	{
 		if( IsAnsiString( ) )
 		{
-			SafeDeleteArray( m_stringData.pString );
+			SafeDeleteArray( data.pString );
 		}
 		else
 		{
-			SafeDeleteArray( m_stringData.pWString );
+			SafeDeleteArray( data.pWString );
 		}
 	}
 
 
 	EStringType		m_eType;
 	size_t			m_nLength;
-	UStringData		m_stringData;
+	UStringData		data;
 };
 
 
@@ -105,7 +105,6 @@ union SParamData
 	int32_t						nInt32;
 	uint32_t					nUint32;
 	int64_t						nInt64;
-	//float						fValue;
 	double						dNumber;
 
 	SBufferDesc					bufferDesc;

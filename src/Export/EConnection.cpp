@@ -157,15 +157,15 @@ NAN_METHOD( EConnection::PrepareQuery )
 
 
 	const auto pQuery = pThis->GetPool( )->CreateQuery( );
-
-	pQuery->InitializeQuery( FromV8String( info[ 0 ].As< String >( ) ) );
 	{
-		if( !pQuery->GetQueryParam( )->BindParameters( isolate, info, 2 ) )
+		pQuery->InitializeQuery( EFetchMode::eNone, FromV8String( info[ 0 ].As< String >( ) ) );
 		{
-			return;
+			if( !pQuery->GetQueryParam( )->AddParameters( isolate, info[ 1 ].As< Array >( ) ) )
+			{
+				return;
+			}
 		}
 	}
-
 	info.GetReturnValue( ).Set(
 		EPreparedQuery::CreateInstance( isolate, pQuery )
 	);
@@ -181,16 +181,18 @@ NAN_METHOD( EConnection::ExecuteQuery )
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->IsReady( ), "invalid pool state (connected to your datasource?)" );
 
+	auto eFetchMode = static_cast< EFetchMode >( info[ 0 ]->Uint32Value( context ).FromJust( ) );
+
 	const auto pQuery = pThis->GetPool( )->CreateQuery( );
 	{
-		if( !pQuery->SetParameters(
-			isolate,
-			static_cast< EFetchMode >( info[ 0 ]->Uint32Value( context ).FromJust( ) ),
-			info[ 1 ].As< Function >( ),
-			FromV8String( info[ 2 ].As< String >( ) ),
-			info,
-			3
-		) )
+		pQuery->InitializeQuery( 
+			isolate, 
+			info[ 1 ].As< Function>( ), 
+			eFetchMode, 
+			FromV8String( info[ 2 ].As< String >( ) ) 
+		);
+
+		if( !pQuery->GetQueryParam( )->AddParameters( isolate, info[ 3 ].As< Array >( ) ) )
 		{
 			return;
 		}

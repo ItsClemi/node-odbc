@@ -31,11 +31,18 @@ enum class EQueryState : size_t
 {
 	eNone,
 	eExecuteStatement,
-	
+
 	eNeedData,
 	eFetchResult,
 
 	eEnd
+};
+
+
+
+enum class ESqlFetchResult: size_t
+{
+	eError, eSuccess, eNoData,
 };
 
 
@@ -46,7 +53,7 @@ class CQuery : public IUvOperation
 public:
 	CQuery( const std::shared_ptr< CConnectionPool > pPool );
 	~CQuery( );
-	
+
 
 public:
 	virtual void ProcessBackground( ) override;
@@ -59,6 +66,20 @@ private:
 	bool ExecuteStatement( );
 	bool BindOdbcParameters( );
 
+
+private:
+	bool GetParamData( );
+
+	bool FetchResults( );
+
+private:
+	void InvokeReadData( v8::Isolate* isolate );
+
+
+private:
+	void Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value );
+
+
 public:
 	void SetError( );
 
@@ -70,10 +91,13 @@ public:
 		m_szQuery = szQuery;
 	}
 
-	inline void InitializeQuery( const std::wstring& szQuery )
+	inline void InitializeQuery( v8::Isolate* isolate, v8::Local< v8::Function > callback, EFetchMode eMode, const std::wstring& szQuery )
 	{
-		InitializeQuery( EFetchMode::eNone, szQuery );
+		InitializeQuery( eMode, szQuery );
+
+		GetResultSet( )->SetCallback( isolate, callback );
 	}
+
 
 public:
 	inline const std::wstring& GetQueryString( ) const
@@ -104,7 +128,7 @@ public:
 
 	inline bool IsIdle( ) const
 	{
-		return (GetState( ) == EQueryState::eNone || GetState( ) == EQueryState::eEnd);
+		return ( GetState( ) == EQueryState::eNone || GetState( ) == EQueryState::eEnd );
 	}
 
 	inline bool IsActive( ) const
@@ -139,23 +163,6 @@ public:
 		m_nQueryTimeout = static_cast< SQLUINTEGER >( nTimeout );
 	}
 
-
-public:
-	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const v8::Local< v8::Function > fnCallback, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos )
-	{
-		GetResultSet()->SetCallback( isolate, fnCallback );
-
-		return SetParameters( isolate, eFetchMode, szQuery, args, nPos );
-	}
-
-	inline bool SetParameters( v8::Isolate* isolate, EFetchMode eFetchMode, const std::wstring szQuery, const Nan::FunctionCallbackInfo<v8::Value>& args, const int nPos )
-	{
-		InitializeQuery( eFetchMode, szQuery );
-
-		return GetQueryParam()->AddParameters( isolate, args, nPos );
-	}
-
-	
 public:
 	inline void EnableReturnValue( )
 	{
@@ -169,7 +176,7 @@ public:
 
 	inline void EnableTransaction( v8::Isolate* isolate, v8::Local< v8::Value > instance )
 	{
-		GetResultSet()->m_queryInstance.Reset( isolate, instance );
+		GetResultSet( )->m_queryInstance.Reset( isolate, instance );
 		m_bTransactionEnabled = true;
 	}
 
@@ -215,4 +222,11 @@ private:
 	SQLSMALLINT		m_nReturnValue = 0;
 	SQLLEN			m_nCbReturnValue = 0;
 
+
+	CBindParam*		m_pActiveStreamParam;
+
+private:
+	bool			m_bExecNoData = false;
+
+	std::vector< std::unique_ptr< CResultSet > >		m_vecResultSets;
 };

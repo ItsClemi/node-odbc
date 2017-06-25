@@ -21,18 +21,9 @@
 
 #include "ParamData.h"
 #include "JSDate.h"
+#include "JSValue.h"
 
 
-enum class ESqlType : size_t
-{
-	eNull,
-	eBit, eTinyint, eSmallint, eInt32, eUint32, eBigInt, eReal, eChar, eNChar, eVarChar,
-	eNVarChar, eBinary, eVarBinary, eDate, eTimestamp, eNumeric,
-
-	eLongVarChar, eLongNVarChar, eLongVarBinary,
-
-	eSqlOutputVar,
-};
 
 enum class EInputOutputValue : SQLSMALLINT
 {
@@ -70,13 +61,6 @@ public:
 		SetPrimitve< int32_t >( SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 	}
 
-	inline void SetUint32( uint32_t nValue )
-	{
-		m_data.nUint32 = nValue;
-
-		SetPrimitve< uint32_t >( SQL_PARAM_INPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
-	}
-
 	inline void SetInt64( int64_t nValue )
 	{
 		m_data.nInt64 = nValue;
@@ -97,11 +81,11 @@ public:
 
 		m_data.stringDesc.Alloc( EStringType::eUnicode, static_cast< size_t >( nLength ) );
 		{
-			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.m_stringData.pWString ) );
+			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.data.pWString ) );
 		}
 		nLength *= sizeof( wchar_t );
 
-		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.data.pWString, nLength, nLength );
 	}
 
 	inline void SetDate( int64_t ms )
@@ -136,15 +120,24 @@ public:
 		v8::HandleScope scope( isolate );
 		const auto context = isolate->GetCurrentContext( );
 
+		auto type = value->Get( context, Nan::New( "type" ).ToLocalChecked( ) ).ToLocalChecked( );
 		auto stream = value->Get( context, Nan::New( "stream" ).ToLocalChecked( ) ).ToLocalChecked( );
 		auto length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) ).ToLocalChecked( );
 
+		ESqlType eType = static_cast< ESqlType >( type->Uint32Value( context ).FromJust( ) );
 		uint32_t nLength = length->Uint32Value( context ).FromJust( );
 
 		m_nDataWritten = 0;
 		m_paramRef.Reset( isolate, stream.As< v8::Value >( ) );
 
-		SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_LONGVARBINARY, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
+		if( eType == ESqlType::eLongNVarChar )
+		{
+			SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WLONGVARCHAR, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
+		}
+		else
+		{
+			SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_LONGVARBINARY, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
+		}		
 	}
 
 	void SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
@@ -155,7 +148,7 @@ public:
 public:
 	void SetStringData( bool bInput, size_t nLength )
 	{
-		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.data.pWString, nLength, nLength );
 	}
 
 

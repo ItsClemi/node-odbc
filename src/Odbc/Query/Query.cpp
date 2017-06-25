@@ -50,6 +50,7 @@ CQuery::~CQuery( )
 	Isolate::GetCurrent( )->AdjustAmountOfExternalAllocatedMemory( -static_cast< int64_t >( sizeof( CQuery ) ) );
 }
 
+
 void CQuery::ProcessBackground( )
 {
 	ProcessQuery( );
@@ -59,29 +60,8 @@ void CQuery::ProcessBackground( )
 		GetStatement()->FreeHandle( );
 		m_pPool->PushConnection( m_pConnection );
 		
-		//TODO: further inspections of connection unlinking
-		m_pConnection = nullptr;
+		m_pConnection = nullptr; 
 	}
-
-}
-
-EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
-{
-	if( GetState( ) == EQueryState::eEnd )
-	{
-		if( HasError( ) )
-		{
-			GetResultSet( )->Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
-		}
-		else
-		{
-			GetResultSet( )->Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
-		}
-
-		return EForegroundResult::eDiscard;
-	}
-
-	return EForegroundResult::eReschedule;
 }
 
 void CQuery::ProcessQuery( )
@@ -97,12 +77,16 @@ void CQuery::ProcessQuery( )
 
 	if( GetState( ) == EQueryState::eNeedData )
 	{
-		return;
+		if( !GetParamData( ) )
+		{
+			SetError( );
+			return;
+		}
 	}
 
 	if( GetState( ) == EQueryState::eFetchResult )
 	{
-		if( !GetResultSet( )->FetchResults( ) )
+		if( !FetchResults( ) )
 		{
 			SetError( );
 			return;
@@ -111,6 +95,33 @@ void CQuery::ProcessQuery( )
 		SetState( EQueryState::eEnd );
 	}
 }
+
+
+EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
+{
+	if( GetState( ) == EQueryState::eNeedData )
+	{
+		InvokeReadData( isolate );
+	}
+
+	if( GetState( ) == EQueryState::eEnd )
+	{
+		if( HasError( ) )
+		{
+			Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
+		}
+		else
+		{
+			Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
+		}
+
+		return EForegroundResult::eDiscard;
+	}
+
+	return EForegroundResult::eReschedule;
+}
+
+
 
 bool CQuery::ExecuteStatement( )
 {
@@ -141,7 +152,7 @@ bool CQuery::ExecuteStatement( )
 	}
 	else if( sqlRet == SQL_NO_DATA )
 	{
-		GetResultSet( )->m_bExecNoData = true;
+		m_bExecNoData = true;
 	}
 	else if( !SQL_SUCCEEDED( sqlRet ) )
 	{
@@ -183,6 +194,81 @@ bool CQuery::BindOdbcParameters( )
 	}
 
 	return true;
+}
+
+bool CQuery::GetParamData( )
+{
+	SQLPOINTER pParam = nullptr;
+
+	SQLRETURN sqlRet = GetStatement( )->ParamData( &pParam );
+
+	if( sqlRet == SQL_NEED_DATA )
+	{
+		m_pActiveStreamParam = static_cast< CBindParam* >( pParam );
+		return true;
+	}
+	else if( !SQL_SUCCEEDED( sqlRet ) )
+	{
+		return false;
+	}
+
+	SetState( EQueryState::eFetchResult );
+	return true;
+}
+
+bool CQuery::FetchResults( )
+{
+	size_t count = 1;
+
+	SQLRETURN sqlRet = 0;
+	do
+	{
+		SQLSMALLINT nColumns = 0;
+		sqlRet = GetStatement( )->NumResultCols( &nColumns );
+
+		if( nColumns > 0 )
+		{
+			auto pResultSet = std::make_unique< CResultSet >( this );
+
+			if( !pResultSet->PrepareColumns( ) )
+			{
+				return false;
+			}
+
+
+
+
+			if( !GetResultSet( )->PrepareColumns( ) )
+			{
+				return false;
+			}
+
+			while( GetStatement( )->FetchScroll( SQL_FETCH_NEXT, 1 ) != SQL_NO_DATA )
+			{
+				//> read row
+			}
+		}
+
+		count++;
+	} while( ( sqlRet = GetStatement()->MoreResults( ) ) == SQL_SUCCESS );
+
+
+	//while( GetStatement( )->MoreResults( ) )
+	//{
+	//	;;
+	//}
+
+	return true;
+}
+
+void CQuery::InvokeReadData( v8::Isolate* isolate )
+{
+
+}
+
+void CQuery::Resolve( Isolate* isolate, Local< Value > value )
+{
+
 }
 
 void CQuery::SetError( )

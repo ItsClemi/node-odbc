@@ -189,5 +189,8 @@
     <ClInclude Include="Core\Connection\ConnectionTracker.h">
       <Filter>Core\Connection</Filter>
     </ClInclude>
+    <ClInclude Include="Odbc\Query\Helper\JSValue.h">
+      <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

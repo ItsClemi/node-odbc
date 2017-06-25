@@ -126,7 +126,7 @@ bool CResultSet::PrepareColumns( )
 
 		pMetaData->m_bLOBColumn = false;
 
-		if( !m_pQuery->GetStatement( )->DescribeCol(
+		if( !GetQuery( )->GetStatement( )->DescribeCol(
 			static_cast< SQLUSMALLINT >( i + 1 ),
 			&pMetaData->m_szColumnName,
 			&pMetaData->m_nDataType,
@@ -138,9 +138,9 @@ bool CResultSet::PrepareColumns( )
 			return false;
 		}
 
-		if( m_pQuery->GetResultSet( )->IsMetaDataEnabled( ) )
+		if( GetQuery( )->GetResultSet( )->IsMetaDataEnabled( ) )
 		{
-			if( !m_pQuery->GetStatement( )->ColAttribute(
+			if( !GetQuery( )->GetStatement( )->ColAttribute(
 				static_cast< SQLUSMALLINT >( i + 1 ),
 				SQL_DESC_TYPE_NAME,
 				&pMetaData->m_szDataTypeName,
@@ -168,6 +168,7 @@ bool CResultSet::PrepareColumns( )
 
 	return true;
 }
+
 
 bool CResultSet::FindNextResultSet( )
 {
@@ -251,22 +252,21 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		{
 			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( char );
 
-			auto pBuffer = new char[ nBufferSize ];//static_cast< char* >( scalable_malloc( nBufferSize ) );
+			auto pBuffer = pData->AllocString( EStringType::eAnsi, nBufferSize );
 
-			if( !GetSqlData( nColumn, SQL_C_CHAR, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
+			if( !GetSqlData( nColumn, SQL_C_CHAR, pBuffer.pString, nBufferSize, &strLen_or_IndPtr ) )
 			{
 				return false;
 			}
 
 			if( strLen_or_IndPtr == SQL_NULL_DATA )
 			{
+				pData->DisposeString( );
 				pData->SetNull( );
-				delete[ ] pBuffer;
-				//scalable_free( pBuffer );
 			}
 			else
 			{
-				pData->SetString( pBuffer, static_cast< size_t >( strLen_or_IndPtr ) );
+				pData->SetStringLength( static_cast< size_t >( strLen_or_IndPtr ) );
 			}
 
 			break;
@@ -276,22 +276,22 @@ bool CResultSet::ReadColumn( size_t nColumn )
 		case SQL_WVARCHAR:
 		{
 			const size_t nBufferSize = pMetaData->m_nColumnSize + sizeof( char );
-			auto pBuffer = new wchar_t[ nBufferSize ]; //static_cast< wchar_t* >( scalable_malloc( nBufferSize * sizeof( wchar_t ) ) );
 
-			if( !GetSqlData( nColumn, SQL_C_WCHAR, pBuffer, nBufferSize * sizeof( wchar_t ), &strLen_or_IndPtr ) )
+			auto pBuffer = pData->AllocString( EStringType::eUnicode, nBufferSize ); 
+
+			if( !GetSqlData( nColumn, SQL_C_WCHAR, pBuffer.pWString, nBufferSize * sizeof( wchar_t ), &strLen_or_IndPtr ) )
 			{
 				return false;
 			}
 
 			if( strLen_or_IndPtr == SQL_NULL_DATA )
 			{
+				pData->DisposeString( );
 				pData->SetNull( );
-				delete[ ] pBuffer;
-				//scalable_free( pBuffer );
 			}
 			else
 			{
-				pData->SetString( pBuffer, static_cast< size_t >( strLen_or_IndPtr ) );
+				pData->SetStringLength( static_cast< size_t >( strLen_or_IndPtr ) );
 			}
 
 			break;
@@ -499,6 +499,9 @@ bool CResultSet::GetSqlData( size_t ColumnNumber, SQLSMALLINT TargetType, SQLPOI
 	return SQL_SUCCEEDED( sqlRet );
 }
 
+
+
+
 void CResultSet::Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value )
 {
 	HandleScope scope( isolate );
@@ -561,6 +564,8 @@ void CResultSet::Resolve( v8::Isolate* isolate, v8::Local< v8::Value > value )
 	}
 }
 
+
+
 Local< Value > CResultSet::ConstructResult( Isolate* isolate )
 {
 	EscapableHandleScope scope( isolate );
@@ -594,7 +599,10 @@ Local< Value > CResultSet::ConstructResult( Isolate* isolate )
 
 	AddResultExtensions( isolate, value.As< Object >( ) );
 
-	UpdateOutputParameters( isolate );
+	if( GetQuery( )->GetQueryParam( )->HasOutputParams( ) )
+	{
+		UpdateOutputParameters( isolate );
+	}
 
 	return scope.Escape( value );
 }
@@ -611,8 +619,8 @@ Local< Value > CResultSet::ConstructResultRow( Isolate* isolate, int nRow )
 		if( value->Set(
 			context,
 			ToV8String( isolate, GetMetaData( i )->m_szColumnName ),
-			GetColumnData( nRow, i )->ToValue( isolate ) ).IsNothing( )
-			)
+			GetColumnData( nRow, i )->ToValue( isolate ) 
+		).IsNothing( ) )
 		{
 			return Null( isolate );
 		}
@@ -623,8 +631,6 @@ Local< Value > CResultSet::ConstructResultRow( Isolate* isolate, int nRow )
 
 void CResultSet::AddResultExtensions( v8::Isolate* isolate, v8::Local< v8::Object > value )
 {
-	HandleScope scope( isolate );
-
 	if( IsMetaDataEnabled( ) )
 	{
 		AddMetaDataExtension( isolate, value );
@@ -649,9 +655,8 @@ void CResultSet::AddMetaDataExtension( v8::Isolate* isolate, v8::Local< v8::Obje
 	const auto key = Nan::New( "$sqlMetaData" ).ToLocalChecked( );
 
 	auto _contains = value->Has( context, key );
-	if( _contains.IsNothing( ) || _contains.IsJust( ) )
+	if( _contains.IsNothing( ) || _contains.FromJust( ) )
 	{
-		//> dont override results
 		return;
 	}
 
@@ -696,7 +701,7 @@ void CResultSet::AddReturnValueExtension( v8::Isolate* isolate, v8::Local< v8::O
 	const auto key = Nan::New( "$sqlReturnValue" ).ToLocalChecked( );
 
 	auto _contains = value->Has( context, key );
-	if( _contains.IsNothing( ) || _contains.IsJust( ) )
+	if( _contains.IsNothing( ) || _contains.FromJust( ) )
 	{
 		return;
 	}
@@ -715,7 +720,7 @@ void CResultSet::AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8:
 	const auto key = Nan::New( "$sqlQuery" ).ToLocalChecked( );
 
 	auto _contains = value->Has( context, key );
-	if( _contains.IsNothing( ) || _contains.IsJust( ) )
+	if( _contains.IsNothing( ) || _contains.FromJust( ) )
 	{
 		return;
 	}

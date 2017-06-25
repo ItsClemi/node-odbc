@@ -85,9 +85,9 @@ public:
 public:
 	bool FetchResults( );
 
-private:
 	bool PrepareColumns( );
-	
+
+private:
 	bool FindNextResultSet( );
 
 	EFecthResult FetchChunk( size_t nChunkSize, size_t* nFetched );

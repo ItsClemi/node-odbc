@@ -49,10 +49,10 @@ public:
 		for( size_t i = 0; i < nParams; i++ )
 		{
 			const ESqlType eType = static_cast< ESqlType >(
-				args->Get( context, static_cast< int >( i ) ).ToLocalChecked( )->Uint32Value( context ).FromJust( ) 
+				args->Get( context, static_cast< int >( i * 2 ) ).ToLocalChecked( )->Uint32Value( context ).FromJust( ) 
 				);
 
-			const auto value = args->Get( context, static_cast< int >( i ) ).ToLocalChecked( );
+			const auto value = args->Get( context, static_cast< int >( ( i * 2 ) + 1  ) ).ToLocalChecked( );
 
 
 			if( !AddParameter( isolate, eType, value, &m_vecParameter[ i ] ) )
@@ -72,6 +72,14 @@ public:
 private:
 	bool AddParameter( v8::Isolate* isolate, ESqlType eType, v8::Local< v8::Value > value, CBindParam* pParam );
 
+public:
+	bool HasOutputParams( )
+	{
+		return m_bOutputParameters;
+	}
+
 private:
+	bool	m_bOutputParameters = false;
+
 	std::vector< CBindParam, tbb::scalable_allocator< CBindParam > >	m_vecParameter;
 };

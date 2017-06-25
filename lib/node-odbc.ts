@@ -27,7 +27,7 @@ import * as binding from "./binding";
 export const enum eSqlType
 {
 	eNull,
-	eBit, eTinyint, eSmallint, eInt32, eUint32, eBigInt, eReal, eChar, eNChar, eVarChar,
+	eBit, eTinyint, eSmallint, eInt32, eBigInt, eReal, eChar, eNChar, eVarChar,
 	eNVarChar, eBinary, eVarBinary, eDate, eTimestamp, eNumeric,
 
 	eLongVarChar, eLongNVarChar, eLongVarBinary,
@@ -38,11 +38,26 @@ export const enum eSqlType
 
 export class SqlStream 
 {
+	type: eSqlType;
 	stream: stream.Readable | stream.Writable;
 	length: number;
 
-	constructor( stream: stream.Readable | stream.Writable, length: number )
+	constructor( type: eSqlType, stream: stream.Readable | stream.Writable, length: number )
 	{
+		if( enableValidation )
+		{
+			if( type != eSqlType.eLongNVarChar && type != eSqlType.eLongVarBinary )
+			{
+				throw new TypeError( `type: out of range ${type}` );
+			}
+
+			if( length > 0xFFFFFFFF )
+			{
+				throw new Error( `length: odbc only supports 32 bit length ${length}` );
+			}
+		}
+
+		this.type = type;
 		this.stream = stream;
 		this.length = length;
 	}
@@ -275,8 +290,6 @@ export class Connection
 		return this._connection.getInfo();
 	}
 
-
-
 	private transformParameters( ...args: ( SqlTypes )[] )
 	{
 		const params = new Array( args.length * 2 );
@@ -284,7 +297,6 @@ export class Connection
 		let i = 0;
 		try
 		{
-
 			for( ; i < args.length; i++ )
 			{
 				params[i] = getParameterType( args[i] );
@@ -325,9 +337,9 @@ export interface ISqlQueryEx extends ISqlQuery
 
 
 
-export function makeInputStream( stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
+export function makeInputStream( type: eSqlType.eLongNVarChar | eSqlType.eLongVarBinary, stream: fs.ReadStream | stream.Readable, length: number ): SqlStream
 {
-	return new SqlStream( stream, length );
+	return new SqlStream( type, stream, length );
 }
 
 export function makeNumeric( precision: number, scale: number, sign: boolean, value: Uint8Array ): SqlNumeric
@@ -361,11 +373,6 @@ export const SqlOutput = {
 	asInt( reference: number ): SqlOutputParameter
 	{
 		return new SqlOutputParameter( reference, eSqlType.eInt32 );
-	},
-
-	asUInt( reference: number ): SqlOutputParameter
-	{
-		return new SqlOutputParameter( reference, eSqlType.eUint32 );
 	},
 
 	asBigInt( reference: number ): SqlOutputParameter
@@ -532,7 +539,6 @@ function getParameterType( i: SqlTypes ): eSqlType
 	{
 		const kMaxInt = 0x7FFFFFFF;
 		const kMinInt = -kMaxInt - 1;
-		const kMaxUInt32 = 0xFFFFFFFF;
 
 		if( isNaN( i ) || isFinite( i ) )
 		{
@@ -544,10 +550,6 @@ function getParameterType( i: SqlTypes ): eSqlType
 		if( even && i !== -0.0 && i >= kMinInt && i <= kMaxInt )
 		{
 			return eSqlType.eInt32;
-		}
-		else if( even && i !== -0.0 && i >= 0 && i <= kMaxUInt32 )
-		{
-			return eSqlType.eUint32;
 		}
 		else if( even && i !== -0.0 )
 		{

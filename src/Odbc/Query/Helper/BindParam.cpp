@@ -120,11 +120,11 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 			SetPrimitve< int32_t >( SQL_PARAM_OUTPUT, SQL_C_SLONG, SQL_INTEGER, &m_data.nInt32 );
 			break;
 		}
-		case ESqlType::eUint32: 
-		{
-			SetPrimitve< uint32_t >( SQL_PARAM_OUTPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
-			break;
-		}
+// 		case ESqlType::eUint32: 
+// 		{
+// 			SetPrimitve< uint32_t >( SQL_PARAM_OUTPUT, SQL_C_ULONG, SQL_BIGINT, &m_data.nUint32 );
+// 			break;
+// 		}
 		case ESqlType::eBigInt:
 		{
 			SetPrimitve< int64_t >( SQL_PARAM_OUTPUT, SQL_C_SBIGINT, SQL_BIGINT, &m_data.nInt64 );
@@ -138,41 +138,55 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 		case ESqlType::eChar:
 		{
 			m_data.stringDesc.Alloc( EStringType::eAnsi, nLength );
-			SetData( SQL_PARAM_OUTPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, m_data.stringDesc.m_stringData.pString, nLength, nLength );
+			SetData( SQL_PARAM_OUTPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, m_data.stringDesc.data.pString, nLength, nLength );
 
 			break;
 		}
 		case ESqlType::eNChar:
 		{
 			m_data.stringDesc.Alloc( EStringType::eUnicode, nLength );
-			//size*2
-			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WCHAR, 0, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+			nLength *= sizeof( wchar_t );
+			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WCHAR, 0, 0, m_data.stringDesc.data.pWString, nLength, nLength );
 
 			break;
 		}
 		case ESqlType::eVarChar:
 		{
 			m_data.stringDesc.Alloc( EStringType::eAnsi, nLength );
-			SetData( SQL_PARAM_OUTPUT, SQL_C_CHAR, SQL_VARCHAR, 0, 0, m_data.stringDesc.m_stringData.pString, nLength, nLength );
+			SetData( SQL_PARAM_OUTPUT, SQL_C_CHAR, SQL_VARCHAR, 0, 0, m_data.stringDesc.data.pString, nLength, nLength );
 			break;
 		}
 		case ESqlType::eNVarChar:
 		{
 			m_data.stringDesc.Alloc( EStringType::eUnicode, nLength );
-			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WVARCHAR, 0, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+			nLength *= sizeof( wchar_t );
+			SetData( SQL_PARAM_OUTPUT, SQL_C_WCHAR, SQL_WVARCHAR, 0, 0, m_data.stringDesc.data.pWString, nLength, nLength );
 
 			break;
 		}
 		case ESqlType::eBinary:
+		{
+
 			break;
+		}
 		case ESqlType::eVarBinary:
+		{
 			break;
+		}
 		case ESqlType::eDate:
+		{
 			break;
-		case ESqlType::eTimestamp:
+		}
+		case ESqlType::eTimestamp: 
+		{
 			break;
+		}
+
 		case ESqlType::eNumeric:
+		{
 			break;
+		}
+
 		case ESqlType::eLongVarChar:
 		case ESqlType::eLongNVarChar:
 		case ESqlType::eLongVarBinary:
@@ -183,7 +197,6 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 	}
 
 	m_paramRef.Reset( isolate, ref );
-
 
 	return true;
 }

@@ -67,6 +67,7 @@
     <ClInclude Include="Odbc\Query\Helper\BindParam.h" />
     <ClInclude Include="Odbc\Query\Helper\ColumnData.h" />
     <ClInclude Include="Odbc\Query\Helper\JSDate.h" />
+    <ClInclude Include="Odbc\Query\Helper\JSValue.h" />
     <ClInclude Include="Odbc\Query\Helper\ParamData.h" />
     <ClInclude Include="Odbc\Query\Query.h" />
     <ClInclude Include="Odbc\Query\QueryParameter.h" />

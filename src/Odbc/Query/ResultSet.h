@@ -102,6 +102,8 @@ public:
 
 	v8::Local< v8::Value > ConstructResult( v8::Isolate* isolate );
 
+
+private:
 	v8::Local< v8::Value > ConstructResultRow( v8::Isolate* isolate, int nRow );
 
 	void AddResultExtensions( v8::Isolate* isolate, v8::Local< v8::Object > value );
@@ -111,6 +113,8 @@ public:
 	void AddReturnValueExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 	void AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+	void UpdateOutputParameters( v8::Isolate* isolate );
 
 public:
 	void SetPromise( v8::Isolate* isolate, v8::Local< v8::Function > fnResolver, v8::Local< v8::Function > fnRejector );
@@ -154,6 +158,12 @@ public:
 		return GetColumnData( m_nActiveRow, nColumn );
 	}
 
+private:
+	inline auto GetQuery( )
+	{
+		return m_pQuery;
+	}
+
 public:
 	inline void SetFetchMode( EFetchMode eFetchMode )
 	{
@@ -189,14 +199,12 @@ public:
 
 public:
 	bool					m_bExecNoData = false;
-	mutable EFetchMode		m_eFetchMode = EFetchMode::eNone;
-
-	size_t					m_nMemoryUsage = 0;
+	EFetchMode				m_eFetchMode = EFetchMode::eNone;
 
 	v8::Persistent< v8::Value >				m_queryInstance;
 
 private:
-	mutable CQuery*			m_pQuery;
+	CQuery*					m_pQuery;
 	EResolveType			m_eResolveType = EResolveType::eNone;
 
 	bool					m_bEnableMetaData = false;
@@ -216,6 +224,6 @@ private:
 
 	std::atomic< EResultState >				m_eState;
 
-	std::vector< SMetaData/*, tbb::scalable_allocator< SMetaData >*/ >			m_vecMetaData;
-	std::vector< SColumnData/*, tbb::scalable_allocator< SColumnData >*/ >		m_vecData;
+	std::vector< SMetaData, tbb::scalable_allocator< SMetaData > >			m_vecMetaData;
+	std::vector< SColumnData, tbb::scalable_allocator< SColumnData > >		m_vecData;
 };

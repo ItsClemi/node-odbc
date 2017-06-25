@@ -99,7 +99,7 @@ bool CResultSet::FetchResults( )
 				break;
 			}
 
-			if( ( it ) * m_nColumns >= m_vecData.size( ) )
+			if( ( it )* m_nColumns >= m_vecData.size( ) )
 			{
 				m_vecData.resize( m_vecData.size( ) * 2 );
 			}
@@ -444,7 +444,6 @@ bool CResultSet::ReadColumn( size_t nColumn )
 
 			auto pBuffer = new uint8_t[ nBufferSize ];
 			memset( pBuffer, 0, nBufferSize );
-			//auto pBuffer = static_cast< uint8_t* >( scalable_malloc( nBufferSize ) );
 
 			if( !GetSqlData( nColumn, SQL_C_BINARY, pBuffer, nBufferSize, &strLen_or_IndPtr ) )
 			{
@@ -595,6 +594,8 @@ Local< Value > CResultSet::ConstructResult( Isolate* isolate )
 
 	AddResultExtensions( isolate, value.As< Object >( ) );
 
+	UpdateOutputParameters( isolate );
+
 	return scope.Escape( value );
 }
 
@@ -607,7 +608,11 @@ Local< Value > CResultSet::ConstructResultRow( Isolate* isolate, int nRow )
 
 	for( size_t i = 0; i < m_nColumns; i++ )
 	{
-		if( value->Set( context, ToV8String( isolate, GetMetaData( i )->m_szColumnName ), GetColumnData( nRow, i )->ToValue( isolate ) ).IsNothing( ) )
+		if( value->Set(
+			context,
+			ToV8String( isolate, GetMetaData( i )->m_szColumnName ),
+			GetColumnData( nRow, i )->ToValue( isolate ) ).IsNothing( )
+			)
 		{
 			return Null( isolate );
 		}
@@ -635,7 +640,6 @@ void CResultSet::AddResultExtensions( v8::Isolate* isolate, v8::Local< v8::Objec
 		AddQueryInstanceExtension( isolate, value );
 	}
 }
-
 
 void CResultSet::AddMetaDataExtension( v8::Isolate* isolate, v8::Local< v8::Object > value )
 {
@@ -697,7 +701,7 @@ void CResultSet::AddReturnValueExtension( v8::Isolate* isolate, v8::Local< v8::O
 		return;
 	}
 
-	if( value->Set( context, key, Int32::New( isolate, m_pQuery->GetReturnValue( ) ) ).IsNothing( ) )
+	if( value->Set( context, key, Int32::New( isolate, GetQuery( )->GetReturnValue( ) ) ).IsNothing( ) )
 	{
 		return;
 	}
@@ -721,6 +725,26 @@ void CResultSet::AddQueryInstanceExtension( v8::Isolate* isolate, v8::Local< v8:
 	if( value->Set( context, key, instance ).IsNothing( ) )
 	{
 		return;
+	}
+}
+
+void CResultSet::UpdateOutputParameters( v8::Isolate* isolate )
+{
+	HandleScope scope( isolate );
+
+	for( const auto& i : GetQuery( )->GetQueryParam( )->m_vecParameter )
+	{
+		if( i.m_nInputOutputType == SQL_PARAM_OUTPUT )
+		{
+			auto value = node::PersistentToLocal< Value, CopyablePersistentTraits< Value > >( isolate, i.m_paramRef );
+
+			SColumnData data;
+			{
+				//> set data with type info from parameter
+			}
+
+			value = data.ToValue( isolate );
+		}
 	}
 }
 

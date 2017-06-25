@@ -71,7 +71,6 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 	{
 		if( HasError( ) )
 		{
-			//-> we can delete UvWorker because we still have a strong ref to CQuery from v8
 			GetResultSet( )->Resolve( isolate, m_pError->ConstructErrorObject( isolate ) );
 		}
 		else
@@ -79,7 +78,6 @@ EForegroundResult CQuery::ProcessForeground( v8::Isolate* isolate )
 			GetResultSet( )->Resolve( isolate, GetResultSet( )->ConstructResult( isolate ) );
 		}
 
-		//return EDiscard >> (target EConnection/EPrepQuery still has instance ref)
 		return EForegroundResult::eDiscard;
 	}
 
@@ -170,7 +168,7 @@ bool CQuery::BindOdbcParameters( )
 	{
 		if( !GetStatement( )->BindParameter(
 			nParam++,
-			SQL_PARAM_INPUT,
+			i.m_nInputOutputType,
 			i.m_nValueType,
 			i.m_nParameterType,
 			i.m_nColumnSize,

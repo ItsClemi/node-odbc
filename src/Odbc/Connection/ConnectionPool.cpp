@@ -53,57 +53,6 @@ CConnectionPool::~CConnectionPool( )
 #endif
 }
 
-bool CConnectionPool::ReadConnectionProps( v8::Isolate* isolate, v8::Local< v8::Object > value )
-{
-	HandleScope scope( isolate );
-	const auto context = isolate->GetCurrentContext( );
-
-	auto _enableMssqlMars = value->Get( context, Nan::New( "enableMssqlMars" ).ToLocalChecked( ) );
-	auto _poolSize = value->Get( context, Nan::New( "poolSize" ).ToLocalChecked( ) );
-
-
-	if( _enableMssqlMars.IsEmpty( ) || _poolSize.IsEmpty( ) )
-	{
-		return false;
-	}
-
-
-	{
-		auto enableMssqlMars = _enableMssqlMars.ToLocalChecked( );
-
-		if( !enableMssqlMars->IsUndefined( ) )
-		{
-			if( enableMssqlMars->IsBoolean( ) )
-			{
-				m_props.bEnableMssqlMars = enableMssqlMars.As< Boolean >( )->BooleanValue( context ).FromJust( );
-			}
-			else
-			{
-				Nan::ThrowTypeError( Nan::New( "enableMssqlMars: invalid type" ).ToLocalChecked( ) );
-				return false;
-			}
-		}
-	}
-
-	{
-		auto poolSize = _poolSize.ToLocalChecked( );
-
-		if( !poolSize->IsUndefined( ) )
-		{
-			if( poolSize->IsUint32( ) )
-			{
-				m_props.nPoolSize = poolSize.As< Uint32 >( )->Uint32Value( context ).FromJust( );
-			}
-			else
-			{
-				Nan::ThrowTypeError( Nan::New( "poolSize: invalid type" ).ToLocalChecked( ) );
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
 
 bool CConnectionPool::ReadResilienceStrategy( v8::Isolate* isolate, v8::Local< v8::Object > value )
 {

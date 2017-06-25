@@ -152,7 +152,7 @@ public:
 	{
 		InitializeQuery( eFetchMode, szQuery );
 
-		return GetQueryParam()->BindParameters( isolate, args, nPos );
+		return GetQueryParam()->AddParameters( isolate, args, nPos );
 	}
 
 	

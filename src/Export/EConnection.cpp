@@ -63,8 +63,6 @@ NAN_METHOD( EConnection::New )
 
 	if( info.IsConstructCall( ) )
 	{
-		V8_TYPE_VALIDATE( info[ 0 ]->IsUndefined( ) || info[ 0 ]->IsObject( ), "^advancedProps: is not undefined or an object" );
-
 		const auto pThis = new EConnection( );
 		{
 			pThis->Wrap( info.This( ) );
@@ -73,9 +71,19 @@ NAN_METHOD( EConnection::New )
 
 		if( info[ 0 ]->IsObject( ) )
 		{
-			if( !pThis->GetPool( )->ReadConnectionProps( info.GetIsolate( ), info[ 0 ].As< Object >( ) ) )
+			auto props = info[ 0 ].As< Object >( );
+
+			auto enableMssqlMars = props->Get( context, Nan::New( "enableMssqlMars" ).ToLocalChecked( ) ).ToLocalChecked( );
+			auto poolSize = props->Get( context, Nan::New( "poolSize" ).ToLocalChecked( ) ).ToLocalChecked( );
+
+			if( !enableMssqlMars->IsUndefined( ) )
 			{
-				return;
+				pThis->GetPool( )->SetMssqlMarsProp( enableMssqlMars->BooleanValue( context ).FromJust( ) );
+			}
+
+			if( poolSize->IsUint32( ) )
+			{
+				pThis->GetPool( )->SetPoolSizeProp( poolSize->Uint32Value( context ).FromJust( ) );
 			}
 		}
 
@@ -127,8 +135,6 @@ NAN_METHOD( EConnection::SetResilienceStrategy )
 {
 	auto isolate = info.GetIsolate( );
 	HandleScope scope( isolate );
-
-	V8_RUNTIME_VALIDATE( info[ 0 ]->IsObject( ), "strategy: not an object" );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EConnection >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetPool( )->GetState( ) == EPoolState::eNone, "invalid pool state (connected to your datasource?)" );

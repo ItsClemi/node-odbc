@@ -22,17 +22,6 @@
 using namespace v8;
 
 
-#ifdef _WINDOWS
-#pragma push_macro("min")
-#pragma push_macro( "max" )
-
-#undef min
-#undef max
-#endif
-
-
-
-
 CQueryParameter::CQueryParameter( )
 {
 }
@@ -105,7 +94,7 @@ bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Val
 		}
 		case ESqlType::eSqlOutputVar:
 		{
-
+			pParam->SetOutputParameter( isolate, value.As< Object >( ) );
 			break;
 		}
 
@@ -122,10 +111,3 @@ bool CQueryParameter::AddParameter( Isolate* isolate, ESqlType eType, Local< Val
 	
 	return true;
 }
-
-#ifdef _WINDOWS
-
-#pragma pop_macro( "min" )
-#pragma pop_macro( "max" )
-
-#endif

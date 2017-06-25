@@ -49,8 +49,6 @@ public:
 	~CConnectionPool( );
 
 public:
-	bool ReadConnectionProps( v8::Isolate* isolate, v8::Local< v8::Object > value );
-
 	bool ReadResilienceStrategy( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 public:
@@ -154,8 +152,17 @@ private:
 public:
 	inline void SetSharedInstance( std::shared_ptr< CConnectionPool > pPool )
 	{
-
 		m_pPool = pPool;
+	}
+
+	inline void SetMssqlMarsProp( bool bEnable )
+	{
+		m_props.bEnableMssqlMars = bEnable;
+	}
+
+	inline void SetPoolSizeProp( uint32_t nPoolSize )
+	{
+		m_props.nPoolSize = nPoolSize;
 	}
 
 	inline void RequestDisconnect( v8::Isolate* isolate, v8::Local< v8::Function > fnDisconnect )

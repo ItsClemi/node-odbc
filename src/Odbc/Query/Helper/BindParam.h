@@ -34,6 +34,12 @@ enum class ESqlType : size_t
 	eSqlOutputVar,
 };
 
+enum class EInputOutputValue : SQLSMALLINT
+{
+	eInput = SQL_PARAM_INPUT,
+	eOutput = SQL_PARAM_OUTPUT,
+};
+
 
 class CBindParam
 {
@@ -42,29 +48,7 @@ public:
 	~CBindParam( );
 
 public:
-	void Dispose( )
-	{
-		if( !m_stream.IsEmpty( ) )
-		{
-			assert( v8::Isolate::GetCurrent( ) != nullptr );
-			m_stream.Reset( );
-		}
-
-		if( !m_paramRef.IsEmpty( ) )
-		{
-			assert( v8::Isolate::GetCurrent( ) != nullptr );
-			m_paramRef.Reset( );
-		}
-
-		if( m_nParameterType == SQL_WVARCHAR )
-		{
-			m_data.stringDesc.Dispose( );
-		}
-		else if( m_nParameterType == SQL_VARBINARY )
-		{
-			delete[ ] m_data.bufferDesc.m_pBuffer; 						//scalable_free( m_data.bufferDesc.m_pBuffer );
-		}
-	}
+	void Dispose( );
 
 public:
 	inline void SetNull( )
@@ -111,17 +95,13 @@ public:
 	{
 		int nLength = value->Length( );
 
-		m_data.stringDesc.m_eType = EStringType::eUnicode;
-		m_data.stringDesc.m_nLength = nLength;
-		m_data.stringDesc.m_stringData.pWString = new wchar_t[ ( nLength + 1 ) ];
+		m_data.stringDesc.Alloc( EStringType::eUnicode, static_cast< size_t >( nLength ) );
 		{
 			value->Write( reinterpret_cast< uint16_t* >( m_data.stringDesc.m_stringData.pWString ) );
 		}
-		m_data.stringDesc.m_stringData.pWString[ nLength ] = '\0';
-
 		nLength *= sizeof( wchar_t );
 
-		SetData( SQL_PARAM_INPUT,  SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
 	}
 
 	inline void SetDate( int64_t ms )
@@ -142,7 +122,6 @@ public:
 		const char* pBuffer = node::Buffer::Data( value );
 
 		m_data.bufferDesc.m_nLength = nLength;
-		//m_data.bufferDesc.m_pBuffer = static_cast< uint8_t* >( scalable_malloc( nLength ) );
 		m_data.bufferDesc.m_pBuffer = new uint8_t[ nLength ];
 		{
 			memcpy_s( m_data.bufferDesc.m_pBuffer, nLength, pBuffer, nLength );
@@ -152,11 +131,32 @@ public:
 	}
 
 public:
-	bool SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value );
+	void SetStream( v8::Isolate* isolate, v8::Local< v8::Object > value )
+	{
+		v8::HandleScope scope( isolate );
+		const auto context = isolate->GetCurrentContext( );
 
-	bool SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
+		auto stream = value->Get( context, Nan::New( "stream" ).ToLocalChecked( ) ).ToLocalChecked( );
+		auto length = value->Get( context, Nan::New( "length" ).ToLocalChecked( ) ).ToLocalChecked( );
+
+		uint32_t nLength = length->Uint32Value( context ).FromJust( );
+
+		m_nDataWritten = 0;
+		m_paramRef.Reset( isolate, stream.As< v8::Value >( ) );
+
+		SetData( SQL_PARAM_INPUT, SQL_C_BINARY, SQL_LONGVARBINARY, nLength, 0, ( SQLPOINTER )this, 0, SQL_DATA_AT_EXEC );
+	}
+
+	void SetNumeric( v8::Isolate* isolate, v8::Local< v8::Object > value );
 
 	bool SetOutputParameter( v8::Isolate* isolate, v8::Local< v8::Object > value );
+
+
+public:
+	void SetStringData( bool bInput, size_t nLength )
+	{
+		SetData( SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, nLength, 0, m_data.stringDesc.m_stringData.pWString, nLength, nLength );
+	}
 
 
 
@@ -164,7 +164,7 @@ private:
 	template< typename T >
 	inline void SetPrimitve( SQLSMALLINT nInputOutputType, SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLPOINTER pBuffer )
 	{
-		SetData( nInputOutputType, nValueType, nParameterType, sizeof( T ), 0, pBuffer, sizeof( T ), sizeof( T ) );
+		SetData( nInputOutputType, nValueType, nParameterType, sizeof( T ), 0, pBuffer, sizeof( T ), 0 );
 	}
 
 	inline void SetData( SQLSMALLINT nInputOutputType, SQLSMALLINT nValueType, SQLSMALLINT nParameterType, SQLUINTEGER nColumnSize, SQLSMALLINT nDigits, SQLPOINTER pBuffer, SQLLEN nBufferLen, SQLLEN strLen_or_IndPtr )
@@ -180,6 +180,14 @@ private:
 	}
 
 public:
+	inline bool IsOutputParam( )
+	{
+		return m_nInputOutputType == SQL_PARAM_OUTPUT;
+	}
+
+
+
+public:
 	SQLSMALLINT				m_nInputOutputType;
 	SQLSMALLINT				m_nValueType;
 	SQLSMALLINT				m_nParameterType;
@@ -193,7 +201,6 @@ private:
 	SParamData				m_data;
 	SQLUINTEGER				m_nDataWritten;
 
-
+public:
 	v8::Persistent< v8::Value, v8::CopyablePersistentTraits< v8::Value > >			m_paramRef;
-	v8::Persistent< v8::Object, v8::CopyablePersistentTraits< v8::Object > >		m_stream;
 };

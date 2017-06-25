@@ -164,9 +164,9 @@ declare interface IRawConnection
 
 	disconnect( cb: () => void ): void;
 
-	prepareQuery( query: string, typeInfo: Array< eSqlType >, ...args: ( SqlTypes )[] ): ISqlQuery;
+	prepareQuery( query: string, args: ( any )[] ): ISqlQuery;
 
-	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, typeInfo: Array<eSqlType>, ...args: ( SqlTypes )[] ): void;
+	executeQuery<T>( eFetchMode: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, args: ( any )[] ): void;
 
 	getInfo(): ConnectionInfo;
 }
@@ -239,9 +239,7 @@ export class Connection
 			}
 		}
 
-		let types = this.prepareSqlParameters( ...args );
-
-		return this._connection.prepareQuery( query, types, ...args );
+		return this._connection.prepareQuery( query, this.transformParameters( ...args ) );
 	}
 
 	public executeQuery<T>( eFetchOperation: eFetchMode, cb: ( result: SqlPartialResultTypes<T>, error: SqlError ) => void, query: string, ...args: ( SqlTypes )[] ): void
@@ -269,9 +267,7 @@ export class Connection
 			}
 		}
 
-		let types = this.prepareSqlParameters( ...args );
-
-		this._connection.executeQuery<T>( eFetchOperation, cb, query, types, ...args );
+		this._connection.executeQuery<T>( eFetchOperation, cb, query, this.transformParameters( ...args ) );
 	}
 
 	public getInfo(): ConnectionInfo
@@ -279,16 +275,20 @@ export class Connection
 		return this._connection.getInfo();
 	}
 
-	private prepareSqlParameters( ...args: ( SqlTypes )[] ): Array< eSqlType >
+
+
+	private transformParameters( ...args: ( SqlTypes )[] )
 	{
-		let types = new Array<eSqlType>( args.length );
+		const params = new Array( args.length * 2 );
 
 		let i = 0;
 		try
 		{
+
 			for( ; i < args.length; i++ )
 			{
-				types[ i ] = getParameterType( args[i] );
+				params[i] = getParameterType( args[i] );
+				params[i + 1] = args[i];
 			}
 		}
 		catch( err )
@@ -296,18 +296,6 @@ export class Connection
 			throw new Error( `failed to prepare parameter at: ${i}, ${err.Message}` );
 		}
 
-		return types;
-	}
-
-	private transformParameters( ...args: ( SqlTypes )[] )
-	{
-		const params = new Array( args.length * 2 );
-
-		for( let i = 0; i < args.length; i++ )
-		{
-			params[i] = getParameterType( args[i] );
-			params[i + 1] = args[i];
-		}
 		return params;
 	}
 }
@@ -580,7 +568,7 @@ function getParameterType( i: SqlTypes ): eSqlType
 	}
 	else if( i instanceof Buffer )
 	{
-		return eSqlType.eBinary;
+		return eSqlType.eVarBinary;
 	}
 	else if( i instanceof SqlOutputParameter )
 	{
@@ -634,7 +622,9 @@ function getParameterType( i: SqlTypes ): eSqlType
 			}
 		}
 
-		return eSqlType.eVarBinary;
+		throw new Error("streams are not supported yet");
+
+		//return eSqlType.eLongVarBinary;
 	}
 	else if( i instanceof SqlNumeric )
 	{

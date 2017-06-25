@@ -174,13 +174,8 @@ NAN_METHOD( EPreparedQuery::ToSingle )
 	{
 		pQuery->GetResultSet( )->SetCallback( isolate, info[ 0 ].As< Function >( ) );
 	}
-	else
-	{
-		//pQuery->GetResultSet( )->SetPromise( );
-	}
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
-
 
 	return info.GetReturnValue( ).Set( 
 		EModuleHelper::CreatePromise( isolate, info.This( ) )
@@ -205,10 +200,7 @@ NAN_METHOD( EPreparedQuery::ToArray )
 	{
 		pQuery->GetResultSet( )->SetCallback( isolate, info[ 0 ].As< Function >( ) );
 	}
-	else
-	{
-		//pQuery->GetResultSet( )->SetPromise( );
-	}
+
 
 	pQuery->GetPool( )->ExecuteQuery( pQuery );
 
@@ -224,8 +216,6 @@ NAN_METHOD( EPreparedQuery::Rollback )
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
 	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is not running" );
-
-
 }
 
 NAN_METHOD( EPreparedQuery::Commit )
@@ -233,9 +223,7 @@ NAN_METHOD( EPreparedQuery::Commit )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is not running" );
-
-	
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is not running" );	
 }
 
 

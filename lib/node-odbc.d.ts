@@ -100,7 +100,6 @@ export declare class Connection {
     prepareQuery(query: string, ...args: (SqlTypes)[]): ISqlQuery;
     executeQuery<T>(eFetchOperation: eFetchMode, cb: (result: SqlPartialResultTypes<T>, error: SqlError) => void, query: string, ...args: (SqlTypes)[]): void;
     getInfo(): ConnectionInfo;
-    private prepareSqlParameters(...args);
     private transformParameters(...args);
 }
 export interface ISqlQuery {

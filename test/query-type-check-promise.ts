@@ -6,7 +6,7 @@ import * as async from "async";
 
 mod.connection.forEach((connection) => {
     describe(`query type checker -> promise ${connection.name} (toSingle)`, function() {
-        this.timeout(connection.timeout);
+        this.timeout(connection.timeout + 2500 );
 
         it("insert null -> fetch null", (done) => {
             let tblName = mod.getRandomTableName();
@@ -210,6 +210,12 @@ mod.connection.forEach((connection) => {
                 await con.prepareQuery(`INSERT INTO ${tblName}(a)VALUES(?)`, str).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: string }>();
 
+				if( r.a == undefined )
+				{
+					throw "failed";
+				}
+
+				assert.equal( str.length, r.a.length ); 
                 assert(r.a == str, `invalid string ${r.a} : ${str}`);
             };
 
@@ -247,22 +253,29 @@ mod.connection.forEach((connection) => {
             let tblName = mod.getRandomTableName();
 
             let con = new odbc.Connection()
-                .connect(connection.connectionString);
+				.connect( connection.connectionString );
 
-            let date = new Date(Date.now());
+			let date = new Date( 2017, 6, 7, 5, 46, 12, 623 );
 
             let r = async () => {
 				await con.prepareQuery( `CREATE TABLE ${tblName}( a datetime )` ).toSingle();
 				await con.prepareQuery( `INSERT INTO ${tblName}(a)VALUES(?)`, odbc.makeTimestamp( date ) ).toSingle();
                 let r = await con.prepareQuery(`SELECT * FROM ${tblName}`).toSingle<{ a: Date }>();
 
+				console.log( r );
+				console.log( date );
+
                 if (r.a == undefined) {
                     throw "failed";
-                }
+				}
 
-                assert(r.a.getFullYear() == date.getFullYear());
-                assert(r.a.getMonth() == date.getMonth());
-                assert(r.a.getDate() == date.getDate());
+				assert.ok( r.a.getFullYear() == date.getFullYear() );
+				assert.ok( r.a.getMonth() == date.getMonth() );
+				assert.ok( r.a.getDate() == date.getDate() );
+				assert.ok( r.a.getHours() == date.getHours() );
+				assert.ok( r.a.getMinutes() == date.getMinutes() );
+				assert.ok( r.a.getSeconds() == date.getSeconds() );
+				assert.ok( r.a.getMilliseconds() == date.getMilliseconds() );
             };
 
             r().then(() => {
@@ -278,7 +291,7 @@ mod.connection.forEach((connection) => {
             let con = new odbc.Connection()
                 .connect(connection.connectionString);
 
-            let date = new Date(2017, 6, 7, 5, 46, 12, 623);
+			let date = new Date( Date.now() );
 
             let r = async () => {
                 await con.prepareQuery(`CREATE TABLE ${tblName}( a datetime )`).toSingle();
@@ -287,15 +300,12 @@ mod.connection.forEach((connection) => {
 
                 if (r.a == undefined) {
                     throw "failed";
-                }
+				}
 
-                assert.ok(r.a.getFullYear() == date.getFullYear());
-                assert.ok(r.a.getMonth() == date.getMonth());
-                assert.ok(r.a.getDate() == date.getDate());
-                assert.ok(r.a.getHours() == date.getHours());
-                assert.ok(r.a.getMinutes() == date.getMinutes());
-                assert.ok(r.a.getSeconds() == date.getSeconds());
-                assert.ok(r.a.getMilliseconds() == date.getMilliseconds());
+				assert( r.a.getFullYear() == date.getFullYear() );
+				assert( r.a.getMonth() == date.getMonth() );
+				assert( r.a.getDate() == date.getDate() );
+
             };
 
             r().then(() => {

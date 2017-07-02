@@ -91,7 +91,7 @@ NAN_METHOD( EPreparedQuery::EnableReturnValue )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 	pThis->GetQuery( )->EnableReturnValue( );
 
@@ -103,7 +103,7 @@ NAN_METHOD( EPreparedQuery::EnableMetaData )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 	pThis->GetQuery( )->GetResultSet( )->EnableMetaData( );
 
@@ -115,7 +115,7 @@ NAN_METHOD( EPreparedQuery::EnableSlowQuery )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 
 	pThis->GetQuery( )->EnableSlowQuery( );
@@ -128,7 +128,7 @@ NAN_METHOD( EPreparedQuery::EnableTransaction )
 	HandleScope scope( info.GetIsolate( ) );
 
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 	pThis->GetQuery( )->EnableTransaction( info.GetIsolate( ), info.This( ) );
 
@@ -145,7 +145,7 @@ NAN_METHOD( EPreparedQuery::SetQueryTimeout )
 	V8_TYPE_VALIDATE( info[ 0 ]->IsUint32( ), "setQueryTimeout: is not an uint32" );
 	
 	const auto pThis = Nan::ObjectWrap::Unwrap< EPreparedQuery >( info.This( ) );
-	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsIdle( ), "invalid query state: query is running" );
+	V8_RUNTIME_VALIDATE( pThis->GetQuery( )->IsActive( ), "invalid query state: query is running" );
 
 	auto nTimeout = info[ 0 ].As< Uint32 >( )->Uint32Value( context ).FromJust( );
 

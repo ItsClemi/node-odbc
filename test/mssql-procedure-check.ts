@@ -2,9 +2,7 @@
 import * as mod from "./module";
 import * as async from "async";
 
-import odbc, { SqlOutput } from "../lib/node-odbc";
-
-
+import * as odbc from "../lib/node-odbc";
 
 mod.connection.forEach(( con ) =>
 {
@@ -15,27 +13,37 @@ mod.connection.forEach(( con ) =>
 		{
 			connection = new odbc.Connection()
 				.connect( con.connectionString );
-		} );
-
-		it( "return value", ( done ) =>
-		{
+			console.log( connection );
 		} );
 
 		it( "output (short)", ( done ) =>
 		{
-			let id = 0;
-			let userName: string;
-			connection.prepareQuery( "{call uspBasicOutput( ? )}", SqlOutput.asInt( id ) )
-				.toSingle()
-				.then(( res ) =>
-				{
+			let procName = mod.getRandomProcedureName( 12 );
 
-					console.log( id );
+			connection.prepareQuery( `CREATE PROCEDURE ${procName} @A INT OUTPUT AS SET @A = 25; RETURN` )
+				.toSingle()
+				.then(() =>
+				{
+					let A = 0;
+					let B = odbc.SqlOutput.asInt( A );
+
+
+					connection.prepareQuery( `{call ${procName}( ? )}`, B)
+						.toSingle()
+						.then(( res ) =>
+						{
+							console.log( A );
+							console.log( B );
+						} )
+						.catch(( err ) =>
+						{
+							done( err );
+						} );
 				} )
 				.catch(( err ) =>
 				{
 					done( err );
-				} );
+				});
 		} );
 
 

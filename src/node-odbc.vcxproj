@@ -33,6 +33,11 @@
     <ClCompile Include="Odbc\Connection\Extension\PoolExtension.cpp" />
     <ClCompile Include="Odbc\Helper\OdbcError.cpp" />
     <ClCompile Include="Odbc\OdbcEnvironment.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\DataType.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBigInt.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBit.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlInt.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlReal.cpp" />
     <ClCompile Include="Odbc\Query\Helper\BindParam.cpp" />
     <ClCompile Include="Odbc\Query\Query.cpp" />
     <ClCompile Include="Odbc\Query\QueryParameter.cpp" />
@@ -64,6 +69,11 @@
     <ClInclude Include="Odbc\Helper\Handle\OdbcStatementHandle.h" />
     <ClInclude Include="Odbc\Helper\OdbcError.h" />
     <ClInclude Include="Odbc\OdbcEnvironment.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\DataType.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBigInt.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBit.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlInt.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlReal.h" />
     <ClInclude Include="Odbc\Query\Helper\BindParam.h" />
     <ClInclude Include="Odbc\Query\Helper\ColumnData.h" />
     <ClInclude Include="Odbc\Query\Helper\JSDate.h" />

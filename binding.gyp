@@ -31,6 +31,8 @@
                 "src/Odbc/Connection/ConnectionPool.cpp",
 
                 "src/Odbc/Helper/OdbcError.cpp",
+
+                "src/Odbc/Query/Helper/BindParam.cpp",
                 "src/Odbc/Query/Query.cpp",
                 "src/Odbc/Query/QueryParameter.cpp",
                 "src/Odbc/Query/ResultSet.cpp",

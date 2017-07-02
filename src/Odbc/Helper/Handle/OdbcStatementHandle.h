@@ -139,4 +139,21 @@ public:
 		return SQLFetchScroll( GetSqlHandle( ), FetchOrientation, FetchOffset );
 	}
 
+	inline bool GetDataEx( size_t ColumnNumber, SQLSMALLINT TargetType, SQLPOINTER TargetValue, SQLLEN BufferLength, SQLLEN *StrLen_or_IndPtr )
+	{
+		auto sqlRet = GetData( static_cast< SQLUSMALLINT >( ColumnNumber + 1 ), TargetType, TargetValue, BufferLength, StrLen_or_IndPtr );
+
+		if( sqlRet == SQL_SUCCESS_WITH_INFO )
+		{
+			auto pError = GetOdbcError( );
+
+			if( pError->IsSqlState( L"01004" ) )
+			{
+				assert( false );
+			}
+		}
+
+		return SQL_SUCCEEDED( sqlRet );
+	}
+
 };

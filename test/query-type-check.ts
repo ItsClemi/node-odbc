@@ -678,7 +678,7 @@ mod.connection.forEach(( connection ) =>
 				done();
 			} );
 		} );
-
+		 
 		it( "insert numeric -> fetch numeric", ( done ) =>
 		{
 			let tblName = mod.getRandomTableName();

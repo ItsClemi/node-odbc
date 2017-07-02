@@ -43,6 +43,9 @@
     <Filter Include="Core\Connection">
       <UniqueIdentifier>{97369b95-b0f9-4c41-807d-dabd24a8ef36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Odbc\Query\DataTypes">
+      <UniqueIdentifier>{500b0e3e-24c7-42b7-892a-49ddf1f8adee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -99,6 +102,21 @@
     </ClCompile>
     <ClCompile Include="Odbc\Query\Helper\BindParam.cpp">
       <Filter>Odbc\Query\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlInt.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBigInt.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\DataType.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlReal.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBit.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +209,21 @@
     </ClInclude>
     <ClInclude Include="Odbc\Query\Helper\JSValue.h">
       <Filter>Odbc\Query\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlInt.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\DataType.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBigInt.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlReal.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBit.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

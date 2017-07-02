@@ -55,10 +55,11 @@ void CBindParam::Dispose( )
 void CBindParam::UpdateOutputParam( Isolate* isolate )
 {
 	HandleScope scope( isolate );
+	const auto context = isolate->GetCurrentContext( );
 
 	auto valueRef = node::PersistentToLocal< Value, CopyablePersistentTraits< Value > >( isolate, m_paramRef );
 	{
-		valueRef = JSValue::ToValue( isolate, m_eOutputType, m_data );
+		valueRef.As< Object >( )->Set( context, Nan::New( "reference" ).ToLocalChecked( ), JSValue::ToValue( isolate, m_eOutputType, m_data ) ).ToChecked( );
 	}
 }
 
@@ -201,7 +202,7 @@ bool CBindParam::SetOutputParameter( Isolate* isolate, Local< Object > value )
 	}
 
 	m_eOutputType = eType;
-	m_paramRef.Reset( isolate, ref );
+	m_paramRef.Reset( isolate, value );
 
 	return true;
 }

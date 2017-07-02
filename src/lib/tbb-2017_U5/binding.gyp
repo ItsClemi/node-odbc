@@ -86,7 +86,7 @@
                             'MinimalRebuild': 'false',
                             'OmitFramePointers': 'false',
                             'BasicRuntimeChecks': 3,  # /RTC1
-                            'RuntimeLibrary': '3',
+                            'RuntimeLibrary': '1',
                         },
                         'VCLinkerTool': {
                             'LinkIncremental': 2,  # enable incremental linking
@@ -106,7 +106,7 @@
                         'VCCLCompilerTool': {
                             'WholeProgramOptimization': 'false',
                             'Optimization': '1',
-                            'RuntimeLibrary': '2',
+                            'RuntimeLibrary': '0',
                         },
                         'VCLinkerTool': {
                             'LinkTimeCodeGeneration': '2',
@@ -259,7 +259,7 @@
                             'MinimalRebuild': 'false',
                             'OmitFramePointers': 'false',
                             'BasicRuntimeChecks': 3,  # /RTC1
-                            'RuntimeLibrary': '3',
+                            'RuntimeLibrary': '1',
                         },
                         'VCLinkerTool': {
                             'LinkIncremental': 2,  # enable incremental linking
@@ -279,7 +279,7 @@
                         'VCCLCompilerTool': {
                             'WholeProgramOptimization': 'false',
                             'Optimization': '1',
-                            'RuntimeLibrary': '2',
+                            'RuntimeLibrary': '0',
                         },
                         'VCLinkerTool': {
                             'LinkTimeCodeGeneration': '2',

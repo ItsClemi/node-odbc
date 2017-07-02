@@ -74,6 +74,13 @@ export function getRandomTableName( length?: number)
     return "tbl" + getRandomString( len );
 }
 
+export function getRandomProcedureName( length?: number )
+{
+	let len = length || 7;
+
+	return "usp" + getRandomString( len );
+}
+
 export function getRandomString(length: number) {
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 

@@ -11,12 +11,12 @@ let tests = new mocha();
 
 tests.checkLeaks();
 
-tests.addFile( "./test/api.js" );
-tests.addFile( "./test/connection.js" );
+//tests.addFile( "./test/api.js" );
+//tests.addFile( "./test/connection.js" );
 
-tests.addFile( "./test/query-type-check.js" );
+//tests.addFile( "./test/query-type-check.js" );
 tests.addFile( "./test/query-type-check-promise.js" );
-
+tests.addFile( "./test/mssql-procedure-check.js" );
 
 tests.run();
 

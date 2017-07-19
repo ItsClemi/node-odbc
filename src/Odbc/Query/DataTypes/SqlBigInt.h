@@ -3,7 +3,6 @@
 #include "DataType.h"
 
 
-class COdbcStatementHandle;
 class CSqlBigInt : public CDataType
 {
 public:

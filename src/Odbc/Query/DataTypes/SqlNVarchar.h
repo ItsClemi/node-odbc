@@ -3,11 +3,10 @@
 #include "DataType.h"
 
 
-class CSqlReal : public CDataType
+class CSqlNVarchar : public CDataType
 {
-public:
-	CSqlReal( );
-	virtual ~CSqlReal( );
+	CSqlNVarchar( );
+	virtual ~CSqlNVarchar( );
 
 protected:
 	virtual void TransformType( v8::Isolate* isolate, v8::Local<v8::Value> value, SSqlBindParam* pParam ) override;

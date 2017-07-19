@@ -79,6 +79,18 @@ struct SStringDesc
 		}
 	}
 
+	wchar_t* GetWString( )
+	{
+		assert( m_eType == EStringType::eUnicode );
+		return data.pWString;
+	}
+
+	char* GetString( )
+	{
+		assert( m_eType == EStringType::eAnsi );
+		return data.pString;
+	}
+
 
 	EStringType		m_eType;
 	size_t			m_nLength;
@@ -98,6 +110,56 @@ struct SBufferDesc
 	size_t		m_nLength;
 };
 
+enum class EBufferType
+{
+	eWstring, eString, eBinary
+};
+
+struct SDataBuffer
+{
+	wchar_t* AllocWstring( size_t nLength )
+	{
+		data.pWstring = new wchar_t[ nLength + 1 ];
+		length = nLength;
+
+		return data.pWstring;
+	}
+
+	char* AllocString( size_t nLength )
+	{
+		data.pString = new char[ nLength + 1 ];
+		length = nLength;
+
+		return data.pString;
+	}
+
+	void DestroyWString( )
+	{
+
+	}
+
+	void DestroyString( )
+	{
+
+	}
+
+	void DestroyBuffer( )
+	{
+		delete[ ] data.pBuffer;
+	}
+
+
+	EBufferType		type;
+	size_t			length;
+
+	union
+	{
+		wchar_t*	pWstring;
+		char*		pString;
+		uint8_t*	pBuffer;
+	} data;
+};
+
 
 union SParamData
 {
@@ -109,6 +171,7 @@ union SParamData
 
 	SBufferDesc					bufferDesc;
 	SStringDesc					stringDesc;
+	SDataBuffer					dataBuffer;
 
 	SQL_DATE_STRUCT				sqlDate;
 	SQL_TIMESTAMP_STRUCT		sqlTimestamp;

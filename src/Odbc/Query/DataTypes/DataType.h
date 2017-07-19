@@ -71,8 +71,10 @@ public:
 	virtual ~CDataType( );
 
 protected:
-	virtual void TransformType( v8::Isolate* isolate, v8::Local< v8::Value > value, SSqlBindParam* pParam );
-	virtual bool TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData );
+	//> Serialize
+	virtual void TransformType( v8::Isolate* isolate, v8::Local< v8::Value > value, SSqlBindParam* pParam ) = 0;
+	//Deserialize
+	virtual bool TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData ) = 0;
 
 protected:
 	bool GetData( COdbcStatementHandle* pStatement, SSqlData* pData, size_t nColumn, SQLSMALLINT nTargetType, SQLPOINTER nTargetValue, SQLLEN nBufferLength, SQLLEN* pStrLen = nullptr );

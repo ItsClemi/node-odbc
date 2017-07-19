@@ -118,6 +118,24 @@
     <ClCompile Include="Odbc\Query\DataTypes\SqlBit.cpp">
       <Filter>Odbc\Query\DataTypes</Filter>
     </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlNVarchar.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlVarchar.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBinary.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlNumeric.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlDate.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\SqlTimestamp.cpp">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -223,6 +241,24 @@
       <Filter>Odbc\Query\DataTypes</Filter>
     </ClInclude>
     <ClInclude Include="Odbc\Query\DataTypes\SqlBit.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlNVarchar.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlVarchar.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBinary.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlNumeric.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlDate.h">
+      <Filter>Odbc\Query\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\SqlTimestamp.h">
       <Filter>Odbc\Query\DataTypes</Filter>
     </ClInclude>
   </ItemGroup>

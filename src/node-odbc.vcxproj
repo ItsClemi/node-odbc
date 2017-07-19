@@ -35,9 +35,15 @@
     <ClCompile Include="Odbc\OdbcEnvironment.cpp" />
     <ClCompile Include="Odbc\Query\DataTypes\DataType.cpp" />
     <ClCompile Include="Odbc\Query\DataTypes\SqlBigInt.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlBinary.cpp" />
     <ClCompile Include="Odbc\Query\DataTypes\SqlBit.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlDate.cpp" />
     <ClCompile Include="Odbc\Query\DataTypes\SqlInt.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlNumeric.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlNVarchar.cpp" />
     <ClCompile Include="Odbc\Query\DataTypes\SqlReal.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlTimestamp.cpp" />
+    <ClCompile Include="Odbc\Query\DataTypes\SqlVarchar.cpp" />
     <ClCompile Include="Odbc\Query\Helper\BindParam.cpp" />
     <ClCompile Include="Odbc\Query\Query.cpp" />
     <ClCompile Include="Odbc\Query\QueryParameter.cpp" />
@@ -71,9 +77,15 @@
     <ClInclude Include="Odbc\OdbcEnvironment.h" />
     <ClInclude Include="Odbc\Query\DataTypes\DataType.h" />
     <ClInclude Include="Odbc\Query\DataTypes\SqlBigInt.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlBinary.h" />
     <ClInclude Include="Odbc\Query\DataTypes\SqlBit.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlDate.h" />
     <ClInclude Include="Odbc\Query\DataTypes\SqlInt.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlNumeric.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlNVarchar.h" />
     <ClInclude Include="Odbc\Query\DataTypes\SqlReal.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlTimestamp.h" />
+    <ClInclude Include="Odbc\Query\DataTypes\SqlVarchar.h" />
     <ClInclude Include="Odbc\Query\Helper\BindParam.h" />
     <ClInclude Include="Odbc\Query\Helper\ColumnData.h" />
     <ClInclude Include="Odbc\Query\Helper\JSDate.h" />
@@ -183,6 +195,7 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

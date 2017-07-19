@@ -269,6 +269,8 @@ bool CResultSet::ReadColumn( size_t nColumn )
 				pData->SetStringLength( static_cast< size_t >( strLen_or_IndPtr ) );
 			}
 
+		
+
 			break;
 		}
 

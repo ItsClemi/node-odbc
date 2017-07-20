@@ -26,7 +26,7 @@ using namespace v8;
 
 CBindParam::CBindParam( )
 {
-	reinterpret_cast
+	
 }
 
 CBindParam::~CBindParam( )

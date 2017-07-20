@@ -5,16 +5,12 @@ using namespace v8;
 
 
 CSqlNVarchar::CSqlNVarchar( )
-{
-
-}
+{ }
 
 CSqlNVarchar::~CSqlNVarchar( )
-{
+{ }
 
-}
-
-void CSqlNVarchar::TransformType( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
+void CSqlNVarchar::Serialize( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
@@ -46,23 +42,27 @@ void CSqlNVarchar::TransformType( Isolate* isolate, Local< Value > value, SSqlBi
 		0,
 		pData->data.pWstring,
 		static_cast< SQLLEN >( pData->length ),
-		0 
+		0
 	);
 }
 
-bool CSqlNVarchar::TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData )
+bool CSqlNVarchar::Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData )
 {
 	pData->m_eType = ESqlType::eNVarChar;
 
+	auto pBuffer = &pData->m_data.dataBuffer;
+
+	pBuffer->AllocWstring( pMetaData->m_nColumnSize );
+
 	SQLLEN nStringLength;
-	if( !GetData( pStatement, pData, nColumn, SQL_C_WCHAR, pData->m_data.stringDesc.GetWString( ), pData->m_data.stringDesc.m_nLength, &nStringLength ) )
+	if( !GetData( pStatement, pData, nColumn, SQL_C_WCHAR, pBuffer->data.pWstring, pBuffer->length, &nStringLength ) )
 	{
 		return false;
 	}
 
 	if( nStringLength == SQL_NULL_DATA )
 	{
-		pData->m_data.stringDesc.Dispose( );
+		pBuffer->DestroyWString( );
 	}
 
 	return true;

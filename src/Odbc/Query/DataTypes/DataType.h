@@ -62,6 +62,18 @@ struct SSqlData
 	SParamData		m_data;
 };
 
+struct SMetaData
+{
+	std::wstring	m_szColumnName;
+	SQLULEN			m_nColumnSize;
+	SQLSMALLINT		m_nDataType;
+	std::wstring	m_szDataTypeName;
+	SQLSMALLINT		m_nDecimalDigits;
+	SQLSMALLINT		m_bNullable;
+	bool			m_bLOBColumn;
+};
+
+
 
 class COdbcStatementHandle;
 struct CDataType
@@ -71,15 +83,11 @@ public:
 	virtual ~CDataType( );
 
 protected:
-	//> Serialize
-	virtual void TransformType( v8::Isolate* isolate, v8::Local< v8::Value > value, SSqlBindParam* pParam ) = 0;
-	//Deserialize
-	virtual bool TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData ) = 0;
+	virtual void Serialize( v8::Isolate* isolate, v8::Local< v8::Value > value, SSqlBindParam* pParam ) = 0;
+	virtual bool Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData ) = 0;
 
 protected:
 	bool GetData( COdbcStatementHandle* pStatement, SSqlData* pData, size_t nColumn, SQLSMALLINT nTargetType, SQLPOINTER nTargetValue, SQLLEN nBufferLength, SQLLEN* pStrLen = nullptr );
-
-
 
 };
 

@@ -9,7 +9,7 @@ CSqlBigInt::CSqlBigInt( )
 CSqlBigInt::~CSqlBigInt( )
 { }
 
-void CSqlBigInt::TransformType( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
+void CSqlBigInt::Serialize( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
@@ -22,7 +22,7 @@ void CSqlBigInt::TransformType( Isolate* isolate, Local< Value > value, SSqlBind
 	pParam->Set( SQL_C_SBIGINT, SQL_BIGINT, sizeof( int64_t ), 0, &pParam->GetData( )->nInt64, sizeof( int64_t ), 0 );
 }
 
-bool CSqlBigInt::TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData )
+bool CSqlBigInt::Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData )
 {
 	pData->m_eType = ESqlType::eBigInt;
 
@@ -30,6 +30,6 @@ bool CSqlBigInt::TransformSqlType( COdbcStatementHandle* pStatement, size_t nCol
 	{
 		return false;
 	}
-	
+
 	return true;
 }

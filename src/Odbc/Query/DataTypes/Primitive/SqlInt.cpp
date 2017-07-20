@@ -9,7 +9,7 @@ CSqlInt::CSqlInt( )
 CSqlInt::~CSqlInt( )
 { }
 
-void CSqlInt::TransformType( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
+void CSqlInt::Serialize( v8::Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
@@ -51,7 +51,7 @@ void CSqlInt::TransformType( Isolate* isolate, Local< Value > value, SSqlBindPar
 	pParam->Set( SQL_C_SLONG, nDataType, sizeof( int32_t ), 0, &pParam->GetData( )->nInt32, sizeof( int32_t ), 0 );
 }
 
-bool CSqlInt::TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData )
+bool CSqlInt::Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData )
 {
 	pData->m_eType = ESqlType::eInt32;
 

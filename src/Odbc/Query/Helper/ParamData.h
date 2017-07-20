@@ -19,97 +19,6 @@
 #pragma once
 
 
-
-union UStringData
-{
-	wchar_t*	pWString;
-	char*		pString;
-};
-
-enum class EStringType : size_t
-{
-	eAnsi, eUnicode,
-};
-
-struct SStringDesc
-{
-	void SetString( char* szString, size_t nLen )
-	{
-		m_eType = EStringType::eAnsi;
-		m_nLength = nLen;
-		data.pString = szString;
-	}
-
-	void SetString( wchar_t* szString, size_t nLen )
-	{
-		m_eType = EStringType::eUnicode;
-		m_nLength = nLen;
-		data.pWString = szString;
-	}
-
-	bool IsAnsiString( )
-	{
-		return m_eType == EStringType::eAnsi;
-	}
-
-	void Alloc( EStringType eType, size_t nLength )
-	{
-		m_eType = eType;
-		m_nLength = nLength;
-
-		if( IsAnsiString( ) )
-		{
-			data.pString = new char[ nLength + 1 ];
-		}
-		else
-		{
-			data.pWString = new wchar_t[ nLength + 1 ];
-		}
-	}
-
-	void Dispose( )
-	{
-		if( IsAnsiString( ) )
-		{
-			SafeDeleteArray( data.pString );
-		}
-		else
-		{
-			SafeDeleteArray( data.pWString );
-		}
-	}
-
-	wchar_t* GetWString( )
-	{
-		assert( m_eType == EStringType::eUnicode );
-		return data.pWString;
-	}
-
-	char* GetString( )
-	{
-		assert( m_eType == EStringType::eAnsi );
-		return data.pString;
-	}
-
-
-	EStringType		m_eType;
-	size_t			m_nLength;
-	UStringData		data;
-};
-
-
-struct SBufferDesc
-{
-	void SetBuffer( uint8_t* pBuffer, size_t nLen )
-	{
-		m_pBuffer = pBuffer;
-		m_nLength = nLen;
-	}
-
-	uint8_t*	m_pBuffer;
-	size_t		m_nLength;
-};
-
 enum class EBufferType
 {
 	eWstring, eString, eBinary
@@ -133,14 +42,22 @@ struct SDataBuffer
 		return data.pString;
 	}
 
+	uint8_t* AllocBuffer( size_t nLength )
+	{
+		data.pBuffer = new uint8_t[ nLength ];
+		length = nLength;
+
+		return data.pBuffer;
+	}
+
 	void DestroyWString( )
 	{
-
+		delete[ ] data.pWstring;
 	}
 
 	void DestroyString( )
 	{
-
+		delete[ ] data.pString;
 	}
 
 	void DestroyBuffer( )
@@ -169,8 +86,6 @@ union SParamData
 	int64_t						nInt64;
 	double						dNumber;
 
-	SBufferDesc					bufferDesc;
-	SStringDesc					stringDesc;
 	SDataBuffer					dataBuffer;
 
 	SQL_DATE_STRUCT				sqlDate;

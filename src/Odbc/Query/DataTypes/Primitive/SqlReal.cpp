@@ -10,7 +10,7 @@ CSqlReal::CSqlReal( )
 CSqlReal::~CSqlReal( )
 { }
 
-void CSqlReal::TransformType( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
+void CSqlReal::Serialize( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
@@ -23,7 +23,7 @@ void CSqlReal::TransformType( Isolate* isolate, Local< Value > value, SSqlBindPa
 	pParam->Set( SQL_C_DOUBLE, SQL_DOUBLE, sizeof( double ), 0, &pParam->GetData( )->dNumber, sizeof( double ), NULL );
 }
 
-bool CSqlReal::TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData )
+bool CSqlReal::Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData )
 {
 	pData->m_eType = ESqlType::eReal;
 

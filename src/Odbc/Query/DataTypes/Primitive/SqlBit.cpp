@@ -12,7 +12,7 @@ CSqlBit::CSqlBit( )
 CSqlBit::~CSqlBit( )
 { }
 
-void CSqlBit::TransformType( Isolate* isolate, Local< Value > value, SSqlBindParam* pParam )
+void CSqlBit::Serialize( v8::Isolate* isolate, v8::Local<v8::Value> value, SSqlBindParam* pParam )
 {
 	HandleScope scope( isolate );
 	const auto context = isolate->GetCurrentContext( );
@@ -25,7 +25,7 @@ void CSqlBit::TransformType( Isolate* isolate, Local< Value > value, SSqlBindPar
 	pParam->Set( SQL_C_BIT, SQL_BIT, sizeof( bool ), 0, &pParam->GetData( )->bValue, sizeof( bool ), NULL );
 }
 
-bool CSqlBit::TransformSqlType( COdbcStatementHandle* pStatement, size_t nColumn, SSqlData* pData )
+bool CSqlBit::Deserialize( COdbcStatementHandle* pStatement, size_t nColumn, SMetaData* pMetaData, SSqlData* pData )
 {
 	pData->m_eType = ESqlType::eBit;
 

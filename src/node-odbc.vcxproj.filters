@@ -46,6 +46,24 @@
     <Filter Include="Odbc\Query\DataTypes">
       <UniqueIdentifier>{500b0e3e-24c7-42b7-892a-49ddf1f8adee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Odbc\Connection\Extension\Mssql">
+      <UniqueIdentifier>{b8467280-8bad-46e6-b945-5a822c5ede66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Connection\Extension\MySql">
+      <UniqueIdentifier>{79224ae9-618e-4694-918f-bc319863f731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Connection\Extension\Mssql\DataTypes">
+      <UniqueIdentifier>{22d031b7-abe9-48eb-ad9b-3079152ca5f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Query\DataTypes\Primitive">
+      <UniqueIdentifier>{ca78ee71-fff8-4cb4-843e-d39ba5346d17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Query\DataTypes\Array">
+      <UniqueIdentifier>{475d6446-fb11-47f9-9ccd-47b1dec60139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Odbc\Query\DataTypes\Complex">
+      <UniqueIdentifier>{9819db46-cf98-4a53-bfc6-5c22556cad00}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -103,38 +121,38 @@
     <ClCompile Include="Odbc\Query\Helper\BindParam.cpp">
       <Filter>Odbc\Query\Helper</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlInt.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
-    </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlBigInt.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
-    </ClCompile>
     <ClCompile Include="Odbc\Query\DataTypes\DataType.cpp">
       <Filter>Odbc\Query\DataTypes</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlReal.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Primitive\SqlReal.cpp">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlBit.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Primitive\SqlInt.cpp">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlNVarchar.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Primitive\SqlBit.cpp">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlVarchar.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Primitive\SqlBigInt.cpp">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlBinary.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Complex\SqlTimestamp.cpp">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlNumeric.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Complex\SqlDate.cpp">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlDate.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Complex\SqlNumeric.cpp">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClCompile>
-    <ClCompile Include="Odbc\Query\DataTypes\SqlTimestamp.cpp">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClCompile Include="Odbc\Query\DataTypes\Array\SqlBinary.cpp">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\Array\SqlNVarchar.cpp">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
+    </ClCompile>
+    <ClCompile Include="Odbc\Query\DataTypes\Array\SqlVarchar.cpp">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -228,38 +246,38 @@
     <ClInclude Include="Odbc\Query\Helper\JSValue.h">
       <Filter>Odbc\Query\Helper</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlInt.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
-    </ClInclude>
     <ClInclude Include="Odbc\Query\DataTypes\DataType.h">
       <Filter>Odbc\Query\DataTypes</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlBigInt.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Primitive\SqlReal.h">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlReal.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Primitive\SqlInt.h">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlBit.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Primitive\SqlBit.h">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlNVarchar.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Primitive\SqlBigInt.h">
+      <Filter>Odbc\Query\DataTypes\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlVarchar.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Complex\SqlNumeric.h">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlBinary.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Complex\SqlTimestamp.h">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlNumeric.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Complex\SqlDate.h">
+      <Filter>Odbc\Query\DataTypes\Complex</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlDate.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Array\SqlVarchar.h">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
     </ClInclude>
-    <ClInclude Include="Odbc\Query\DataTypes\SqlTimestamp.h">
-      <Filter>Odbc\Query\DataTypes</Filter>
+    <ClInclude Include="Odbc\Query\DataTypes\Array\SqlBinary.h">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
+    </ClInclude>
+    <ClInclude Include="Odbc\Query\DataTypes\Array\SqlNVarchar.h">
+      <Filter>Odbc\Query\DataTypes\Array</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -19,7 +19,6 @@
 
 import * as stream from "stream";
 import * as fs from "fs";
-import * as bluebird from "bluebird";
 import * as binding from "./binding";
 
 export type SqlComplexType = {
@@ -274,10 +273,3 @@ exports.setReadStreamInitializer(( query: ISqlQueryEx, column: number ) =>
 	return new SqlStreamReader( query, column );
 } );
 
-exports.setPromiseInitializer(( query: ISqlQueryEx ) => 
-{
-	return new bluebird(( resolve, reject ) =>
-	{
-		query.setPromiseInfo( resolve, reject );
-	} );
-} );

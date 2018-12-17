@@ -48,8 +48,6 @@
 #endif
 
 
-#define TBB_PREVIEW_MEMORY_POOL 1
-
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef _WINDOWS
@@ -94,11 +92,6 @@
 #include <chrono>
 #include <condition_variable>
 #include <queue>
-
-
-#include <tbb/tbb.h>
-#include <tbb/scalable_allocator.h>
-#include <tbb/memory_pool.h>
 
 
 #include "Odbc/Drivers/msodbcsql.h"
